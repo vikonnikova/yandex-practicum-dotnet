@@ -1,0 +1,7 @@
+@Events_Api_HostAddress = https://localhost:7262
+
+### Получить список событий
+GET {{Events_Api_HostAddress}}/api/events/1
+Accept: application/json
+
+###
