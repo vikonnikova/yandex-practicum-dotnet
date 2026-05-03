@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="Events.Api/Events.Api.csproj" />
+    <Project Path="Events.Domain/Events.Domain.csproj" />
   </Folder>
 </Solution>
