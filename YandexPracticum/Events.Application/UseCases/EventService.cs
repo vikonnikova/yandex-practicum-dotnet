@@ -1,36 +1,50 @@
-﻿using Events.Domain;
+﻿using Events.Application.Dto;
+using Events.Application.Mappings;
+using Events.Domain;
 
 namespace Events.Application.UseCases;
 
 public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
-	
-	public IReadOnlyCollection<Event> GetAll()
+
+	public IReadOnlyCollection<EventData> GetAll()
 	{
-		return _events;
+		return _events.Select(e => e.ToDto()).ToArray();
 	}
-	
-	public void Add(Event @event)
+
+	public EventData? GetById(int eventId)
 	{
-		_events.Add(@event);
+		return _events.Find(e => e.Id == eventId)?.ToDto();
 	}
-	
-	public void Update(Event @event)
+
+	public void Add(CreateEventData eventData)
 	{
-		var eventToUpdate = _events.Find(e => e.Id == @event.Id);
+		_events.Add(Event.Create(eventData.Id, eventData.Title, eventData.Description, eventData.StartAt,
+			eventData.EndAt));
+	}
+
+	public void Update(int eventId, UpdateEventData eventData)
+	{
+		var eventToUpdate = _events.Find(e => e.Id == eventId);
 
 		if (eventToUpdate is null)
 		{
 			throw new Exception("Event with id not found");
 		}
-		
-		_events.Remove(eventToUpdate);
-		_events.Add(@event);
+
+		eventToUpdate.Update(eventData.Title, eventData.Description, eventData.StartAt, eventToUpdate.EndAt);
 	}
-	
-	public void Remove(Event @event)
+
+	public void Remove(int eventId)
 	{
-		_events.Remove(@event);
+		var eventToDelete = _events.Find(e => e.Id == eventId);
+
+		if (eventToDelete is null)
+		{
+			throw new Exception("Event with id not found");
+		}
+
+		_events.Remove(eventToDelete);
 	}
 }

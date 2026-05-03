@@ -1,7 +1,36 @@
-@Events_Api_HostAddress = https://localhost:7262
+@Events_Api_HostAddress = http://localhost:5130/api
 
 ### Получить список событий
-GET {{Events_Api_HostAddress}}/api/events/1
+GET {{Events_Api_HostAddress}}/events
 Accept: application/json
 
-###
+### Получить событие по идентификатору
+GET {{Events_Api_HostAddress}}/events/1
+Accept: application/json
+
+### Создать событие
+POST {{Events_Api_HostAddress}}/events
+Content-Type: application/json
+
+{
+  "id": "Петр",
+  "title": "Н. Римский-Корсаков «Снегурочка»",
+  "description": "опера в двух действиях, продолжительность: 2 часа 20 минут с одним антрактом",
+  "startAt": "2026-05-03 15:00",
+  "endAt": "2026-05-03 17:20"
+}
+
+### Обновить событие
+PUT {{Events_Api_HostAddress}}/events/1
+Content-Type: application/json
+
+{
+  "title": "А. Адан «Жизель»",
+  "description": "балет в двух действиях, продолжительность: 2 часа с одним антрактом",
+  "startAt": "2026-05-04 18:00",
+  "endAt": "2026-05-04 20:00"
+}
+
+### Удалить событие
+DELETE {{Events_Api_HostAddress}}/events/1
+Accept: application/json

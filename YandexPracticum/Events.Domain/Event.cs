@@ -21,4 +21,12 @@ public class Event
 	{
 		return new Event(id, title, description, startAt, endAt);
 	}
+
+	public void Update(string title, string? description, DateTime startAt, DateTime endAt)
+	{
+		Title = title;
+		Description = description;
+		StartAt = startAt;
+		EndAt = endAt;
+	}
 }
