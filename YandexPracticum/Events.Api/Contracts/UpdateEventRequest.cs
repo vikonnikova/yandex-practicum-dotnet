@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Events.Application.Dto;
+namespace Events.Api.Contracts;
 
 /// <summary>
 /// Представляет данные для изменения события.
@@ -10,7 +10,10 @@ namespace Events.Application.Dto;
 /// <param name="StartAt">Дата начала.</param>
 /// <param name="EndAt">Дата окончания.</param>
 public record UpdateEventRequest(
-	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")] string Title,
+	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")]
+	string Title,
 	string? Description,
-	[Required(ErrorMessage = "Дата начала события обязательна для заполнения.")] DateTime StartAt,
-	[Required(ErrorMessage = "Дата окончания события обязательна для заполнения.")] DateTime EndAt);
+	[Required(ErrorMessage = "Дата начала события обязательна для заполнения.")]
+	DateTime StartAt,
+	[Required(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
+	DateTime EndAt);

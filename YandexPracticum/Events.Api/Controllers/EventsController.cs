@@ -1,5 +1,7 @@
+using Events.Api.Contracts;
+using Events.Api.Mappings;
 using Events.Api.Middleware;
-using Events.Application.Dto;
+using Events.Api.Validation;
 using Events.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,7 +44,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
 	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
 	{
-		eventService.Add(eventRequest);
+		ModelValidator.Validate(eventRequest);
+		eventService.Add(eventRequest.ToDto());
+		
 		return Created();
 	}
 
@@ -57,7 +61,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
 	public IActionResult Update([FromRoute] int id, [FromBody] UpdateEventRequest eventRequest)
 	{
-		eventService.Update(id, eventRequest);
+		ModelValidator.Validate(eventRequest);
+		eventService.Update(eventRequest.ToDto(id));
+		
 		return NoContent();
 	}
 

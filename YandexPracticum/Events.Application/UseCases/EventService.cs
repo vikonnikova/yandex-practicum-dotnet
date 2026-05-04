@@ -1,6 +1,5 @@
-﻿using Events.Application.Dto;
-using Events.Application.Exceptions;
-using Events.Application.Mappings;
+﻿using Events.Application.Exceptions;
+using Events.Application.UseCases.Dto;
 using Events.Domain;
 
 namespace Events.Application.UseCases;
@@ -9,33 +8,33 @@ public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
 
-	public IReadOnlyCollection<EventResponse> GetAll()
+	public IReadOnlyCollection<Event> GetAll()
 	{
-		return _events.Select(e => e.ToDto()).ToArray();
+		return _events.ToArray();
 	}
 
-	public EventResponse? GetById(int eventId)
+	public Event? GetById(int eventId)
 	{
-		return _events.Find(e => e.Id == eventId)?.ToDto();
+		return _events.Find(e => e.Id == eventId);
 	}
 
-	public void Add(CreateEventRequest eventRequest)
+	public void Add(EventDto eventData)
 	{
-		_events.Add(Event.Create(eventRequest.Id, eventRequest.Title, eventRequest.Description,
-			EventPeriod.Create(eventRequest.StartAt, eventRequest.EndAt)));
+		_events.Add(Event.Create(eventData.Id, eventData.Title, eventData.Description,
+			EventPeriod.Create(eventData.StartAt, eventData.EndAt)));
 	}
 
-	public void Update(int eventId, UpdateEventRequest eventRequest)
+	public void Update(EventDto eventData)
 	{
-		var eventToUpdate = _events.Find(e => e.Id == eventId);
+		var eventToUpdate = _events.Find(e => e.Id == eventData.Id);
 
 		if (eventToUpdate is null)
 		{
-			throw new EntityNotFoundException("Событие", eventId);
+			throw new EntityNotFoundException("Событие", eventData.Id);
 		}
 
-		eventToUpdate.Update(eventRequest.Title, eventRequest.Description,
-			EventPeriod.Create(eventRequest.StartAt, eventRequest.EndAt));
+		eventToUpdate.Update(eventData.Title, eventData.Description,
+			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
 	}
 
 	public void Remove(int eventId)

@@ -16,8 +16,4 @@
       <ProjectReference Include="..\Events.Application\Events.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Dto\" />
-    </ItemGroup>
-
 </Project>

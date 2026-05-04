@@ -2,7 +2,7 @@
 
 namespace Events.Api.Middleware;
 
-public class ExceptionHandlingMiddleware
+internal class ExceptionHandlingMiddleware
 {
 	private readonly RequestDelegate _next;
 

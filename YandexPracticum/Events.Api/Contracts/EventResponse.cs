@@ -1,4 +1,4 @@
-﻿namespace Events.Application.Dto;
+﻿namespace Events.Api.Contracts;
 
 /// <summary>
 /// Представляет данные события.

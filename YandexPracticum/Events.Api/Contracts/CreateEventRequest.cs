@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Events.Application.Dto;
+namespace Events.Api.Contracts;
 
 /// <summary>
 /// Представляет данные для создания события.
@@ -12,7 +12,10 @@ namespace Events.Application.Dto;
 /// <param name="EndAt">Дата окончания.</param>
 public record CreateEventRequest(
 	[Required] int Id,
-	[Required] string Title,
+	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")]
+	string Title,
 	string? Description,
-	[Required] DateTime StartAt,
-	[Required] DateTime EndAt);
+	[Required(ErrorMessage = "Дата начала события обязательна для заполнения.")]
+	DateTime StartAt,
+	[Required(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
+	DateTime EndAt);

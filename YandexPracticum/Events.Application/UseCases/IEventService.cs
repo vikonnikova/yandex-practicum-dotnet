@@ -1,16 +1,17 @@
-﻿using Events.Application.Dto;
+﻿using Events.Application.UseCases.Dto;
+using Events.Domain;
 
 namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	IReadOnlyCollection<EventResponse> GetAll();
+	IReadOnlyCollection<Event> GetAll();
 
-	EventResponse? GetById(int eventId);
+	Event? GetById(int eventId);
 
-	void Add(CreateEventRequest eventRequest);
+	void Add(EventDto eventData);
 
-	void Update(int eventId, UpdateEventRequest eventRequest);
+	void Update(EventDto eventData);
 
 	void Remove(int eventId);
 }
