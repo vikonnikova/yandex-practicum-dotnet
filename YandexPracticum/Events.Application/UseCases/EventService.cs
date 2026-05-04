@@ -1,4 +1,5 @@
 ﻿using Events.Application.Dto;
+using Events.Application.Exceptions;
 using Events.Application.Mappings;
 using Events.Domain;
 
@@ -30,7 +31,7 @@ public class EventService : IEventService
 
 		if (eventToUpdate is null)
 		{
-			throw new Exception("Event with id not found");
+			throw new EntityNotFoundException("Событие", eventId);
 		}
 
 		eventToUpdate.Update(eventRequest.Title, eventRequest.Description,
@@ -43,7 +44,7 @@ public class EventService : IEventService
 
 		if (eventToDelete is null)
 		{
-			throw new Exception("Event with id not found");
+			throw new EntityNotFoundException("Событие", eventId);
 		}
 
 		_events.Remove(eventToDelete);

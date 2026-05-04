@@ -5,9 +5,9 @@ public class Event
 	private Event(int id, string title, string? description, EventPeriod period)
 	{
 		Id = id;
-		Title = title;
+		Title = title ?? throw new ArgumentNullException(nameof(title));
 		Description = description;
-		Period = period;
+		Period = period ?? throw new ArgumentNullException(nameof(period));
 	}
 
 	public int Id { get; private set; }

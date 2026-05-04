@@ -15,7 +15,7 @@ public class EventPeriod
 	{
 		if (endAt <= startAt)
 		{
-			throw new ArgumentException("Invalid period");
+			throw new ArgumentException("Начало события должно быть раньше его завершения.");
 		}
 
 		return new EventPeriod(startAt, endAt);
