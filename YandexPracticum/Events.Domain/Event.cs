@@ -2,31 +2,28 @@
 
 public class Event
 {
-	private Event(int id, string title, string? description, DateTime startAt, DateTime endAt)
+	private Event(int id, string title, string? description, EventPeriod period)
 	{
 		Id = id;
 		Title = title;
 		Description = description;
-		StartAt = startAt;
-		EndAt = endAt;
+		Period = period;
 	}
 
 	public int Id { get; private set; }
 	public string Title { get; private set; }
 	public string? Description { get; private set; }
-	public DateTime StartAt { get; private set; }
-	public DateTime EndAt { get; private set; }
+	public EventPeriod Period { get; private set; }
 
-	public static Event Create(int id, string title, string? description, DateTime startAt, DateTime endAt)
+	public static Event Create(int id, string title, string? description, EventPeriod period)
 	{
-		return new Event(id, title, description, startAt, endAt);
+		return new Event(id, title, description, period);
 	}
 
-	public void Update(string title, string? description, DateTime startAt, DateTime endAt)
+	public void Update(string title, string? description, EventPeriod period)
 	{
 		Title = title;
 		Description = description;
-		StartAt = startAt;
-		EndAt = endAt;
+		Period = period;
 	}
 }

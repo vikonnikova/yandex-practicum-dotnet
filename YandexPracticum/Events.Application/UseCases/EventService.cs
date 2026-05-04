@@ -8,23 +8,23 @@ public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
 
-	public IReadOnlyCollection<EventData> GetAll()
+	public IReadOnlyCollection<EventResponse> GetAll()
 	{
 		return _events.Select(e => e.ToDto()).ToArray();
 	}
 
-	public EventData? GetById(int eventId)
+	public EventResponse? GetById(int eventId)
 	{
 		return _events.Find(e => e.Id == eventId)?.ToDto();
 	}
 
-	public void Add(CreateEventData eventData)
+	public void Add(CreateEventRequest eventRequest)
 	{
-		_events.Add(Event.Create(eventData.Id, eventData.Title, eventData.Description, eventData.StartAt,
-			eventData.EndAt));
+		_events.Add(Event.Create(eventRequest.Id, eventRequest.Title, eventRequest.Description,
+			EventPeriod.Create(eventRequest.StartAt, eventRequest.EndAt)));
 	}
 
-	public void Update(int eventId, UpdateEventData eventData)
+	public void Update(int eventId, UpdateEventRequest eventRequest)
 	{
 		var eventToUpdate = _events.Find(e => e.Id == eventId);
 
@@ -33,7 +33,8 @@ public class EventService : IEventService
 			throw new Exception("Event with id not found");
 		}
 
-		eventToUpdate.Update(eventData.Title, eventData.Description, eventData.StartAt, eventToUpdate.EndAt);
+		eventToUpdate.Update(eventRequest.Title, eventRequest.Description,
+			EventPeriod.Create(eventRequest.StartAt, eventRequest.EndAt));
 	}
 
 	public void Remove(int eventId)

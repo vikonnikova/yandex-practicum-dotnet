@@ -15,6 +15,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+	builder.Host.UseDefaultServiceProvider(options =>
+	{
+		options.ValidateScopes = true;
+		options.ValidateOnBuild = true;
+	});
+	
 	app.MapOpenApi();
 	
 	app.UseSwagger();

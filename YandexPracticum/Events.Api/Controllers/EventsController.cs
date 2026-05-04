@@ -9,28 +9,28 @@ namespace Events.Api.Controllers;
 public class EventsController(IEventService eventService) : ControllerBase
 {
 	[HttpGet]
-	public ActionResult<IReadOnlyCollection<EventData>> GetAll()
+	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll()
 	{
 		return Ok(eventService.GetAll());
 	}
 
 	[HttpGet("{id:int}")]
-	public ActionResult<EventData?> GetById([FromRoute] int id)
+	public ActionResult<EventResponse?> GetById([FromRoute] int id)
 	{
 		return Ok(eventService.GetById(id));
 	}
 
 	[HttpPost]
-	public IActionResult Create([FromBody] CreateEventData eventData)
+	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
 	{
-		eventService.Add(eventData);
-		return NoContent();
+		eventService.Add(eventRequest);
+		return Created();
 	}
 
 	[HttpPut("{id:int}")]
-	public IActionResult Update([FromRoute] int id, [FromBody] UpdateEventData eventData)
+	public IActionResult Update([FromRoute] int id, [FromBody] UpdateEventRequest eventRequest)
 	{
-		eventService.Update(id, eventData);
+		eventService.Update(id, eventRequest);
 		return NoContent();
 	}
 
@@ -38,6 +38,6 @@ public class EventsController(IEventService eventService) : ControllerBase
 	public IActionResult Delete([FromRoute] int id)
 	{
 		eventService.Remove(id);
-		return NoContent();
+		return Ok();
 	}
 }

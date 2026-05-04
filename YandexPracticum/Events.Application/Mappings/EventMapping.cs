@@ -5,9 +5,9 @@ namespace Events.Application.Mappings;
 
 public static class EventMapping
 {
-	public static EventData ToDto(this Event eventEntity)
+	public static EventResponse ToDto(this Event eventEntity)
 	{
-		return new EventData(eventEntity.Id, eventEntity.Title, eventEntity.Description, eventEntity.StartAt,
-			eventEntity.EndAt);
+		return new EventResponse(eventEntity.Id, eventEntity.Title, eventEntity.Description, eventEntity.Period.StartAt,
+			eventEntity.Period.EndAt);
 	}
 }

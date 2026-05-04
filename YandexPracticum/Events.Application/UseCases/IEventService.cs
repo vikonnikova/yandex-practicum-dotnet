@@ -4,13 +4,13 @@ namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	IReadOnlyCollection<EventData> GetAll();
+	IReadOnlyCollection<EventResponse> GetAll();
 
-	EventData? GetById(int eventId);
+	EventResponse? GetById(int eventId);
 
-	void Add(CreateEventData eventData);
+	void Add(CreateEventRequest eventRequest);
 
-	void Update(int eventId, UpdateEventData eventData);
+	void Update(int eventId, UpdateEventRequest eventRequest);
 
 	void Remove(int eventId);
 }
