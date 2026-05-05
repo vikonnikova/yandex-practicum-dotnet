@@ -4,7 +4,7 @@ namespace Events.Api.Validation;
 
 internal static class ModelValidator
 {
-	public static void Validate(CreateEventRequest eventData)
+	public static void Validate(CreateEventRequest eventData) //TODO FluentValidator
 	{
 		if (eventData.StartAt == default)
 		{

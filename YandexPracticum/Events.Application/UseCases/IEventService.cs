@@ -7,7 +7,7 @@ public interface IEventService
 {
 	IReadOnlyCollection<Event> GetAll();
 
-	Event? GetById(int eventId);
+	Event GetById(int eventId);
 
 	void Add(EventDto eventData);
 

@@ -4,4 +4,4 @@
 /// Представляет http-ответ.
 /// </summary>
 /// <param name="Message">Сообщение.</param>
-public record CustomHttpResponse(string Message);
+public record CustomHttpResponse(string Message); //TODO problem details

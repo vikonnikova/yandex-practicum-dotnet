@@ -15,7 +15,9 @@ public class EventService : IEventService
 
 	public Event? GetById(int eventId)
 	{
-		return _events.Find(e => e.Id == eventId);
+		var @event = _events.Find(e => e.Id == eventId);
+
+		return @event ?? throw new EntityNotFoundException("Событие", eventId);
 	}
 
 	public void Add(EventDto eventData)

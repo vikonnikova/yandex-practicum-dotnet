@@ -30,7 +30,8 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// <param name="id">Идентификатор события.</param>
 	[HttpGet("{id:int}")]
 	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
-	public ActionResult<EventResponse?> GetById([FromRoute] int id)
+	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status404NotFound)]
+	public ActionResult<EventResponse> GetById([FromRoute] int id)
 	{
 		return Ok(eventService.GetById(id));
 	}
