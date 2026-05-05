@@ -13,7 +13,7 @@ public class EventService : IEventService
 		return _events.ToArray();
 	}
 
-	public Event? GetById(int eventId)
+	public Event GetById(int eventId)
 	{
 		var @event = _events.Find(e => e.Id == eventId);
 
