@@ -1,7 +1,6 @@
 using Events.Api.Contracts;
 using Events.Api.Mappings;
 using Events.Api.Middleware;
-using Events.Api.Validation;
 using Events.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +10,7 @@ namespace Events.Api.Controllers;
 /// Представляет контроллер для событий.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class EventsController(IEventService eventService) : ControllerBase
 {
 	/// <summary>
@@ -45,10 +44,8 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
 	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
 	{
-		ModelValidator.Validate(eventRequest);
-		eventService.Add(eventRequest.ToDto());
-		
-		return Created();
+		var result = eventService.Add(eventRequest.ToDto(eventRequest.Id));
+		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
 
 	/// <summary>
@@ -60,11 +57,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status404NotFound)]
 	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
-	public IActionResult Update([FromRoute] int id, [FromBody] UpdateEventRequest eventRequest)
+	public IActionResult Update([FromRoute] int id, [FromBody] EventRequest eventRequest)
 	{
-		ModelValidator.Validate(eventRequest);
 		eventService.Update(eventRequest.ToDto(id));
-		
 		return NoContent();
 	}
 

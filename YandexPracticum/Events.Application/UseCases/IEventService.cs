@@ -5,11 +5,11 @@ namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	IReadOnlyCollection<Event> GetAll();
+	IReadOnlyCollection<EventDto> GetAll();
 
-	Event GetById(int eventId);
+	EventDto GetById(int eventId);
 
-	void Add(EventDto eventData);
+	EventDto Add(EventDto eventData);
 
 	void Update(EventDto eventData);
 

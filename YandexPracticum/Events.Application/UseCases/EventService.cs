@@ -1,4 +1,5 @@
 ﻿using Events.Application.Exceptions;
+using Events.Application.Mappings;
 using Events.Application.UseCases.Dto;
 using Events.Domain;
 
@@ -8,22 +9,26 @@ public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
 
-	public IReadOnlyCollection<Event> GetAll()
+	public IReadOnlyCollection<EventDto> GetAll()
 	{
-		return _events.ToArray();
+		return _events.Select(x => x.ToDto()).ToArray();
 	}
 
-	public Event GetById(int eventId)
+	public EventDto GetById(int eventId)
 	{
 		var @event = _events.Find(e => e.Id == eventId);
 
-		return @event ?? throw new EntityNotFoundException("Событие", eventId);
+		return @event?.ToDto() ?? throw new EntityNotFoundException("Событие", eventId);
 	}
 
-	public void Add(EventDto eventData)
+	public EventDto Add(EventDto eventData)
 	{
-		_events.Add(Event.Create(eventData.Id, eventData.Title, eventData.Description,
-			EventPeriod.Create(eventData.StartAt, eventData.EndAt)));
+		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
+			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
+		
+		_events.Add(@event);
+		
+		return @event.ToDto();
 	}
 
 	public void Update(EventDto eventData)

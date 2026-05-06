@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Events.Api.Validation;
 
 namespace Events.Api.Contracts;
 
@@ -9,11 +10,11 @@ namespace Events.Api.Contracts;
 /// <param name="Description">Описание.</param>
 /// <param name="StartAt">Дата начала.</param>
 /// <param name="EndAt">Дата окончания.</param>
-public record UpdateEventRequest(
+public record EventRequest(
 	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")]
 	string Title,
 	string? Description,
-	[Required(ErrorMessage = "Дата начала события обязательна для заполнения.")]
+	[NotDefault(ErrorMessage = "Дата начала события обязательна для заполнения.")]
 	DateTime StartAt,
-	[Required(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
+	[NotDefault(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
 	DateTime EndAt);

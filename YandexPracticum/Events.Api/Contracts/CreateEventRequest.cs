@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Events.Api.Validation;
 
 namespace Events.Api.Contracts;
 
@@ -15,7 +16,8 @@ public record CreateEventRequest(
 	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")]
 	string Title,
 	string? Description,
-	[Required(ErrorMessage = "Дата начала события обязательна для заполнения.")]
+	[NotDefault(ErrorMessage = "Дата начала события обязательна для заполнения.")]
 	DateTime StartAt,
-	[Required(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
-	DateTime EndAt);
+	[NotDefault(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
+	DateTime EndAt)
+	: EventRequest(Title, Description, StartAt, EndAt);
