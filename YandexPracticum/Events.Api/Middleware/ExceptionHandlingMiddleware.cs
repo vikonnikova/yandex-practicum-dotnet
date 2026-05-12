@@ -2,20 +2,13 @@
 
 namespace Events.Api.Middleware;
 
-internal class ExceptionHandlingMiddleware
+internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-	private readonly RequestDelegate _next;
-
-	public ExceptionHandlingMiddleware(RequestDelegate next)
-	{
-		_next = next;
-	}
-
 	public async Task InvokeAsync(HttpContext context)
 	{
 		try
 		{
-			await _next(context);
+			await next(context);
 		}
 		catch (Exception ex)
 		{
