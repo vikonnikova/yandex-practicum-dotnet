@@ -8,6 +8,7 @@
     <Project Path="Events.Domain/Events.Domain.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/Events.IntegrationTests/Events.IntegrationTests.csproj" />
     <Project Path="Tests/Events.UnitTests/Events.UnitTests.csproj" />
   </Folder>
 </Solution>
