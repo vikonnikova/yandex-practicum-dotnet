@@ -1,4 +1,5 @@
 using System.Reflection;
+using Events.Api.Extensions;
 using Events.Api.Middleware;
 using Events.Application;
 
@@ -18,6 +19,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.SeedData();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

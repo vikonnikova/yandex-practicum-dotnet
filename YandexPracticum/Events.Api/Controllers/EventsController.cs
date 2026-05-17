@@ -18,9 +18,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// </summary>
 	[HttpGet]
 	[ProducesResponseType(typeof(IReadOnlyCollection<EventResponse>), StatusCodes.Status200OK)]
-	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll()
+	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
 	{
-		return Ok(eventService.GetAll());
+		return Ok(eventService.GetBy(query.Title, query.From, query.To, query.Page, query.PageSize));
 	}
 
 	/// <summary>
