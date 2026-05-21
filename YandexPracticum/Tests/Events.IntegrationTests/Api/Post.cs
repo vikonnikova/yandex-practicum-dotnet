@@ -9,35 +9,25 @@ public class PostTests : BaseApiTest
 	[Fact]
 	public async Task Post_Success()
 	{
-		//Arrange
-		var @event = new
-		{
-			Id = 1,
-			Title = "Наименование",
-			Description = "Описание",
-			StartAt = new DateTime(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc),
-			EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc)
-		};
-
 		//Act
-		var response = await Client.PostAsJsonAsync("/events", @event);
+		var response = await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-		Assert.Equal($"/Events/{@event.Id}", response.Headers.Location!.AbsolutePath);
+		Assert.Equal("/Events/1", response.Headers.Location!.AbsolutePath);
 
 		var responseData = (await response.Content.ReadFromJsonAsync<EventDto>())!;
-		Assert.Equal(@event.Id, responseData.Id);
-		Assert.Equal(@event.Title, responseData.Title);
-		Assert.Equal(@event.Description, responseData.Description);
-		Assert.Equal(@event.StartAt, responseData.StartAt);
-		Assert.Equal(@event.EndAt, responseData.EndAt);
+		Assert.Equal(1, responseData.Id);
+		Assert.Equal(TestData.Title, responseData.Title);
+		Assert.Equal(TestData.Description, responseData.Description);
+		Assert.Equal(TestData.StartAt, responseData.StartAt);
+		Assert.Equal(TestData.EndAt, responseData.EndAt);
 
-		var createdEvent = (await Client.GetFromJsonAsync<EventDto>($"/events/{@event.Id}"))!;
-		Assert.Equal(@event.Id, createdEvent.Id);
-		Assert.Equal(@event.Title, createdEvent.Title);
-		Assert.Equal(@event.Description, createdEvent.Description);
-		Assert.Equal(@event.StartAt, createdEvent.StartAt);
-		Assert.Equal(@event.EndAt, createdEvent.EndAt);
+		var createdEvent = (await Client.GetFromJsonAsync<EventDto>("/events/1"))!;
+		Assert.Equal(1, createdEvent.Id);
+		Assert.Equal(TestData.Title, createdEvent.Title);
+		Assert.Equal(TestData.Description, createdEvent.Description);
+		Assert.Equal(TestData.StartAt, createdEvent.StartAt);
+		Assert.Equal(TestData.EndAt, createdEvent.EndAt);
 	}
 }

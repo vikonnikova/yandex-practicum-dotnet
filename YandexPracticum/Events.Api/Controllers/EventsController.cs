@@ -20,7 +20,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(typeof(IReadOnlyCollection<EventResponse>), StatusCodes.Status200OK)]
 	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
 	{
-		return Ok(eventService.GetBy(query.Title, query.From, query.To, query.Page, query.PageSize));
+		return Ok(eventService.GetBy(new Filters(query.Title, query.From, query.To), query.Page, query.PageSize));
 	}
 
 	/// <summary>

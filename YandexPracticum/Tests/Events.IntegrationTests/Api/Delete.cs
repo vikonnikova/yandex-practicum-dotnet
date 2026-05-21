@@ -11,11 +11,11 @@ public class DeleteTests : BaseApiTest
 		await CreateEvent();
 
 		//Act
-		var responseFromDelete = await Client.DeleteAsync($"/events/1");
+		var responseFromDelete = await Client.DeleteAsync("/events/1");
 
 		//Assert
 		Assert.Equal(HttpStatusCode.OK, responseFromDelete.StatusCode);
-		var responseFromGet = await Client.GetAsync($"/events/1");
+		var responseFromGet = await Client.GetAsync("/events/1");
 		Assert.Equal(HttpStatusCode.NotFound, responseFromGet.StatusCode);
 	}
 }

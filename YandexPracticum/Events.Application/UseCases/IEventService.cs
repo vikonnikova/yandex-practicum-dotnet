@@ -4,7 +4,7 @@ namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	PaginatedResult<EventDto> GetBy(string? title, DateTime? from, DateTime? to, int page, int pageSize);
+	PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize);
 
 	EventDto GetById(int eventId);
 

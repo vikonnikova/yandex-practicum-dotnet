@@ -9,23 +9,23 @@ public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
 
-	public PaginatedResult<EventDto> GetBy(string? title, DateTime? from, DateTime? to, int page, int pageSize)
+	public PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize)
 	{
 		IEnumerable<Event> filteredEvents = _events;
 
-		if (title != null)
+		if (filters.Title != null)
 		{
-			filteredEvents = filteredEvents.Where(x => x.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+			filteredEvents = filteredEvents.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
 		}
 
-		if (from.HasValue)
+		if (filters.From.HasValue)
 		{
-			filteredEvents = filteredEvents.Where(x => x.Period.StartAt >= from);
+			filteredEvents = filteredEvents.Where(x => x.Period.StartAt >= filters.From);
 		}
 
-		if (to.HasValue)
+		if (filters.To.HasValue)
 		{
-			filteredEvents = filteredEvents.Where(x => x.Period.EndAt <= to);
+			filteredEvents = filteredEvents.Where(x => x.Period.EndAt <= filters.To);
 		}
 
 		var totalItems = filteredEvents.Count();

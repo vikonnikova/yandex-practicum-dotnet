@@ -18,8 +18,8 @@ public class GetTests : BaseApiTest
 		//Assert
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-		var responseData = (await response.Content.ReadFromJsonAsync<IReadOnlyCollection<EventDto>>())!;
-		Assert.Equal(3, responseData.Count);
+		var responseData = (await response.Content.ReadFromJsonAsync<PaginatedResult<EventDto>>())!;
+		Assert.Equal(3, responseData.TotalItems);
 		// TODO дописать тест
 	}
 
