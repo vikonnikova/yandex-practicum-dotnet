@@ -6,8 +6,11 @@ namespace Events.IntegrationTests.Api;
 
 public class PostTests : BaseApiTest
 {
+	/// <summary>
+	/// Проверяет создание события.
+	/// </summary>
 	[Fact]
-	public async Task Post_Success()
+	public async Task Post_ValidData_201Returned()
 	{
 		//Act
 		var response = await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
@@ -29,5 +32,18 @@ public class PostTests : BaseApiTest
 		Assert.Equal(TestData.Description, createdEvent.Description);
 		Assert.Equal(TestData.StartAt, createdEvent.StartAt);
 		Assert.Equal(TestData.EndAt, createdEvent.EndAt);
+	}
+	
+	/// <summary>
+	/// Проверяет создание события с невалидными даными.
+	/// </summary>
+	[Fact]
+	public async Task Post_InvalidData_400Returned()
+	{
+		//Act
+		var response = await Client.PostAsJsonAsync("/events", TestData.CreateInvalidTestEvent());
+
+		//Assert
+		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 	}
 }

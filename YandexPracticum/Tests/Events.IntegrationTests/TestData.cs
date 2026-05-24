@@ -23,12 +23,33 @@ public static class TestData
 			EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc)
 		};
 	}
+	
+	public static object CreateInvalidTestEvent()
+	{
+		return new
+		{
+			Id = 1,
+			Description = "Описание",
+			StartAt = new DateTime(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc),
+			EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc)
+		};
+	}
 
 	public static object CreateTestEventToUpdate()
 	{
 		return new
 		{
 			Title = "Новое наименование",
+			Description = "Новое описание",
+			StartAt = new DateTime(2026, 02, 03, 18, 55, 00, DateTimeKind.Utc),
+			EndAt = new DateTime(2026, 02, 05, 12, 00, 00, DateTimeKind.Utc)
+		};
+	}
+	
+	public static object CreateInvalidTestEventToUpdate()
+	{
+		return new
+		{
 			Description = "Новое описание",
 			StartAt = new DateTime(2026, 02, 03, 18, 55, 00, DateTimeKind.Utc),
 			EndAt = new DateTime(2026, 02, 05, 12, 00, 00, DateTimeKind.Utc)

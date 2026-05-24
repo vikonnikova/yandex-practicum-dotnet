@@ -17,9 +17,10 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// </summary>
 	[HttpGet]
 	[ProducesResponseType(typeof(IReadOnlyCollection<EventResponse>), StatusCodes.Status200OK)]
-	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
+	public ActionResult<PaginatedResult<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
 	{
-		return Ok(eventService.GetBy(new Filters(query.Title, query.From, query.To), query.Page, query.PageSize));
+		var result = eventService.GetBy(new Filters(query.Title, query.From, query.To), query.Page, query.PageSize);
+		return Ok(result.ToPaginatedResponse());
 	}
 
 	/// <summary>
