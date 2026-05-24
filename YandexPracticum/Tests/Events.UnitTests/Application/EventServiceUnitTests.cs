@@ -43,7 +43,9 @@ public class EventServiceUnitTests
 
 		//Assert
 		act.Should().Throw<ArgumentNullException>();
-		//TODO проверить, что событие не создалось
+		Action act2 = () => _service.GetById(1);
+		act2.Should().Throw<EntityNotFoundException>()
+			.WithMessage("Сущность [Событие] с идентификатором [1] не найдена.");
 	}
 
 	/// <summary>
@@ -80,7 +82,11 @@ public class EventServiceUnitTests
 
 		//Assert
 		act.Should().Throw<ArgumentException>().WithMessage("Начало события должно быть раньше его завершения.");
-		//TODO проверить, что событие не обновилось
+		var @event = _service.GetById(1);
+		@event.Title.Should().Be("День рождения");
+		@event.Description.Should().Be("Дед Мороз и снегурочка");
+		@event.StartAt.Should().Be(_now);
+		@event.EndAt.Should().Be(_now.AddDays(7));
 	}
 
 	/// <summary>
@@ -90,6 +96,7 @@ public class EventServiceUnitTests
 	public void Update_NonExistentEvent_Failed()
 	{
 		//Arrange
+		CreateEvents();
 		var dto = new EventDto(10, "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
@@ -98,7 +105,7 @@ public class EventServiceUnitTests
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage("Сущность [Событие] с идентификатором [10] не найдена.");
-		//TODO проверить, что события не изменились (общее количество)
+		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
 	}
 
 	/// <summary>
@@ -135,7 +142,7 @@ public class EventServiceUnitTests
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage("Сущность [Событие] с идентификатором [10] не найдена.");
-		//TODO проверить, что события не изменились (общее количество)
+		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
 	}
 
 	/// <summary>
@@ -153,6 +160,23 @@ public class EventServiceUnitTests
 		//Assert
 		result.Should().NotBeNull();
 		result.Title.Should().Be("Пасха");
+	}
+
+	/// <summary>
+	/// Проверяет получение несуществующего события.
+	/// </summary>
+	[Fact]
+	public void GetById_NonExistentEvent_Failed()
+	{
+		//Arrange
+		CreateEvents();
+
+		//Act
+		Action act = () => _service.GetById(6);
+
+		//Assert
+		act.Should().Throw<EntityNotFoundException>()
+			.WithMessage("Сущность [Событие] с идентификатором [6] не найдена.");
 	}
 
 	/// <summary>

@@ -45,7 +45,7 @@ REST API для управления событиями (создание, по�
 - dotnet run --project Events.Api
 
 После запуска API будет доступен по адресу:
-http://localhost:5130/api
+http://localhost:5130/events
 
 Запуск тестов:
 - dotnet test

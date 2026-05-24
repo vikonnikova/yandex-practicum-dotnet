@@ -16,7 +16,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Возвращает все события.
 	/// </summary>
 	[HttpGet]
-	[ProducesResponseType(typeof(IReadOnlyCollection<EventResponse>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(PaginatedResult<EventResponse>), StatusCodes.Status200OK)]
 	public ActionResult<PaginatedResult<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
 	{
 		var result = eventService.GetBy(new Filters(query.Title, query.From, query.To), query.Page, query.PageSize);
