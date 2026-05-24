@@ -13,6 +13,16 @@ public class EventPeriod
 
 	public static EventPeriod Create(DateTime startAt, DateTime endAt)
 	{
+		if (startAt == default)
+		{
+			throw new ArgumentNullException(nameof(startAt));
+		}
+		
+		if (endAt == default)
+		{
+			throw new ArgumentNullException(nameof(endAt));
+		}
+		
 		if (endAt <= startAt)
 		{
 			throw new ArgumentException("Начало события должно быть раньше его завершения.");

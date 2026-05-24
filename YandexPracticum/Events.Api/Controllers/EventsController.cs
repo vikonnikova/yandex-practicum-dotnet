@@ -1,6 +1,5 @@
 using Events.Api.Contracts;
 using Events.Api.Mappings;
-using Events.Api.Middleware;
 using Events.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,10 +16,11 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Возвращает все события.
 	/// </summary>
 	[HttpGet]
-	[ProducesResponseType(typeof(IReadOnlyCollection<EventResponse>), StatusCodes.Status200OK)]
-	public ActionResult<IReadOnlyCollection<EventResponse>> GetAll()
+	[ProducesResponseType(typeof(PaginatedResult<EventResponse>), StatusCodes.Status200OK)]
+	public ActionResult<PaginatedResult<EventResponse>> GetAll([FromQuery] GetEventsQuery query)
 	{
-		return Ok(eventService.GetAll());
+		var result = eventService.GetBy(new Filters(query.Title, query.From, query.To), query.Page, query.PageSize);
+		return Ok(result.ToPaginatedResponse());
 	}
 
 	/// <summary>
@@ -29,7 +29,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// <param name="id">Идентификатор события.</param>
 	[HttpGet("{id:int}")]
 	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult<EventResponse> GetById([FromRoute] int id)
 	{
 		return Ok(eventService.GetById(id));
@@ -41,7 +41,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// <param name="eventRequest">Данные для создания.</param>
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
-	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
 	{
 		var result = eventService.Add(eventRequest.ToDto(eventRequest.Id));
@@ -55,8 +55,8 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// <param name="eventRequest">Данные для обновления.</param>
 	[HttpPut("{id:int}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status404NotFound)]
-	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public IActionResult Update([FromRoute] int id, [FromBody] EventRequest eventRequest)
 	{
 		eventService.Update(eventRequest.ToDto(id));
@@ -69,7 +69,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// <param name="id">Идентификатор события.</param>
 	[HttpDelete("{id:int}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(typeof(CustomHttpResponse), StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public IActionResult Delete([FromRoute] int id)
 	{
 		eventService.Remove(id);

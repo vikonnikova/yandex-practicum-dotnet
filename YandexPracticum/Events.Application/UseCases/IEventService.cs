@@ -1,11 +1,10 @@
 ﻿using Events.Application.UseCases.Dto;
-using Events.Domain;
 
 namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	IReadOnlyCollection<EventDto> GetAll();
+	PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize);
 
 	EventDto GetById(int eventId);
 

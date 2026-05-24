@@ -1,21 +1,16 @@
-﻿using Events.Application.Exceptions;
+﻿using System.Diagnostics;
+using Events.Application.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Middleware;
 
-internal class ExceptionHandlingMiddleware
+internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-	private readonly RequestDelegate _next;
-
-	public ExceptionHandlingMiddleware(RequestDelegate next)
-	{
-		_next = next;
-	}
-
 	public async Task InvokeAsync(HttpContext context)
 	{
 		try
 		{
-			await _next(context);
+			await next(context);
 		}
 		catch (Exception ex)
 		{
@@ -23,10 +18,10 @@ internal class ExceptionHandlingMiddleware
 		}
 	}
 
-	private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+	private Task HandleExceptionAsync(HttpContext context, Exception exception)
 	{
+		var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
 		context.Response.ContentType = "application/json";
-
 		int statusCode;
 		string message;
 
@@ -45,11 +40,20 @@ internal class ExceptionHandlingMiddleware
 			default:
 				statusCode = StatusCodes.Status500InternalServerError;
 				message = "Internal server error";
+				logger.LogError(exception, "Ошибка при обработке запроса {Method} {Path}. TraceId: {TraceId}",
+					context.Request.Method, context.Request.Path, traceId);
 				break;
 		}
 
 		context.Response.StatusCode = statusCode;
 
-		return context.Response.WriteAsJsonAsync(new CustomHttpResponse(message));
+		var responseMessage = new ProblemDetails
+		{
+			Status = statusCode,
+			Title = message,
+			Detail = message
+		};
+
+		return context.Response.WriteAsJsonAsync(responseMessage);
 	}
 }

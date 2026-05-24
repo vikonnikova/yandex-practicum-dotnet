@@ -9,9 +9,29 @@ public class EventService : IEventService
 {
 	private readonly List<Event> _events = [];
 
-	public IReadOnlyCollection<EventDto> GetAll()
+	public PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize)
 	{
-		return _events.Select(x => x.ToDto()).ToArray();
+		IEnumerable<Event> filteredEvents = _events;
+
+		if (filters.Title != null)
+		{
+			filteredEvents = filteredEvents.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
+		}
+
+		if (filters.From.HasValue)
+		{
+			filteredEvents = filteredEvents.Where(x => x.Period.StartAt >= filters.From);
+		}
+
+		if (filters.To.HasValue)
+		{
+			filteredEvents = filteredEvents.Where(x => x.Period.EndAt <= filters.To);
+		}
+
+		var totalItems = filteredEvents.Count();
+		var result = filteredEvents.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.ToDto()).ToArray();
+
+		return new PaginatedResult<EventDto>(totalItems, page, result.Length, result);
 	}
 
 	public EventDto GetById(int eventId)
@@ -25,9 +45,9 @@ public class EventService : IEventService
 	{
 		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
-		
+
 		_events.Add(@event);
-		
+
 		return @event.ToDto();
 	}
 
