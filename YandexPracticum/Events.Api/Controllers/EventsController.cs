@@ -1,6 +1,5 @@
 using Events.Api.Contracts;
 using Events.Api.Mappings;
-using Events.Api.Middleware;
 using Events.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 
