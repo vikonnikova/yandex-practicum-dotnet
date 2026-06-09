@@ -7,6 +7,6 @@ internal static class BookingMappings
 {
 	public static BookingDto ToDto(this Booking entity)
 	{
-		return new BookingDto(entity.Status);
+		return new BookingDto(entity.Id, entity.EventId, entity.Status);
 	}
 }

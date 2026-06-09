@@ -2,4 +2,4 @@
 
 namespace Events.Application.UseCases.Dto;
 
-public record BookingDto(BookingStatus Status);
+public record BookingDto(Guid Id, Guid EventId, BookingStatus Status);

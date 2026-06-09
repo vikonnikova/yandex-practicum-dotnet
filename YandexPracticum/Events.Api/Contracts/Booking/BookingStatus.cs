@@ -6,17 +6,17 @@
 public enum BookingStatus
 {
 	/// <summary>
-	/// В ожидании.
+	/// Создана, ожидает обработки.
 	/// </summary>
 	Pending,
 
 	/// <summary>
-	/// Бронирование подтверждено.
+	/// Подтверждена.
 	/// </summary>
 	Confirmed,
 
 	/// <summary>
-	/// Бронирование отклонено.
+	/// Отклонена.
 	/// </summary>
 	Rejected
 }

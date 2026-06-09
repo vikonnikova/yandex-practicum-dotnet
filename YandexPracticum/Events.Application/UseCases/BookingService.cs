@@ -15,4 +15,12 @@ public class BookingService : IBookingService
 
 		return booking?.ToDto() ?? throw new EntityNotFoundException("Бронь", bookingId);
 	}
+
+	public BookingDto Add(BookingToAddDto bookingData)
+	{
+		var booking = Booking.Create(bookingData.Id, bookingData.EventId);
+		_bookings.Add(booking);
+
+		return booking.ToDto();
+	}
 }
