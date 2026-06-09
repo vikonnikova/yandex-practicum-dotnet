@@ -1,17 +1,16 @@
 ﻿using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Mappings;
 using Events.Application.UseCases.Dto;
 using Events.Domain;
 
 namespace Events.Application.UseCases;
 
-public class EventService : IEventService
+public class EventService(IEventRepository repository) : IEventService
 {
-	private readonly List<Event> _events = [];
-
 	public PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize)
 	{
-		IEnumerable<Event> filteredEvents = _events;
+		IEnumerable<Event> filteredEvents = repository.GetAll(); // TODO перенести в репозиторий
 
 		if (filters.Title != null)
 		{
@@ -36,7 +35,7 @@ public class EventService : IEventService
 
 	public EventDto GetById(Guid eventId)
 	{
-		var @event = _events.Find(e => e.Id == eventId);
+		var @event = repository.Find(eventId);
 
 		return @event?.ToDto() ?? throw new EntityNotFoundException("Событие", eventId);
 	}
@@ -46,14 +45,14 @@ public class EventService : IEventService
 		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
 
-		_events.Add(@event);
+		repository.Add(@event);
 
 		return @event.ToDto();
 	}
 
 	public void Update(EventDto eventData)
 	{
-		var eventToUpdate = _events.Find(e => e.Id == eventData.Id);
+		var eventToUpdate = repository.Find(eventData.Id);
 
 		if (eventToUpdate is null)
 		{
@@ -66,13 +65,13 @@ public class EventService : IEventService
 
 	public void Remove(Guid eventId)
 	{
-		var eventToDelete = _events.Find(e => e.Id == eventId);
+		var eventToDelete = repository.Find(eventId);
 
 		if (eventToDelete is null)
 		{
 			throw new EntityNotFoundException("Событие", eventId);
 		}
 
-		_events.Remove(eventToDelete);
+		repository.Delete(eventToDelete);
 	}
 }

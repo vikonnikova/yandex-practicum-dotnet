@@ -1,3 +1,4 @@
+using Events.Api.BackgroundServices;
 using Events.Api.Contracts;
 using Events.Api.Mappings;
 using Events.Application.UseCases;
@@ -10,7 +11,8 @@ namespace Events.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class EventsController(IEventService eventService, IBookingService bookingService) : ControllerBase
+public class EventsController(IEventService eventService, IBookingService bookingService)
+	: ControllerBase
 {
 	/// <summary>
 	/// Возвращает все события.
@@ -46,7 +48,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	{
 		var eventId = Guid.NewGuid();
 		var result = eventService.Add(eventRequest.ToDto(eventId));
-		
+
 		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
 
@@ -77,7 +79,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 		eventService.Remove(id);
 		return Ok();
 	}
-	
+
 	/// <summary>
 	/// Бронирует событие.
 	/// </summary>
@@ -89,12 +91,12 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	{
 		var bookingId = Guid.NewGuid();
 		var result = bookingService.Add(BookingMapping.ToDto(bookingId, id));
-		
+
 		var statusUrl = Url.Action(nameof(BookingController.GetById), new { id = bookingId });
 		Response.Headers.Location = statusUrl;
-		
+
 		return Accepted(result);
-		
+
 		// TODO реализовать возврат 404 при отсутствии события по идентификатору
 	}
 }

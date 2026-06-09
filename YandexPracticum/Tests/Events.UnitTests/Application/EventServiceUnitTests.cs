@@ -1,6 +1,7 @@
 ﻿using Events.Application.Exceptions;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
+using Events.Infrastructure;
 using FluentAssertions;
 
 namespace Events.UnitTests.Application;
@@ -8,8 +9,8 @@ namespace Events.UnitTests.Application;
 public class EventServiceUnitTests
 {
 	private readonly DateTime _now = DateTime.UtcNow;
-	private readonly EventService _service = new();
 	private readonly Guid _eventId = Guid.NewGuid();
+	private readonly IEventService _service = new EventService(new InMemoryEventStore());
 
 	/// <summary>
 	/// Проверяет создание события.
@@ -102,7 +103,7 @@ public class EventServiceUnitTests
 		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
-		Action act = () => new EventService().Update(dto);
+		Action act = () => _service.Update(dto);
 
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()

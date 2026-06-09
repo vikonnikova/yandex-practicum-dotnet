@@ -2,11 +2,13 @@ using System.Reflection;
 using Events.Api.Extensions;
 using Events.Api.Middleware;
 using Events.Application;
+using Events.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices();
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
