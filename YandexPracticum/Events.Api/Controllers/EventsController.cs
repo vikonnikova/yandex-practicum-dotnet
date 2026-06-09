@@ -42,7 +42,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
+	public IActionResult Create([FromBody] EventRequest eventRequest)
 	{
 		var eventId = Guid.NewGuid();
 		var result = eventService.Add(eventRequest.ToDto(eventId));
