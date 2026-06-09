@@ -26,4 +26,9 @@ public class InMemoryEventStore : IEventRepository
 	{
 		_events.Remove(@event);
 	}
+
+	public bool Exists(Guid eventId)
+	{
+		return _events.Any(e => e.Id == eventId);
+	}
 }

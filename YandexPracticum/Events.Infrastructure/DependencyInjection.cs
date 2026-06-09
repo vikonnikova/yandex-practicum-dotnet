@@ -1,4 +1,5 @@
 ﻿using Events.Application.Interfaces;
+using Events.Infrastructure.BackgroundServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.Infrastructure;
@@ -9,7 +10,7 @@ public static class DependencyInjection
 	{
 		services.AddSingleton<IEventRepository, InMemoryEventStore>();
 		services.AddSingleton<IBookingRepository, InMemoryBookingStore>();
-		
-		//services.AddHostedService<BookingService>();
+		services.AddSingleton<IBookingTaskQueue, InMemoryBookingTaskQueue>();
+		services.AddHostedService<BookingBackgroundService>();
 	}
 }

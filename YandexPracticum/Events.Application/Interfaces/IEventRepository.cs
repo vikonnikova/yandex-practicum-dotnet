@@ -11,4 +11,6 @@ public interface IEventRepository
 	void Add(Event @event);
 
 	void Delete(Event @event);
+	
+	bool Exists(Guid eventId);
 }

@@ -1,4 +1,3 @@
-using Events.Api.BackgroundServices;
 using Events.Api.Contracts;
 using Events.Api.Mappings;
 using Events.Application.UseCases;
@@ -96,7 +95,5 @@ public class EventsController(IEventService eventService, IBookingService bookin
 		Response.Headers.Location = statusUrl;
 
 		return Accepted(result);
-
-		// TODO реализовать возврат 404 при отсутствии события по идентификатору
 	}
 }
