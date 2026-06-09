@@ -25,7 +25,7 @@ public class BookingService(
 			throw new EntityNotFoundException("Событие", bookingData.EventId);
 		}
 		
-		var booking = Booking.Create(bookingData.Id, bookingData.EventId);
+		var booking = Booking.Create(bookingData.Id, bookingData.EventId, DateTime.UtcNow);
 		repository.Add(booking);
 
 		taskQueue.Enqueue(new BookingTask(booking.Id));
@@ -42,7 +42,7 @@ public class BookingService(
 			throw new EntityNotFoundException("Бронь", bookingId);
 		}
 
-		booking.Confirm();
+		booking.Confirm(DateTime.UtcNow);
 	}
 
 	public void Reject(Guid bookingId)
@@ -54,6 +54,6 @@ public class BookingService(
 			throw new EntityNotFoundException("Бронь", bookingId);
 		}
 
-		booking.Reject();
+		booking.Reject(DateTime.UtcNow);
 	}
 }

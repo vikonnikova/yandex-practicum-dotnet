@@ -2,12 +2,12 @@
 
 public class Booking
 {
-	private Booking(Guid id, Guid eventId)
+	private Booking(Guid id, Guid eventId, DateTime createdAt)
 	{
 		Id = id;
 		EventId = eventId;
+		CreatedAt = createdAt;
 		Status = BookingStatus.Pending;
-		CreatedAt = DateTime.UtcNow;
 	}
 
 	public Guid Id { get; private set; }
@@ -16,20 +16,20 @@ public class Booking
 	public DateTime CreatedAt { get; private set; }
 	public DateTime? ProcessedAt { get; private set; }
 
-	public static Booking Create(Guid id, Guid eventId)
+	public static Booking Create(Guid id, Guid eventId, DateTime createdAt)
 	{
-		return new Booking(id, eventId);
+		return new Booking(id, eventId, createdAt);
 	}
 	
-	public void Confirm()
+	public void Confirm(DateTime processedAt)
 	{
 		Status = BookingStatus.Confirmed;
-		ProcessedAt = DateTime.UtcNow;
+		ProcessedAt = processedAt;
 	}
 
-	public void Reject()
+	public void Reject(DateTime processedAt)
 	{
 		Status = BookingStatus.Rejected;
-		ProcessedAt = DateTime.UtcNow;
+		ProcessedAt = processedAt;
 	}
 }
