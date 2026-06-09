@@ -80,7 +80,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	}
 
 	/// <summary>
-	/// Бронирует событие.
+	/// Создает заявку на бронирование.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
 	[HttpPost("{id:guid}/book")]
@@ -91,7 +91,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 		var bookingId = Guid.NewGuid();
 		var result = bookingService.Add(BookingMapping.ToDto(bookingId, id));
 
-		var statusUrl = Url.Action(nameof(BookingController.GetById), new { id = bookingId });
+		var statusUrl = Url.Action(nameof(BookingsController.GetById), new { id = bookingId });
 		Response.Headers.Location = statusUrl;
 
 		return Accepted(result);

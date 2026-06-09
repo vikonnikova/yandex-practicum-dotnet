@@ -9,7 +9,7 @@ namespace Events.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class BookingController(IBookingService bookingService) : ControllerBase
+public class BookingsController(IBookingService bookingService) : ControllerBase
 {
 	/// <summary>
 	/// Возвращает бронь по идентификатору.
