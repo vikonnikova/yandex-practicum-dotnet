@@ -57,7 +57,7 @@ public class BookingUnitTests
 		var rejectedAt = DateTime.UtcNow.AddDays(1).AddHours(6).AddMinutes(20);
 		var booking = Booking.Create(bookingId, eventId, now);
 		
-		booking.Confirm(rejectedAt);
+		booking.Reject(rejectedAt);
 		
 		booking.Id.Should().Be(bookingId);
 		booking.EventId.Should().Be(eventId);

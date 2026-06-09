@@ -23,19 +23,4 @@
       <ProjectReference Include="..\..\Events.Api\Events.Api.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Update="Api\Get.cs">
-        <DependentUpon>BaseApiTest.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Api\Post.cs">
-        <DependentUpon>BaseApiTest.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Api\Put.cs">
-        <DependentUpon>BaseApiTest.cs</DependentUpon>
-      </Compile>
-      <Compile Update="Api\Delete.cs">
-        <DependentUpon>BaseApiTest.cs</DependentUpon>
-      </Compile>
-    </ItemGroup>
-
 </Project>

@@ -35,4 +35,12 @@ public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposa
 			await Client.PostAsJsonAsync("/events", @event);
 		}
 	}
+	
+	protected async Task<Guid> CreateBooking(Guid eventId)
+	{
+		var response = await Client.PostAsync($"/events/{eventId}/book", null);
+		var bookingId = await response.Content.ReadFromJsonAsync<Guid>();
+		
+		return bookingId;
+	}
 }
