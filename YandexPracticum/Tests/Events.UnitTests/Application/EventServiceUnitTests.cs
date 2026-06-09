@@ -9,6 +9,7 @@ public class EventServiceUnitTests
 {
 	private readonly DateTime _now = DateTime.UtcNow;
 	private readonly EventService _service = new();
+	private readonly Guid _eventId = Guid.NewGuid();
 
 	/// <summary>
 	/// Проверяет создание события.
@@ -17,7 +18,8 @@ public class EventServiceUnitTests
 	public void Add_ValidData_Success()
 	{
 		//Arrange
-		var dto = new EventDto(1, "8 марта", "Международный женский день",
+		var eventId = Guid.NewGuid();
+		var dto = new EventDto(eventId, "8 марта", "Международный женский день",
 			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2));
 
 		//Act
@@ -26,7 +28,7 @@ public class EventServiceUnitTests
 		//Assert
 		result.Should().NotBeNull();
 		result.Title.Should().Be(dto.Title);
-		_service.GetById(1).Should().BeEquivalentTo(dto);
+		_service.GetById(eventId).Should().BeEquivalentTo(dto);
 	}
 
 	/// <summary>
@@ -36,16 +38,17 @@ public class EventServiceUnitTests
 	public void Add_InvalidData_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(1, "8 марта", "Международный женский день", default, default);
+		var eventId = Guid.NewGuid();
+		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default);
 
 		//Act
 		Action act = () => _service.Add(dto);
 
 		//Assert
 		act.Should().Throw<ArgumentNullException>();
-		Action act2 = () => _service.GetById(1);
+		Action act2 = () => _service.GetById(eventId);
 		act2.Should().Throw<EntityNotFoundException>()
-			.WithMessage("Сущность [Событие] с идентификатором [1] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -56,14 +59,14 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		CreateEvents();
-		var dto = new EventDto(1, "8 марта", "Международный женский день",
+		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
 			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2));
 
 		//Act
 		_service.Update(dto);
 
 		//Assert
-		_service.GetById(1).Should().BeEquivalentTo(dto);
+		_service.GetById(_eventId).Should().BeEquivalentTo(dto);
 	}
 
 	/// <summary>
@@ -74,15 +77,14 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		CreateEvents();
-		var dto = new EventDto(1, "8 марта", "Международный женский день",
-			_now, _now.AddDays(-1));
+		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
 		Action act = () => _service.Update(dto);
 
 		//Assert
 		act.Should().Throw<ArgumentException>().WithMessage("Начало события должно быть раньше его завершения.");
-		var @event = _service.GetById(1);
+		var @event = _service.GetById(_eventId);
 		@event.Title.Should().Be("День рождения");
 		@event.Description.Should().Be("Дед Мороз и снегурочка");
 		@event.StartAt.Should().Be(_now);
@@ -97,14 +99,14 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		CreateEvents();
-		var dto = new EventDto(10, "8 марта", "Международный женский день", _now, _now.AddDays(-1));
+		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
 		Action act = () => new EventService().Update(dto);
 
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage("Сущность [Событие] с идентификатором [10] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{dto.Id.ToString()}] не найдена.");
 		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
 	}
 
@@ -118,13 +120,13 @@ public class EventServiceUnitTests
 		CreateEvents();
 
 		//Act
-		_service.Remove(2);
+		_service.Remove(_eventId);
 
 		//Assert
 		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(4);
-		Action act = () => _service.GetById(2);
+		Action act = () => _service.GetById(_eventId);
 		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage("Сущность [Событие] с идентификатором [2] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -134,14 +136,15 @@ public class EventServiceUnitTests
 	public void Remove_NonExistentEvent_Failed()
 	{
 		//Arrange
+		var eventId = Guid.NewGuid();
 		CreateEvents();
 
 		//Act
-		Action act = () => _service.Remove(10);
+		Action act = () => _service.Remove(eventId);
 
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage("Сущность [Событие] с идентификатором [10] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
 	}
 
@@ -155,11 +158,14 @@ public class EventServiceUnitTests
 		CreateEvents();
 
 		//Act
-		var result = _service.GetById(3);
+		var result = _service.GetById(_eventId);
 
 		//Assert
 		result.Should().NotBeNull();
-		result.Title.Should().Be("Пасха");
+		result.Title.Should().Be("День рождения");
+		result.Description.Should().Be("Дед Мороз и снегурочка");
+		result.StartAt.Should().Be(_now);
+		result.EndAt.Should().Be(_now.AddDays(7));
 	}
 
 	/// <summary>
@@ -169,14 +175,15 @@ public class EventServiceUnitTests
 	public void GetById_NonExistentEvent_Failed()
 	{
 		//Arrange
+		var eventId = Guid.NewGuid();
 		CreateEvents();
 
 		//Act
-		Action act = () => _service.GetById(6);
+		Action act = () => _service.GetById(eventId);
 
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage("Сущность [Событие] с идентификатором [6] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -308,11 +315,13 @@ public class EventServiceUnitTests
 
 	private void CreateEvents()
 	{
-		_service.Add(new EventDto(1, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7)));
-		_service.Add(new EventDto(2, "Рождество", "описание рождества, подарки, игрушки", _now.AddMonths(-5),
-			_now.AddMonths(-5).AddDays(2)));
-		_service.Add(new EventDto(3, "Пасха", "Красим яйца, печем куличи", _now.AddHours(-12), _now.AddHours(-10)));
-		_service.Add(new EventDto(4, "23 февраля", "День защитника отечества", _now.AddDays(-7), _now.AddDays(-6)));
-		_service.Add(new EventDto(5, "День победы", "Парад и салют", _now, _now.AddHours(14)));
+		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7)));
+		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
+			_now.AddHours(-12), _now.AddHours(-10)));
+		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2)));
+		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
+			_now.AddDays(-7), _now.AddDays(-6)));
+		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14)));
 	}
 }

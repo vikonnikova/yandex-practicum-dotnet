@@ -27,10 +27,10 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Возвращает событие по идентификатору.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
-	[HttpGet("{id:int}")]
+	[HttpGet("{id:guid}")]
 	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public ActionResult<EventResponse> GetById([FromRoute] int id)
+	public ActionResult<EventResponse> GetById([FromRoute] Guid id)
 	{
 		return Ok(eventService.GetById(id));
 	}
@@ -44,7 +44,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
 	{
-		var result = eventService.Add(eventRequest.ToDto(eventRequest.Id));
+		var eventId = Guid.NewGuid();
+		var result = eventService.Add(eventRequest.ToDto(eventId));
+		
 		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
 
@@ -53,11 +55,11 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
 	/// <param name="eventRequest">Данные для обновления.</param>
-	[HttpPut("{id:int}")]
+	[HttpPut("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public IActionResult Update([FromRoute] int id, [FromBody] EventRequest eventRequest)
+	public IActionResult Update([FromRoute] Guid id, [FromBody] EventRequest eventRequest)
 	{
 		eventService.Update(eventRequest.ToDto(id));
 		return NoContent();
@@ -67,10 +69,10 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Удаляет событие.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
-	[HttpDelete("{id:int}")]
+	[HttpDelete("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public IActionResult Delete([FromRoute] int id)
+	public IActionResult Delete([FromRoute] Guid id)
 	{
 		eventService.Remove(id);
 		return Ok();

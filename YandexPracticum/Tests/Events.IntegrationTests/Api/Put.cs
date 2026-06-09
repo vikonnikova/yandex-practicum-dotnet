@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Events.Application.UseCases.Dto;
+using Events.Api.Contracts;
 
 namespace Events.IntegrationTests.Api;
 
@@ -13,16 +13,16 @@ public class PutTests : BaseApiTest
 	public async Task Put_ValidData_204Returned()
 	{
 		//Arrange
-		await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync("/events/1", TestData.CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}", TestData.CreateTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-		var updatedEvent = (await Client.GetFromJsonAsync<EventDto>("/events/1"))!;
-		Assert.Equal(1, updatedEvent.Id);
+		var updatedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
+		Assert.Equal(eventId, updatedEvent.Id);
 		Assert.Equal(TestData.UpdatedTitle, updatedEvent.Title);
 		Assert.Equal(TestData.UpdatedDescription, updatedEvent.Description);
 		Assert.Equal(TestData.UpdatedStartAt, updatedEvent.StartAt);
@@ -36,10 +36,10 @@ public class PutTests : BaseApiTest
 	public async Task Put_InvalidData_400Returned()
 	{
 		//Arrange
-		await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync("/events/1", TestData.CreateInvalidTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}", TestData.CreateInvalidTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -52,10 +52,10 @@ public class PutTests : BaseApiTest
 	public async Task Put_NonExistentEvent_404Returned()
 	{
 		//Arrange
-		await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync("/events/2", TestData.CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{Guid.NewGuid()}", TestData.CreateTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

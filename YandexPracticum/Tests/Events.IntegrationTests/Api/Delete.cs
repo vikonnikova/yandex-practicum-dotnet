@@ -11,14 +11,14 @@ public class DeleteTests : BaseApiTest
 	public async Task Delete_ValidData_200Returned()
 	{
 		//Arrange
-		await CreateEvent();
+		var eventId = await CreateEvent();
 
 		//Act
-		var responseFromDelete = await Client.DeleteAsync("/events/1");
+		var responseFromDelete = await Client.DeleteAsync($"/events/{eventId}");
 
 		//Assert
 		Assert.Equal(HttpStatusCode.OK, responseFromDelete.StatusCode);
-		var responseFromGet = await Client.GetAsync("/events/1");
+		var responseFromGet = await Client.GetAsync($"/events/{eventId}");
 		Assert.Equal(HttpStatusCode.NotFound, responseFromGet.StatusCode);
 	}
 	
@@ -32,7 +32,7 @@ public class DeleteTests : BaseApiTest
 		await CreateEvent();
 
 		//Act
-		var responseFromDelete = await Client.DeleteAsync("/events/2");
+		var responseFromDelete = await Client.DeleteAsync($"/events/{Guid.NewGuid()}");
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, responseFromDelete.StatusCode);

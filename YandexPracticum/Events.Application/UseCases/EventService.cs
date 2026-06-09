@@ -34,7 +34,7 @@ public class EventService : IEventService
 		return new PaginatedResult<EventDto>(totalItems, page, result.Length, result);
 	}
 
-	public EventDto GetById(int eventId)
+	public EventDto GetById(Guid eventId)
 	{
 		var @event = _events.Find(e => e.Id == eventId);
 
@@ -64,7 +64,7 @@ public class EventService : IEventService
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
 	}
 
-	public void Remove(int eventId)
+	public void Remove(Guid eventId)
 	{
 		var eventToDelete = _events.Find(e => e.Id == eventId);
 
