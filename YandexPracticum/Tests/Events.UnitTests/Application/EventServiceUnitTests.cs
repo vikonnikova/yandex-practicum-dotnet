@@ -10,7 +10,20 @@ public class EventServiceUnitTests
 {
 	private readonly DateTime _now = DateTime.UtcNow;
 	private readonly Guid _eventId = Guid.NewGuid();
-	private readonly IEventService _service = new EventService(new InMemoryEventStore());
+	private readonly IEventService _service;
+
+	public EventServiceUnitTests()
+	{
+		_service = new EventService(new InMemoryEventStore());
+		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7)));
+		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
+			_now.AddHours(-12), _now.AddHours(-10)));
+		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2)));
+		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
+			_now.AddDays(-7), _now.AddDays(-6)));
+		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14)));
+	}
 
 	/// <summary>
 	/// Проверяет создание события.
@@ -59,7 +72,6 @@ public class EventServiceUnitTests
 	public void Update_ValidData_Success()
 	{
 		//Arrange
-		CreateEvents();
 		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
 			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2));
 
@@ -77,7 +89,6 @@ public class EventServiceUnitTests
 	public void Update_InvalidData_Failed()
 	{
 		//Arrange
-		CreateEvents();
 		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
@@ -99,7 +110,6 @@ public class EventServiceUnitTests
 	public void Update_NonExistentEvent_Failed()
 	{
 		//Arrange
-		CreateEvents();
 		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день", _now, _now.AddDays(-1));
 
 		//Act
@@ -117,9 +127,6 @@ public class EventServiceUnitTests
 	[Fact]
 	public void Remove_ValidData_Success()
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		_service.Remove(_eventId);
 
@@ -138,7 +145,6 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		CreateEvents();
 
 		//Act
 		Action act = () => _service.Remove(eventId);
@@ -155,9 +161,6 @@ public class EventServiceUnitTests
 	[Fact]
 	public void GetById_ValidData_Success()
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetById(_eventId);
 
@@ -177,7 +180,6 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		CreateEvents();
 
 		//Act
 		Action act = () => _service.GetById(eventId);
@@ -193,9 +195,6 @@ public class EventServiceUnitTests
 	[Fact]
 	public void GetBy_ValidData_Success()
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetBy(new Filters(), 1, 10);
 
@@ -216,9 +215,6 @@ public class EventServiceUnitTests
 	[InlineData("ФеВрАлЯ")]
 	public void GetBy_FilterByTitle_Success(string title)
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetBy(new Filters(Title: title), 1, 10);
 
@@ -237,9 +233,6 @@ public class EventServiceUnitTests
 	[InlineData(-6, 3)]
 	public void GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetBy(new Filters(From: _now.AddDays(daysToAdd)), 1, 10);
 
@@ -257,9 +250,6 @@ public class EventServiceUnitTests
 	[InlineData(-5, 0)]
 	public void GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetBy(new Filters(To: _now.AddMonths(monthToAdd)), 1, 10);
 
@@ -277,9 +267,6 @@ public class EventServiceUnitTests
 	[InlineData(8, 2)]
 	public void GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result =
 			_service.GetBy(
@@ -301,9 +288,6 @@ public class EventServiceUnitTests
 	[InlineData(3, 2, 1)]
 	public void GetBy_Pagination_Success(int page, int pageSize, int itemsPerPage)
 	{
-		//Arrange
-		CreateEvents();
-
 		//Act
 		var result = _service.GetBy(new Filters(), page, pageSize);
 
@@ -312,17 +296,5 @@ public class EventServiceUnitTests
 		result.CurrentPage.Should().Be(page);
 		result.ItemsPerPage.Should().Be(itemsPerPage);
 		result.Items.Count.Should().Be(itemsPerPage);
-	}
-
-	private void CreateEvents()
-	{
-		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7)));
-		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-			_now.AddHours(-12), _now.AddHours(-10)));
-		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2)));
-		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-			_now.AddDays(-7), _now.AddDays(-6)));
-		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14)));
 	}
 }

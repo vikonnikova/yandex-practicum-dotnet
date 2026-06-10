@@ -25,7 +25,7 @@ public class BookingService(
 			throw new EntityNotFoundException("Событие", bookingData.EventId);
 		}
 		
-		var booking = Booking.Create(bookingData.Id, bookingData.EventId, DateTime.UtcNow);
+		var booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
 		repository.Add(booking);
 
 		taskQueue.Enqueue(new BookingTask(booking.Id));
