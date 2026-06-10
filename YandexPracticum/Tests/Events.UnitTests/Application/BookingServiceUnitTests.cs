@@ -1,4 +1,5 @@
 ﻿using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
 using Events.Domain;
@@ -13,20 +14,21 @@ public class BookingServiceUnitTests
 	private readonly Guid _eventId2 = Guid.NewGuid();
 	private readonly Guid _eventId3 = Guid.NewGuid();
 	private readonly Guid _bookingId = Guid.NewGuid();
+	private readonly IEventRepository _eventRepository = new InMemoryEventStore();
 	private readonly IBookingService _service;
 
 	public BookingServiceUnitTests()
 	{
 		var now = DateTime.UtcNow;
-		var eventRepository = new InMemoryEventStore();
-		eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
+		
+		_eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
 			EventPeriod.Create(now, now.AddDays(7))));
-		eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
+		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
 			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10))));
-		eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
+		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
 			EventPeriod.Create(now, now.AddHours(14))));
 
-		_service = new BookingService(new InMemoryBookingStore(), eventRepository, new InMemoryBookingTaskQueue());
+		_service = new BookingService(new InMemoryBookingStore(), _eventRepository, new InMemoryBookingTaskQueue());
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId3));
 	}
@@ -50,12 +52,47 @@ public class BookingServiceUnitTests
 		result.Status.Should().Be(BookingStatus.Pending);
 		_service.GetById(_bookingId).Should().BeEquivalentTo(dto);
 	}
+	
+	/// <summary>
+	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события.
+	/// </summary>
+	[Fact]
+	public void Add_MultipleBookingsForOneEvent_Success()
+	{
+		//Arrange
+		var bookingId1 = Guid.NewGuid();
+		var bookingId2 = Guid.NewGuid();
+		var bookingId3 = Guid.NewGuid();
+		
+		var bookings = new List<BookingToAddDto>
+		{
+			new(bookingId1, _eventId1), 
+			new(bookingId2, _eventId1), 
+			new(bookingId3, _eventId1)
+		};
+
+		//Act
+		foreach (var booking in bookings)
+		{
+			_service.Add(booking);
+		}
+
+		//Assert
+		foreach (var bookingId in new List<Guid> { bookingId1, bookingId2, bookingId3 })
+		{
+			var result = _service.GetById(bookingId);
+			result.Should().NotBeNull();
+			result.BookingId.Should().Be(bookingId);
+			result.EventId.Should().Be(_eventId1);
+			result.Status.Should().Be(BookingStatus.Pending);
+		}
+	}
 
 	/// <summary>
 	/// Проверяет создание брони на несуществующее событие.
 	/// </summary>
 	[Fact]
-	public void Add_NonExistentEvent_Failed()
+	public void Add_ForNonExistentEvent_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
@@ -67,6 +104,27 @@ public class BookingServiceUnitTests
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+		Action act2 = () => _service.GetById(_bookingId);
+		act2.Should().Throw<EntityNotFoundException>()
+			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+	}
+	
+	/// <summary>
+	/// Проверяет создание брони на несуществующее событие.
+	/// </summary>
+	[Fact]
+	public void Add_ForDeletedEvent_Failed()
+	{
+		//Arrange
+		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
+		new EventService(_eventRepository).Remove(_eventId2);
+
+		//Act
+		Action act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId2));
+
+		//Assert
+		act.Should().Throw<EntityNotFoundException>()
+			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId2.ToString()}] не найдена.");
 		Action act2 = () => _service.GetById(_bookingId);
 		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");

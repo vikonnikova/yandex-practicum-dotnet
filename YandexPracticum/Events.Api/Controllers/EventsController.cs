@@ -84,16 +84,16 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
 	[HttpPost("{id:guid}/book")]
-	[ProducesResponseType(typeof(Guid), StatusCodes.Status202Accepted)]
+	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public ActionResult<Guid> Book([FromRoute] Guid id)
+	public ActionResult<BookingResponse> Book([FromRoute] Guid id)
 	{
 		var bookingId = Guid.NewGuid();
-		bookingService.Add(BookingMapping.ToDto(bookingId, id));
+		var result = bookingService.Add(BookingMapping.ToDto(bookingId, id));
 
 		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = bookingId });
 		Response.Headers.Location = statusUrl;
 
-		return Accepted(bookingId);
+		return Accepted(result);
 	}
 }
