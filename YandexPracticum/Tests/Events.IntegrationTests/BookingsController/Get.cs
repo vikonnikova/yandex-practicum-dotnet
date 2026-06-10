@@ -23,7 +23,7 @@ public class GetTests : BaseApiTest
 		//Assert
 		var responseData = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-		//Assert.Equal(bookingId, responseData.BookingId); TODO
+		Assert.Equal(bookingId, responseData.BookingId);
 		Assert.Equal(eventId, responseData.EventId);
 		Assert.Equal(BookingStatus.Pending, responseData.Status);
 	}

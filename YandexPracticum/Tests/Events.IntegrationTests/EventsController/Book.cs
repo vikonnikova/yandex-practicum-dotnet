@@ -25,7 +25,7 @@ public class BookTests : BaseApiTest
 		Assert.Equal(new Uri($"/Bookings/{bookingId}", UriKind.Relative), response.Headers.Location);
 
 		var createdBooking = (await Client.GetFromJsonAsync<BookingResponse>($"/bookings/{bookingId}"))!;
-		//Assert.Equal(bookingId, createdBooking.BookingId); TODO
+		Assert.Equal(bookingId, createdBooking.BookingId);
 		Assert.Equal(eventId, createdBooking.EventId);
 		Assert.Equal(BookingStatus.Pending, createdBooking.Status);
 	}

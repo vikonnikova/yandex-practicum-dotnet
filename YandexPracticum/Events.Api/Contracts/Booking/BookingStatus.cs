@@ -1,8 +1,11 @@
-﻿namespace Events.Api.Contracts;
+﻿using System.Text.Json.Serialization;
+
+namespace Events.Api.Contracts;
 
 /// <summary>
 /// Представляет статусы бронирования.
 /// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum BookingStatus
 {
 	/// <summary>

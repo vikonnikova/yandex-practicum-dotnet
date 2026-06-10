@@ -1,4 +1,5 @@
 ﻿using Events.Api.Contracts;
+using Events.Api.Mappings;
 using Events.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,6 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public ActionResult<BookingResponse> GetById([FromRoute] Guid id)
 	{
-		return Ok(bookingService.GetById(id));
+		return Ok(bookingService.GetById(id).ToResponse());
 	}
 }
