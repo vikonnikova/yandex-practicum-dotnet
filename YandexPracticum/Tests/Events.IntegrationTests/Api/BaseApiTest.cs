@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using Events.Api.Contracts;
 
 namespace Events.IntegrationTests.Api;
 
@@ -19,9 +20,12 @@ public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposa
 		Factory.Dispose();
 	}
 
-	protected async Task CreateEvent()
+	protected async Task<Guid> CreateEvent()
 	{
-		await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		var response = await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
+		
+		return responseData.Id;
 	}
 
 	protected async Task CreateEvents()
@@ -30,5 +34,13 @@ public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposa
 		{
 			await Client.PostAsJsonAsync("/events", @event);
 		}
+	}
+	
+	protected async Task<Guid> CreateBooking(Guid eventId)
+	{
+		var response = await Client.PostAsync($"/events/{eventId}/book", null);
+		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
+		
+		return booking.BookingId;
 	}
 }

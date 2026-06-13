@@ -5,7 +5,7 @@ namespace Events.Api.Mappings;
 
 internal static class EventMapping
 {
-	internal static EventDto ToDto(this EventRequest eventData, int eventId)
+	internal static EventDto ToDto(this EventRequest eventData, Guid eventId)
 	{
 		return new EventDto(eventId, eventData.Title, eventData.Description, eventData.StartAt, eventData.EndAt);
 	}

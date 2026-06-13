@@ -2,7 +2,7 @@
 
 public class Event
 {
-	private Event(int id, string title, string? description, EventPeriod period)
+	private Event(Guid id, string title, string? description, EventPeriod period)
 	{
 		Id = id;
 		Title = title ?? throw new ArgumentNullException(nameof(title));
@@ -10,12 +10,12 @@ public class Event
 		Period = period ?? throw new ArgumentNullException(nameof(period));
 	}
 
-	public int Id { get; private set; }
+	public Guid Id { get; private set; }
 	public string Title { get; private set; }
 	public string? Description { get; private set; }
 	public EventPeriod Period { get; private set; }
 
-	public static Event Create(int id, string title, string? description, EventPeriod period)
+	public static Event Create(Guid id, string title, string? description, EventPeriod period)
 	{
 		return new Event(id, title, description, period);
 	}

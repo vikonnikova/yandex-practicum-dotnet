@@ -2,47 +2,34 @@
 
 public static class TestData
 {
-	public static string Title => "Наименование";
-	public static string Description => "Описание";
+	public static string Title => "Ярмарка мёда";
+	public static string Description => "Большой ассортимент мёда на главной площади города.";
 	public static DateTime StartAt => new(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc);
 	public static DateTime EndAt => new(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc);
 	
-	public static string UpdatedTitle => "Новое наименование";
-	public static string UpdatedDescription => "Новое описание";
+	public static string UpdatedTitle => "Яблочный спас";
+	public static string UpdatedDescription => "Народное название праздника Преображение Господне";
 	public static DateTime UpdatedStartAt => new(2026, 02, 03, 18, 55, 00, DateTimeKind.Utc);
 	public static DateTime UpdatedEndAt => new(2026, 02, 05, 12, 00, 00, DateTimeKind.Utc);
 
 	public static object CreateTestEvent()
 	{
-		return new
-		{
-			Id = 1,
-			Title = "Наименование",
-			Description = "Описание",
-			StartAt = new DateTime(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc),
-			EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc)
-		};
+		return new { Title, Description, StartAt, EndAt };
 	}
 	
 	public static object CreateInvalidTestEvent()
 	{
-		return new
-		{
-			Id = 1,
-			Description = "Описание",
-			StartAt = new DateTime(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc),
-			EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc)
-		};
+		return new { Description, StartAt, EndAt };
 	}
 
 	public static object CreateTestEventToUpdate()
 	{
 		return new
 		{
-			Title = "Новое наименование",
-			Description = "Новое описание",
-			StartAt = new DateTime(2026, 02, 03, 18, 55, 00, DateTimeKind.Utc),
-			EndAt = new DateTime(2026, 02, 05, 12, 00, 00, DateTimeKind.Utc)
+			Title = UpdatedTitle,
+			Description = UpdatedDescription,
+			StartAt = UpdatedStartAt,
+			EndAt = UpdatedEndAt
 		};
 	}
 	
@@ -50,16 +37,16 @@ public static class TestData
 	{
 		return new
 		{
-			Description = "Новое описание",
-			StartAt = new DateTime(2026, 02, 03, 18, 55, 00, DateTimeKind.Utc),
-			EndAt = new DateTime(2026, 02, 05, 12, 00, 00, DateTimeKind.Utc)
+			Description = UpdatedDescription,
+			StartAt = UpdatedStartAt,
+			EndAt = UpdatedEndAt
 		};
 	}
 
 	public static object[] CreateTestEvents()
 	{
-		return new[]
-		{
+		return
+		[
 			new
 			{
 				Id = 1,
@@ -85,6 +72,6 @@ public static class TestData
 				StartAt = new DateTime(2026, 03, 03, 15, 32, 00, DateTimeKind.Utc),
 				EndAt = new DateTime(2026, 03, 03, 17, 52, 00, DateTimeKind.Utc)
 			}
-		};
+		];
 	}
 }

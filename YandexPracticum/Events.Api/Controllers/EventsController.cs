@@ -10,7 +10,8 @@ namespace Events.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class EventsController(IEventService eventService) : ControllerBase
+public class EventsController(IEventService eventService, IBookingService bookingService)
+	: ControllerBase
 {
 	/// <summary>
 	/// Возвращает все события.
@@ -27,10 +28,10 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Возвращает событие по идентификатору.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
-	[HttpGet("{id:int}")]
+	[HttpGet("{id:guid}")]
 	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public ActionResult<EventResponse> GetById([FromRoute] int id)
+	public ActionResult<EventResponse> GetById([FromRoute] Guid id)
 	{
 		return Ok(eventService.GetById(id));
 	}
@@ -40,11 +41,13 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// </summary>
 	/// <param name="eventRequest">Данные для создания.</param>
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status201Created)]
+	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public IActionResult Create([FromBody] CreateEventRequest eventRequest)
+	public ActionResult<EventResponse> Create([FromBody] EventRequest eventRequest)
 	{
-		var result = eventService.Add(eventRequest.ToDto(eventRequest.Id));
+		var eventId = Guid.NewGuid();
+		var result = eventService.Add(eventRequest.ToDto(eventId));
+
 		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
 
@@ -53,11 +56,11 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
 	/// <param name="eventRequest">Данные для обновления.</param>
-	[HttpPut("{id:int}")]
+	[HttpPut("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public IActionResult Update([FromRoute] int id, [FromBody] EventRequest eventRequest)
+	public IActionResult Update([FromRoute] Guid id, [FromBody] EventRequest eventRequest)
 	{
 		eventService.Update(eventRequest.ToDto(id));
 		return NoContent();
@@ -67,12 +70,30 @@ public class EventsController(IEventService eventService) : ControllerBase
 	/// Удаляет событие.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
-	[HttpDelete("{id:int}")]
+	[HttpDelete("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public IActionResult Delete([FromRoute] int id)
+	public IActionResult Delete([FromRoute] Guid id)
 	{
 		eventService.Remove(id);
 		return Ok();
+	}
+
+	/// <summary>
+	/// Создает заявку на бронирование.
+	/// </summary>
+	/// <param name="id">Идентификатор события.</param>
+	[HttpPost("{id:guid}/book")]
+	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public ActionResult<BookingResponse> Book([FromRoute] Guid id)
+	{
+		var bookingId = Guid.NewGuid();
+		var result = bookingService.Add(BookingMapping.ToDto(bookingId, id));
+
+		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = bookingId });
+		Response.Headers.Location = statusUrl;
+
+		return Accepted(result);
 	}
 }

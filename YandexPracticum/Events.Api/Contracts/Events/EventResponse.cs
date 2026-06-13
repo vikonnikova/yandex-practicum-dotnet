@@ -8,4 +8,4 @@
 /// <param name="Description">Описание.</param>
 /// <param name="StartAt">Дата начала.</param>
 /// <param name="EndAt">Дата окончания.</param>
-public record EventResponse(int Id, string Title, string? Description, DateTime StartAt, DateTime EndAt);
+public record EventResponse(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt);

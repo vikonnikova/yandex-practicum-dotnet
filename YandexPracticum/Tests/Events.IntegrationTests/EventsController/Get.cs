@@ -1,8 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.IntegrationTests.Api;
 
-namespace Events.IntegrationTests.Api;
+namespace Events.IntegrationTests.EventsController;
 
 public class GetTests : BaseApiTest
 {
@@ -32,13 +33,19 @@ public class GetTests : BaseApiTest
 	public async Task GetById_ValidData_200Returned()
 	{
 		//Arrange
-		await CreateEvent();
+		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.GetAsync("/events/1");
+		var response = await Client.GetAsync($"/events/{eventId}");
 
 		//Assert
+		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+		Assert.Equal(eventId, responseData.Id);
+		Assert.Equal(TestData.Title, responseData.Title);
+		Assert.Equal(TestData.Description, responseData.Description);
+		Assert.Equal(TestData.StartAt, responseData.StartAt);
+		Assert.Equal(TestData.EndAt, responseData.EndAt);
 	}
 	
 	/// <summary>
@@ -48,10 +55,10 @@ public class GetTests : BaseApiTest
 	public async Task GetById_NonExistentEvent_404Returned()
 	{
 		//Arrange
-		await CreateEvent();
+		await CreateEvents();
 
 		//Act
-		var response = await Client.GetAsync("/events/2");
+		var response = await Client.GetAsync($"/events/{Guid.NewGuid()}");
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
