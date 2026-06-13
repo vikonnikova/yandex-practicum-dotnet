@@ -8,7 +8,7 @@ namespace Events.Application.UseCases;
 
 public class EventService(IEventRepository repository) : IEventService
 {
-	public PaginatedResult<EventDto> GetBy(Filters filters, int page, int pageSize)
+	public PaginatedResult<EventInfoDto> GetBy(Filters filters, int page, int pageSize)
 	{
 		IEnumerable<Event> filteredEvents = repository.GetAll(); // TODO перенести в репозиторий
 
@@ -30,20 +30,20 @@ public class EventService(IEventRepository repository) : IEventService
 		var totalItems = filteredEvents.Count();
 		var result = filteredEvents.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.ToDto()).ToArray();
 
-		return new PaginatedResult<EventDto>(totalItems, page, result.Length, result);
+		return new PaginatedResult<EventInfoDto>(totalItems, page, result.Length, result);
 	}
 
-	public EventDto GetById(Guid eventId)
+	public EventInfoDto GetById(Guid eventId)
 	{
 		var @event = repository.Find(eventId);
 
 		return @event?.ToDto() ?? throw new EntityNotFoundException("Событие", eventId);
 	}
 
-	public EventDto Add(EventDto eventData)
+	public EventInfoDto Add(EventDto eventData)
 	{
 		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
-			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
+			EventPeriod.Create(eventData.StartAt, eventData.EndAt), eventData.TotalSeats);
 
 		repository.Add(@event);
 

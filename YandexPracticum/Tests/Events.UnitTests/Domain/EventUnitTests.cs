@@ -14,7 +14,7 @@ public class EventUnitTests
 		var startAt = DateTime.UtcNow;
 		var endAt = startAt.AddDays(2);
 
-		var @event = Event.Create(eventId, "Title", "Description", EventPeriod.Create(startAt, endAt));
+		var @event = Event.Create(eventId, "Title", "Description", EventPeriod.Create(startAt, endAt), 90);
 
 		Assert.Multiple(() =>
 		{
@@ -25,6 +25,8 @@ public class EventUnitTests
 			Assert.Equal(endAt, @event.Period.EndAt);
 		});
 	}
+	
+	// TODO добавить тест на проверку невалидного количества мест (< 0 и == 0)
 
 	/// <summary>
 	/// Проверяет обновление события.
@@ -36,7 +38,7 @@ public class EventUnitTests
 		var utcNow = DateTime.UtcNow;
 		var startAt = utcNow.AddDays(3).AddHours(4);
 		var endAt = startAt.AddHours(5);
-		var @event = Event.Create(eventId, "Title", "Description", EventPeriod.Create(utcNow, utcNow.AddDays(2)));
+		var @event = Event.Create(eventId, "Title", "Description", EventPeriod.Create(utcNow, utcNow.AddDays(2)), 90);
 
 		@event.Update("Наименование", "Описание", EventPeriod.Create(startAt, endAt));
 

@@ -22,11 +22,11 @@ public class BookingServiceUnitTests
 		var now = DateTime.UtcNow;
 		
 		_eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
-			EventPeriod.Create(now, now.AddDays(7))));
+			EventPeriod.Create(now, now.AddDays(7)), 10));
 		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
-			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10))));
+			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10)), 20));
 		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
-			EventPeriod.Create(now, now.AddHours(14))));
+			EventPeriod.Create(now, now.AddHours(14)), 100));
 
 		_service = new BookingService(new InMemoryBookingStore(), _eventRepository, new InMemoryBookingTaskQueue());
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));

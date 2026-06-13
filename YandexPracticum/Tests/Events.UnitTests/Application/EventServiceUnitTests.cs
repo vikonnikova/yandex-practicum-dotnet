@@ -15,14 +15,14 @@ public class EventServiceUnitTests
 	public EventServiceUnitTests()
 	{
 		_service = new EventService(new InMemoryEventStore());
-		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7)));
+		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7), 10));
 		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-			_now.AddHours(-12), _now.AddHours(-10)));
+			_now.AddHours(-12), _now.AddHours(-10), 20));
 		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2)));
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 30));
 		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-			_now.AddDays(-7), _now.AddDays(-6)));
-		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14)));
+			_now.AddDays(-7), _now.AddDays(-6), 40));
+		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14), 50));
 	}
 
 	/// <summary>
@@ -34,7 +34,7 @@ public class EventServiceUnitTests
 		//Arrange
 		var eventId = Guid.NewGuid();
 		var dto = new EventDto(eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2));
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 100);
 
 		//Act
 		var result = _service.Add(dto);
@@ -53,7 +53,7 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default);
+		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default, 100);
 
 		//Act
 		Action act = () => _service.Add(dto);
@@ -73,7 +73,7 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2));
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 10);
 
 		//Act
 		_service.Update(dto);
@@ -89,7 +89,7 @@ public class EventServiceUnitTests
 	public void Update_InvalidData_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1));
+		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1), 10);
 
 		//Act
 		Action act = () => _service.Update(dto);
@@ -110,7 +110,8 @@ public class EventServiceUnitTests
 	public void Update_NonExistentEvent_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день", _now, _now.AddDays(-1));
+		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день",
+			_now, _now.AddDays(-1), 100);
 
 		//Act
 		Action act = () => _service.Update(dto);
