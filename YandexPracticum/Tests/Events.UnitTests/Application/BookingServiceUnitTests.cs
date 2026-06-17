@@ -14,6 +14,7 @@ public class BookingServiceUnitTests
 	private readonly Guid _eventId2 = Guid.NewGuid();
 	private readonly Guid _eventId3 = Guid.NewGuid();
 	private readonly Guid _bookingId = Guid.NewGuid();
+	private const int EventTotalSeats = 10;
 	private readonly IEventRepository _eventRepository = new InMemoryEventStore();
 	private readonly IBookingService _service;
 
@@ -22,7 +23,7 @@ public class BookingServiceUnitTests
 		var now = DateTime.UtcNow;
 		
 		_eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
-			EventPeriod.Create(now, now.AddDays(7)), 10));
+			EventPeriod.Create(now, now.AddDays(7)), EventTotalSeats));
 		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
 			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10)), 20));
 		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
@@ -51,6 +52,7 @@ public class BookingServiceUnitTests
 		result.EventId.Should().Be(_eventId1);
 		result.Status.Should().Be(BookingStatus.Pending);
 		_service.GetById(_bookingId).Should().BeEquivalentTo(dto);
+		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(EventTotalSeats - 1);
 	}
 	
 	/// <summary>

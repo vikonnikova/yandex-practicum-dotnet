@@ -10,7 +10,7 @@ public class Event
 		Period = period ?? throw new ArgumentNullException(nameof(period));
 		if (totalSeats < 1)
 		{
-			throw new ArgumentException("Общее количество мест должно быть больше нуля.");;
+			throw new ArgumentException("Общее количество мест должно быть больше нуля.");
 		}
 		TotalSeats = totalSeats;
 		AvailableSeats = totalSeats;
