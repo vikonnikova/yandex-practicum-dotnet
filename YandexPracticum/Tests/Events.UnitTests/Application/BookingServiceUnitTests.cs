@@ -28,7 +28,7 @@ public class BookingServiceUnitTests
 		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
 			EventPeriod.Create(now, now.AddHours(14)), 100));
 
-		_service = new BookingService(new InMemoryBookingStore(), _eventRepository, new InMemoryBookingTaskQueue());
+		_service = new BookingService(new InMemoryBookingStore(), _eventRepository);
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId3));
 	}

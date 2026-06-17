@@ -10,7 +10,6 @@ public static class DependencyInjection
 	{
 		services.AddSingleton<IEventRepository, InMemoryEventStore>();
 		services.AddSingleton<IBookingRepository, InMemoryBookingStore>();
-		services.AddSingleton<IBookingTaskQueue, InMemoryBookingTaskQueue>();
 		services.AddHostedService<BookingBackgroundService>();
 	}
 }

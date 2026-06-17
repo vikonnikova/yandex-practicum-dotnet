@@ -6,11 +6,10 @@ using Events.Domain;
 
 namespace Events.Application.UseCases;
 
-public class BookingService(
-	IBookingRepository repository,
-	IEventRepository eventRepository,
-	IBookingTaskQueue taskQueue) : IBookingService
+public class BookingService(IBookingRepository repository, IEventRepository eventRepository) : IBookingService
 {
+	private readonly Lock _bookingLock = new();
+
 	public BookingDto GetById(Guid bookingId)
 	{
 		var booking = repository.Find(bookingId);
@@ -20,15 +19,27 @@ public class BookingService(
 
 	public BookingDto Add(BookingToAddDto bookingData)
 	{
-		if (!eventRepository.Exists(bookingData.EventId))
-		{
-			throw new EntityNotFoundException("Событие", bookingData.EventId);
-		}
-		
-		var booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
-		repository.Add(booking);
+		Booking booking;
 
-		taskQueue.Enqueue(new BookingTask(booking.Id));
+		lock (_bookingLock)
+		{
+			var @event = eventRepository.Find(bookingData.EventId);
+
+			if (@event is null)
+			{
+				throw new EntityNotFoundException("Событие", bookingData.EventId);
+			}
+
+			var seatsExist = @event.TryReserveSeats();
+
+			if (!seatsExist)
+			{
+				throw new NoAvailableSeatsException();
+			}
+
+			booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
+			repository.Add(booking);
+		}
 
 		return booking.ToDto();
 	}
