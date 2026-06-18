@@ -74,7 +74,42 @@ public class BookingServiceUnitTests
 		};
 
 		//Act
-		foreach (var booking in bookings)
+		foreach (var booking in bookings) // TODO сделать параллельные запросы по заданию
+		{
+			_service.Add(booking);
+		}
+
+		//Assert
+		foreach (var bookingId in new List<Guid> { bookingId1, bookingId2, bookingId3 })
+		{
+			var result = _service.GetById(bookingId);
+			result.Should().NotBeNull();
+			result.BookingId.Should().Be(bookingId);
+			result.EventId.Should().Be(_eventId1);
+			result.Status.Should().Be(BookingStatus.Pending);
+		}
+	}
+	
+	/// <summary>
+	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события при овербукинге.
+	/// </summary>
+	[Fact]
+	public void Add_MultipleBookingsForOneEvent_Overbooking_Success()
+	{
+		//Arrange
+		var bookingId1 = Guid.NewGuid();
+		var bookingId2 = Guid.NewGuid();
+		var bookingId3 = Guid.NewGuid();
+		
+		var bookings = new List<BookingToAddDto>
+		{
+			new(bookingId1, _eventId1), 
+			new(bookingId2, _eventId1), 
+			new(bookingId3, _eventId1)
+		};
+
+		//Act
+		foreach (var booking in bookings) // TODO сделать параллельные запросы по заданию
 		{
 			_service.Add(booking);
 		}
@@ -131,74 +166,27 @@ public class BookingServiceUnitTests
 		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
 	}
-
+	
 	/// <summary>
-	/// Проверяет обновление события.
+	/// Проверяет создание брони на недоступное количество мест.
 	/// </summary>
 	[Fact]
-	public void Confirm_ValidData_Success()
+	public void Add_NoAvailableSeats_ExceptionThrown()
 	{
 		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
-		_service.Add(dto);
+		for (var i = 0; i < 10; i++)
+		{
+			_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1));
+		}
 
 		//Act
-		_service.Confirm(_bookingId);
+		Action act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId1));
 
 		//Assert
-		var result = _service.GetById(_bookingId);
-		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
-		result.Status.Should().Be(BookingStatus.Confirmed);
-	}
-
-	/// <summary>
-	/// Проверяет обновление события с невалидными данными.
-	/// </summary>
-	[Fact]
-	public void Confirm_NonExistentBooking_Failed()
-	{
-		//Act
-		Action act = () => _service.Confirm(_bookingId);
-
-		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
-	}
-
-	/// <summary>
-	/// Проверяет удаление события.
-	/// </summary>
-	[Fact]
-	public void Reject_ValidData_Success()
-	{
-		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
-		_service.Add(dto);
-
-		//Act
-		_service.Reject(_bookingId);
-
-		//Assert
-		var result = _service.GetById(_bookingId);
-		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
-		result.Status.Should().Be(BookingStatus.Rejected);
-	}
-
-	/// <summary>
-	/// Проверяет обновление несуществующего события.
-	/// </summary>
-	[Fact]
-	public void Reject_NonExistentBooking_Failed()
-	{
-		//Act
-		Action act = () => _service.Reject(_bookingId);
-
-		//Assert
-		act.Should().Throw<EntityNotFoundException>()
+		act.Should().Throw<NoAvailableSeatsException>()
+			.WithMessage("No available seats for this event.");
+		Action act2 = () => _service.GetById(_bookingId);
+		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
 	}
 

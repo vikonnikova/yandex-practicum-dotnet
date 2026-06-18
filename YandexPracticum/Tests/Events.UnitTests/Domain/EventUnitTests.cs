@@ -82,8 +82,8 @@ public class EventUnitTests
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
 		var endAt = startAt.AddDays(2);
-		var @event = Event.Create(eventId, "Новый год", "Дед мороз и снегурочка", EventPeriod.Create(startAt, endAt),
-			10);
+		var @event = Event.Create(eventId, "Новый год", "Дед мороз и снегурочка",
+			EventPeriod.Create(startAt, endAt), 10);
 
 		var requestResult = @event.TryReserveSeats();
 
@@ -109,8 +109,8 @@ public class EventUnitTests
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
 		var endAt = startAt.AddDays(2);
-		var @event = Event.Create(eventId, "Новый год", "Дед мороз и снегурочка", EventPeriod.Create(startAt, endAt),
-			10);
+		var @event = Event.Create(eventId, "Новый год", "Дед мороз и снегурочка",
+			EventPeriod.Create(startAt, endAt), 10);
 		@event.TryReserveSeats(10);
 
 		var requestResult = @event.TryReserveSeats();
@@ -127,6 +127,31 @@ public class EventUnitTests
 			Assert.Equal(0, @event.AvailableSeats);
 		});
 	}
+	
+	/// <summary>
+	/// Проверяет освобождение забронированных мест на событии.
+	/// </summary>
+	[Fact]
+	public void ReleaseSeats_Success()
+	{
+		var eventId = Guid.NewGuid();
+		var startAt = DateTime.UtcNow;
+		var endAt = startAt.AddDays(2);
+		var @event = Event.Create(eventId, "Новый год", "Дед мороз и снегурочка",
+			EventPeriod.Create(startAt, endAt), 10);
+		@event.TryReserveSeats(3);
 
-	// TODO добавить тесты на отмену бронирования мест, когда появится логика в следующих спринтах
+		@event.ReleaseSeats();
+
+		Assert.Multiple(() =>
+		{
+			Assert.Equal(eventId, @event.Id);
+			Assert.Equal("Новый год", @event.Title);
+			Assert.Equal("Дед мороз и снегурочка", @event.Description);
+			Assert.Equal(startAt, @event.Period.StartAt);
+			Assert.Equal(endAt, @event.Period.EndAt);
+			Assert.Equal(10, @event.TotalSeats);
+			Assert.Equal(8, @event.AvailableSeats);
+		});
+	}
 }

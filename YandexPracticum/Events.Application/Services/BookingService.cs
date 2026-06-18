@@ -43,28 +43,4 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 
 		return booking.ToDto();
 	}
-
-	public void Confirm(Guid bookingId)
-	{
-		var booking = repository.Find(bookingId);
-
-		if (booking is null)
-		{
-			throw new EntityNotFoundException("Бронь", bookingId);
-		}
-
-		booking.Confirm(DateTime.UtcNow);
-	}
-
-	public void Reject(Guid bookingId)
-	{
-		var booking = repository.Find(bookingId);
-
-		if (booking is null)
-		{
-			throw new EntityNotFoundException("Бронь", bookingId);
-		}
-
-		booking.Reject(DateTime.UtcNow);
-	}
 }

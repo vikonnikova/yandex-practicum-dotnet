@@ -46,8 +46,8 @@ public class Event
 		return true;
 	}
 
-	public bool ReleaseSeats(int count = 1)
+	public void ReleaseSeats(int count = 1)
 	{
-		return false;
+		AvailableSeats += count;
 	}
 }

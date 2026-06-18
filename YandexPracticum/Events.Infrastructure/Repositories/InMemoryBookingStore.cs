@@ -3,7 +3,7 @@ using Events.Domain;
 
 namespace Events.Infrastructure;
 
-internal class InMemoryBookingStore : IBookingRepository
+public class InMemoryBookingStore : IBookingRepository
 {
 	private readonly List<Booking> _bookings = [];
 	

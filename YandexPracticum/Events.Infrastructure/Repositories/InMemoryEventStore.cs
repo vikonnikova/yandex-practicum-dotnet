@@ -3,7 +3,7 @@ using Events.Domain;
 
 namespace Events.Infrastructure;
 
-internal class InMemoryEventStore : IEventRepository
+public class InMemoryEventStore : IEventRepository
 {
 	private readonly List<Event> _events = [];
 
