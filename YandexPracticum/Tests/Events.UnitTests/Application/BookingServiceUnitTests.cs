@@ -1,4 +1,5 @@
-﻿using Events.Application.Exceptions;
+﻿using System.Collections.Concurrent;
+using Events.Application.Exceptions;
 using Events.Application.Interfaces;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
@@ -16,12 +17,13 @@ public class BookingServiceUnitTests
 	private readonly Guid _bookingId = Guid.NewGuid();
 	private const int EventTotalSeats = 10;
 	private readonly IEventRepository _eventRepository = new InMemoryEventStore();
+	private readonly IBookingRepository _bookingRepository = new InMemoryBookingStore();
 	private readonly IBookingService _service;
 
 	public BookingServiceUnitTests()
 	{
 		var now = DateTime.UtcNow;
-		
+
 		_eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
 			EventPeriod.Create(now, now.AddDays(7)), EventTotalSeats));
 		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
@@ -29,7 +31,7 @@ public class BookingServiceUnitTests
 		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
 			EventPeriod.Create(now, now.AddHours(14)), 100));
 
-		_service = new BookingService(new InMemoryBookingStore(), _eventRepository);
+		_service = new BookingService(_bookingRepository, _eventRepository);
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
 		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId3));
 	}
@@ -54,76 +56,6 @@ public class BookingServiceUnitTests
 		_service.GetById(_bookingId).Should().BeEquivalentTo(dto);
 		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(EventTotalSeats - 1);
 	}
-	
-	/// <summary>
-	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события.
-	/// </summary>
-	[Fact]
-	public void Add_MultipleBookingsForOneEvent_Success()
-	{
-		//Arrange
-		var bookingId1 = Guid.NewGuid();
-		var bookingId2 = Guid.NewGuid();
-		var bookingId3 = Guid.NewGuid();
-		
-		var bookings = new List<BookingToAddDto>
-		{
-			new(bookingId1, _eventId1), 
-			new(bookingId2, _eventId1), 
-			new(bookingId3, _eventId1)
-		};
-
-		//Act
-		foreach (var booking in bookings) // TODO сделать параллельные запросы по заданию
-		{
-			_service.Add(booking);
-		}
-
-		//Assert
-		foreach (var bookingId in new List<Guid> { bookingId1, bookingId2, bookingId3 })
-		{
-			var result = _service.GetById(bookingId);
-			result.Should().NotBeNull();
-			result.BookingId.Should().Be(bookingId);
-			result.EventId.Should().Be(_eventId1);
-			result.Status.Should().Be(BookingStatus.Pending);
-		}
-	}
-	
-	/// <summary>
-	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события при овербукинге.
-	/// </summary>
-	[Fact]
-	public void Add_MultipleBookingsForOneEvent_Overbooking_Success()
-	{
-		//Arrange
-		var bookingId1 = Guid.NewGuid();
-		var bookingId2 = Guid.NewGuid();
-		var bookingId3 = Guid.NewGuid();
-		
-		var bookings = new List<BookingToAddDto>
-		{
-			new(bookingId1, _eventId1), 
-			new(bookingId2, _eventId1), 
-			new(bookingId3, _eventId1)
-		};
-
-		//Act
-		foreach (var booking in bookings) // TODO сделать параллельные запросы по заданию
-		{
-			_service.Add(booking);
-		}
-
-		//Assert
-		foreach (var bookingId in new List<Guid> { bookingId1, bookingId2, bookingId3 })
-		{
-			var result = _service.GetById(bookingId);
-			result.Should().NotBeNull();
-			result.BookingId.Should().Be(bookingId);
-			result.EventId.Should().Be(_eventId1);
-			result.Status.Should().Be(BookingStatus.Pending);
-		}
-	}
 
 	/// <summary>
 	/// Проверяет создание брони на несуществующее событие.
@@ -145,7 +77,7 @@ public class BookingServiceUnitTests
 		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
 	}
-	
+
 	/// <summary>
 	/// Проверяет создание брони на несуществующее событие.
 	/// </summary>
@@ -166,7 +98,7 @@ public class BookingServiceUnitTests
 		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
 	}
-	
+
 	/// <summary>
 	/// Проверяет создание брони на недоступное количество мест.
 	/// </summary>
@@ -174,7 +106,7 @@ public class BookingServiceUnitTests
 	public void Add_NoAvailableSeats_ExceptionThrown()
 	{
 		//Arrange
-		for (var i = 0; i < 10; i++)
+		for (var i = 0; i < EventTotalSeats; i++)
 		{
 			_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1));
 		}
@@ -188,6 +120,77 @@ public class BookingServiceUnitTests
 		Action act2 = () => _service.GetById(_bookingId);
 		act2.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+	}
+	
+	/// <summary>
+	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события.
+	/// </summary>
+	[Fact]
+	public async Task Add_MultipleBookingsForOneEvent_Success()
+	{
+		// Arrange
+		var successCount = 0;
+		var exceptionsCount = 0;
+		var bookingIdsList = new ConcurrentBag<Guid>();
+
+		//Act
+		var tasks = Enumerable.Range(0, EventTotalSeats)
+			.Select(_ => Task.Run(() =>
+			{
+				try
+				{
+					var bookingId = Guid.NewGuid();
+					bookingIdsList.Add(bookingId);
+					_service.Add(new BookingToAddDto(bookingId, _eventId1));
+					Interlocked.Increment(ref successCount);
+				}
+				catch (NoAvailableSeatsException)
+				{
+					Interlocked.Increment(ref exceptionsCount);
+				}
+			})).ToArray();
+
+		await Task.WhenAll(tasks);
+
+		//Assert
+		successCount.Should().Be(EventTotalSeats);
+		exceptionsCount.Should().Be(0);
+		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(0);
+		bookingIdsList.Distinct().Should().HaveCount(successCount);
+	}
+
+	/// <summary>
+	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события при овербукинге.
+	/// </summary>
+	[Fact]
+	public async Task Add_MultipleBookingsForOneEvent_Overbooking_Success()
+	{
+		// Arrange
+		var totalRequests = 25;
+		var successCount = 0;
+		var exceptionsCount = 0;
+
+		//Act
+		var tasks = Enumerable.Range(0, totalRequests)
+			.Select(_ => Task.Run(() =>
+			{
+				try
+				{
+					_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1));
+					Interlocked.Increment(ref successCount);
+				}
+				catch (NoAvailableSeatsException)
+				{
+					Interlocked.Increment(ref exceptionsCount);
+				}
+			})).ToArray();
+
+		await Task.WhenAll(tasks);
+
+		//Assert
+		successCount.Should().Be(EventTotalSeats);
+		exceptionsCount.Should().Be(totalRequests - EventTotalSeats);
+		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(0);
 	}
 
 	/// <summary>

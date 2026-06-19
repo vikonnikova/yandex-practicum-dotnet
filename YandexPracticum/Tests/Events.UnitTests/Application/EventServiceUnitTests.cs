@@ -119,7 +119,7 @@ public class EventServiceUnitTests
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{dto.Id.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
+		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
 	}
 
 	/// <summary>
@@ -132,7 +132,7 @@ public class EventServiceUnitTests
 		_service.Remove(_eventId);
 
 		//Assert
-		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(4);
+		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(4);
 		Action act = () => _service.GetById(_eventId);
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId.ToString()}] не найдена.");
@@ -153,7 +153,7 @@ public class EventServiceUnitTests
 		//Assert
 		act.Should().Throw<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Count.Should().Be(5);
+		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
 	}
 
 	/// <summary>
@@ -201,7 +201,7 @@ public class EventServiceUnitTests
 
 		//Assert
 		result.Should().NotBeNull();
-		result.Items.Count.Should().Be(5);
+		result.Items.Should().HaveCount(5);
 	}
 
 	/// <summary>
@@ -274,7 +274,7 @@ public class EventServiceUnitTests
 				new Filters(Title: "День", _now.AddDays(-1), _now.AddDays(endAtAddDays)), 1, 10);
 
 		//Assert
-		result.Items.Count.Should().Be(filteredItems);
+		result.Items.Should().HaveCount(filteredItems);
 	}
 
 	/// <summary>
@@ -296,6 +296,6 @@ public class EventServiceUnitTests
 		result.TotalItems.Should().Be(5);
 		result.CurrentPage.Should().Be(page);
 		result.ItemsPerPage.Should().Be(itemsPerPage);
-		result.Items.Count.Should().Be(itemsPerPage);
+		result.Items.Should().HaveCount(itemsPerPage);
 	}
 }
