@@ -35,28 +35,20 @@ public class BookTests : BaseApiTest
 	}
 
 	/// <summary>
-	/// Проверяет создание заявки на бронирование.
+	/// Проверяет создание заявки на бронирование при овербукинге.
 	/// </summary>
 	[Fact]
 	public async Task Book_Overbooking_409Returned()
 	{
 		//Arrange
 		var eventId = await CreateEvent();
+		await CreateBookings(eventId, TestData.TotalSeats);
 
 		//Act
 		var response = await Client.PostAsync($"/events/{eventId}/book", null);
 
 		//Assert
-		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
-		Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-		Assert.Equal(new Uri($"/Bookings/{booking.BookingId}", UriKind.Relative), response.Headers.Location);
-		Assert.Equal(eventId, booking.EventId);
-		Assert.Equal(BookingStatus.Pending, booking.Status);
-
-		var createdBooking = (await Client.GetFromJsonAsync<BookingResponse>($"/bookings/{booking.BookingId}"))!;
-		Assert.Equal(booking.BookingId, createdBooking.BookingId);
-		Assert.Equal(eventId, createdBooking.EventId);
-		Assert.Equal(BookingStatus.Pending, createdBooking.Status);
+		Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
 	}
 
 	/// <summary>
