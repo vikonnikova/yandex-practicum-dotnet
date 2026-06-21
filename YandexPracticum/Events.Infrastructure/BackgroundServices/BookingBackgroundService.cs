@@ -17,31 +17,31 @@ internal class BookingBackgroundService(
 	private readonly SemaphoreSlim _rejectionSemaphore = new(1, 1);
 
 	// TODO подумать над архитектурой, чтобы покрыть тестами механизм отклонения заявок.
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 	{
 		logger.LogInformation("Фоновая обработка бронирований запущена.");
 
-		while (!stoppingToken.IsCancellationRequested)
+		while (!cancellationToken.IsCancellationRequested)
 		{
-			var pendingBookings = bookingStore.GetPending();
-			var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, stoppingToken));
+			var pendingBookings = await bookingStore.GetPending(cancellationToken);
+			var tasks = pendingBookings.Select(booking => ProcessBookingAsync(booking, cancellationToken));
 			await Task.WhenAll(tasks);
 
-			await Task.Delay(_delayTimeSpan, stoppingToken);
+			await Task.Delay(_delayTimeSpan, cancellationToken);
 		}
 
 		logger.LogInformation("Фоновая обработка бронирований остановлена.");
 	}
 
-	private async Task ProcessBookingAsync(Booking booking, CancellationToken stoppingToken)
+	private async Task ProcessBookingAsync(Booking booking, CancellationToken cancellationToken)
 	{
 		logger.LogInformation("Начало обработки бронирования с идентификатором {BookingId}", booking.Id);
 
 		try
 		{
-			await TryConfirm(booking, stoppingToken);
+			await TryConfirm(booking, cancellationToken);
 		}
-		catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 		{
 			logger.LogWarning("Обработка бронирования с идентификатором {BookingId} отменена.", booking.Id);
 			return;
@@ -49,21 +49,21 @@ internal class BookingBackgroundService(
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Ошибка при обработке бронирования.");
-			await Reject(booking, stoppingToken);
+			await Reject(booking, cancellationToken);
 		}
 
 		logger.LogInformation("Бронирование с идентификатором {BookingId} обработано успешно.", booking.Id);
 	}
 
-	private async Task TryConfirm(Booking booking, CancellationToken stoppingToken)
+	private async Task TryConfirm(Booking booking, CancellationToken cancellationToken)
 	{
 		// Имитация долгой обработки
-		await Task.Delay(_processBookingDelayTimeSpan, stoppingToken);
+		await Task.Delay(_processBookingDelayTimeSpan, cancellationToken);
 
-		await _processingSemaphore.WaitAsync(stoppingToken);
+		await _processingSemaphore.WaitAsync(cancellationToken);
 		try
 		{
-			var @event = eventStore.Find(booking.EventId);
+			var @event = await eventStore.Find(booking.EventId, cancellationToken);
 
 			if (@event is null)
 			{
@@ -83,13 +83,13 @@ internal class BookingBackgroundService(
 		}
 	}
 
-	private async Task Reject(Booking booking, CancellationToken stoppingToken)
+	private async Task Reject(Booking booking, CancellationToken cancellationToken)
 	{
-		await _rejectionSemaphore.WaitAsync(stoppingToken);
+		await _rejectionSemaphore.WaitAsync(cancellationToken);
 		try
 		{
 			booking.Reject(DateTime.UtcNow);
-			var @event = eventStore.Find(booking.EventId);
+			var @event = await eventStore.Find(booking.EventId, cancellationToken);
 			@event?.ReleaseSeats();
 		}
 		finally

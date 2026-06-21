@@ -8,22 +8,23 @@ namespace Events.Application.UseCases;
 
 public class BookingService(IBookingRepository repository, IEventRepository eventRepository) : IBookingService
 {
-	private readonly Lock _bookingLock = new();
+	private readonly SemaphoreSlim _additionSemaphore = new(1, 1);
 
-	public BookingDto GetById(Guid bookingId)
+	public async Task<BookingDto> GetById(Guid bookingId, CancellationToken cancellationToken)
 	{
-		var booking = repository.Find(bookingId);
+		var booking = await repository.Find(bookingId, cancellationToken);
 
 		return booking?.ToDto() ?? throw new EntityNotFoundException("Бронь", bookingId);
 	}
 
-	public BookingDto Add(BookingToAddDto bookingData)
+	public async Task<BookingDto> Add(BookingToAddDto bookingData, CancellationToken cancellationToken)
 	{
 		Booking booking;
 
-		lock (_bookingLock)
+		await _additionSemaphore.WaitAsync(cancellationToken);
+		try
 		{
-			var @event = eventRepository.Find(bookingData.EventId);
+			var @event = await eventRepository.Find(bookingData.EventId, cancellationToken);
 
 			if (@event is null)
 			{
@@ -38,7 +39,11 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 			}
 
 			booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
-			repository.Add(booking);
+			await repository.Add(booking, cancellationToken);
+		}
+		finally
+		{
+			_additionSemaphore.Release();
 		}
 
 		return booking.ToDto();

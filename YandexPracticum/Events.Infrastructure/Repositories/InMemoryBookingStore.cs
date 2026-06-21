@@ -1,9 +1,8 @@
-﻿using Events.Application.Interfaces;
-using Events.Domain;
+﻿using Events.Domain;
 
 namespace Events.Infrastructure;
 
-public class InMemoryBookingStore : IBookingRepository
+internal class InMemoryBookingStore
 {
 	private readonly List<Booking> _bookings = [];
 	

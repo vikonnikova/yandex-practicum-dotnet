@@ -8,9 +8,9 @@ namespace Events.Application.UseCases;
 
 public class EventService(IEventRepository repository) : IEventService
 {
-	public PaginatedResult<EventInfoDto> GetBy(Filters filters, int page, int pageSize)
+	public async Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize, CancellationToken cancellationToken)
 	{
-		IEnumerable<Event> filteredEvents = repository.GetAll(); // TODO перенести в репозиторий
+		IEnumerable<Event> filteredEvents = await repository.GetAll(cancellationToken); // TODO перенести в репозиторий
 
 		if (filters.Title != null)
 		{
@@ -33,26 +33,26 @@ public class EventService(IEventRepository repository) : IEventService
 		return new PaginatedResult<EventInfoDto>(totalItems, page, result.Length, result);
 	}
 
-	public EventInfoDto GetById(Guid eventId)
+	public async Task<EventInfoDto> GetById(Guid eventId, CancellationToken cancellationToken)
 	{
-		var @event = repository.Find(eventId);
+		var @event = await repository.Find(eventId, cancellationToken);
 
 		return @event?.ToDto() ?? throw new EntityNotFoundException("Событие", eventId);
 	}
 
-	public EventInfoDto Add(EventDto eventData)
+	public async Task<EventInfoDto> Add(EventDto eventData, CancellationToken cancellationToken)
 	{
 		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt), eventData.TotalSeats);
 
-		repository.Add(@event);
+		await repository.Add(@event, cancellationToken);
 
 		return @event.ToDto();
 	}
 
-	public void Update(EventDto eventData)
+	public async Task Update(EventDto eventData, CancellationToken cancellationToken)
 	{
-		var eventToUpdate = repository.Find(eventData.Id);
+		var eventToUpdate = await repository.Find(eventData.Id, cancellationToken);
 
 		if (eventToUpdate is null)
 		{
@@ -61,17 +61,19 @@ public class EventService(IEventRepository repository) : IEventService
 
 		eventToUpdate.Update(eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
+		
+		await repository.Update(cancellationToken);
 	}
 
-	public void Remove(Guid eventId)
+	public async Task Remove(Guid eventId, CancellationToken cancellationToken)
 	{
-		var eventToDelete = repository.Find(eventId);
+		var eventToDelete = await repository.Find(eventId, cancellationToken);
 
 		if (eventToDelete is null)
 		{
 			throw new EntityNotFoundException("Событие", eventId);
 		}
 
-		repository.Delete(eventToDelete);
+		await repository.Delete(eventToDelete, cancellationToken);
 	}
 }

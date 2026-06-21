@@ -4,13 +4,13 @@ namespace Events.Application.UseCases;
 
 public interface IEventService
 {
-	PaginatedResult<EventInfoDto> GetBy(Filters filters, int page, int pageSize);
+	Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize, CancellationToken cancellationToken);
 
-	EventInfoDto GetById(Guid eventId);
+	Task<EventInfoDto> GetById(Guid eventId, CancellationToken cancellationToken);
 
-	EventInfoDto Add(EventDto eventData);
+	Task<EventInfoDto> Add(EventDto eventData, CancellationToken cancellationToken);
 
-	void Update(EventDto eventData);
+	Task Update(EventDto eventData, CancellationToken cancellationToken);
 
-	void Remove(Guid eventId);
+	Task Remove(Guid eventId, CancellationToken cancellationToken);
 }

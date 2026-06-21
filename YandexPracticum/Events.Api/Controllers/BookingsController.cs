@@ -16,11 +16,12 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 	/// Возвращает бронь по идентификатору.
 	/// </summary>
 	/// <param name="id">Идентификатор брони.</param>
+	/// <param name="cancellationToken">Токен отмены.</param>
 	[HttpGet("{id:guid}")]
 	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public ActionResult<BookingResponse> GetById([FromRoute] Guid id)
+	public async Task<ActionResult<BookingResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		return Ok(bookingService.GetById(id).ToResponse());
+		return Ok((await bookingService.GetById(id, cancellationToken)).ToResponse());
 	}
 }

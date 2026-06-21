@@ -1,9 +1,8 @@
-﻿using Events.Application.Interfaces;
-using Events.Domain;
+﻿using Events.Domain;
 
 namespace Events.Infrastructure;
 
-public class InMemoryEventStore : IEventRepository
+internal class InMemoryEventStore
 {
 	private readonly List<Event> _events = [];
 
