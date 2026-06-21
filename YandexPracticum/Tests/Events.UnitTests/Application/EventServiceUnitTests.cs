@@ -14,22 +14,25 @@ public class EventServiceUnitTests
 
 	public EventServiceUnitTests()
 	{
-		_service = new EventService(new InMemoryEventStore());
-		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7), 10));
-		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-			_now.AddHours(-12), _now.AddHours(-10), 20));
-		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 30));
-		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-			_now.AddDays(-7), _now.AddDays(-6), 40));
-		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14), 50));
+		// TODO через контекст заполнить данными
+		_service = new EventService(new EventRepository());
+		await _service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка",
+			_now, _now.AddDays(7), 10), CancellationToken.None);
+		await _service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
+			_now.AddHours(-12), _now.AddHours(-10), 20), CancellationToken.None);
+		await _service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
+			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 30), CancellationToken.None);
+		await _service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
+			_now.AddDays(-7), _now.AddDays(-6), 40), CancellationToken.None);
+		await _service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют",
+			_now, _now.AddHours(14), 50), CancellationToken.None);
 	}
 
 	/// <summary>
 	/// Проверяет создание события.
 	/// </summary>
 	[Fact]
-	public void Add_ValidData_Success()
+	public async Task Add_ValidData_Success()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
@@ -37,31 +40,31 @@ public class EventServiceUnitTests
 			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 100);
 
 		//Act
-		var result = _service.Add(dto);
+		var result = await _service.Add(dto, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.Title.Should().Be(dto.Title);
-		_service.GetById(eventId).Should().BeEquivalentTo(dto);
+		(await _service.GetById(eventId, CancellationToken.None)).Should().BeEquivalentTo(dto);
 	}
 
 	/// <summary>
 	/// Проверяет создание события с невалидными даными.
 	/// </summary>
 	[Fact]
-	public void Add_InvalidData_Failed()
+	public async Task Add_InvalidData_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
 		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default, 100);
 
 		//Act
-		Action act = () => _service.Add(dto);
+		Func<Task> act = () => _service.Add(dto, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<ArgumentNullException>();
-		Action act2 = () => _service.GetById(eventId);
-		act2.Should().Throw<EntityNotFoundException>()
+		await act.Should().ThrowAsync<ArgumentNullException>();
+		Func<Task> act2 = () => _service.GetById(eventId, CancellationToken.None);
+		await act2.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 	}
 
@@ -69,34 +72,35 @@ public class EventServiceUnitTests
 	/// Проверяет обновление события.
 	/// </summary>
 	[Fact]
-	public void Update_ValidData_Success()
+	public async Task Update_ValidData_Success()
 	{
 		//Arrange
 		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
 			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 10);
 
 		//Act
-		_service.Update(dto);
+		await _service.Update(dto, CancellationToken.None);
 
 		//Assert
-		_service.GetById(_eventId).Should().BeEquivalentTo(dto);
+		(await _service.GetById(_eventId, CancellationToken.None)).Should().BeEquivalentTo(dto);
 	}
 
 	/// <summary>
 	/// Проверяет обновление события с невалидными данными.
 	/// </summary>
 	[Fact]
-	public void Update_InvalidData_Failed()
+	public async Task Update_InvalidData_Failed()
 	{
 		//Arrange
 		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1), 10);
 
 		//Act
-		Action act = () => _service.Update(dto);
+		Func<Task> act = () => _service.Update(dto, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<ArgumentException>().WithMessage("Начало события должно быть раньше его завершения.");
-		var @event = _service.GetById(_eventId);
+		await act.Should().ThrowAsync<ArgumentException>()
+			.WithMessage("Начало события должно быть раньше его завершения.");
+		var @event = await _service.GetById(_eventId, CancellationToken.None);
 		@event.Title.Should().Be("День рождения");
 		@event.Description.Should().Be("Дед Мороз и снегурочка");
 		@event.StartAt.Should().Be(_now);
@@ -107,34 +111,34 @@ public class EventServiceUnitTests
 	/// Проверяет обновление несуществующего события.
 	/// </summary>
 	[Fact]
-	public void Update_NonExistentEvent_Failed()
+	public async Task Update_NonExistentEvent_Failed()
 	{
 		//Arrange
 		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день",
 			_now, _now.AddDays(-1), 100);
 
 		//Act
-		Action act = () => _service.Update(dto);
+		Func<Task> act = () => _service.Update(dto, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
+		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{dto.Id.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
+		(await _service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
 	}
 
 	/// <summary>
 	/// Проверяет удаление события.
 	/// </summary>
 	[Fact]
-	public void Remove_ValidData_Success()
+	public async Task Remove_ValidData_Success()
 	{
 		//Act
-		_service.Remove(_eventId);
+		await _service.Remove(_eventId, CancellationToken.None);
 
 		//Assert
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(4);
-		Action act = () => _service.GetById(_eventId);
-		act.Should().Throw<EntityNotFoundException>()
+		(await _service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(4);
+		Func<Task> act = () => _service.GetById(_eventId, CancellationToken.None);
+		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId.ToString()}] не найдена.");
 	}
 
@@ -142,28 +146,28 @@ public class EventServiceUnitTests
 	/// Проверяет удаление несуществующего события.
 	/// </summary>
 	[Fact]
-	public void Remove_NonExistentEvent_Failed()
+	public async Task Remove_NonExistentEvent_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
 
 		//Act
-		Action act = () => _service.Remove(eventId);
+		Func<Task> act = () => _service.Remove(eventId, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
+		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
+		(await _service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
 	}
 
 	/// <summary>
 	/// Проверяет получение события по идентификатору.
 	/// </summary>
 	[Fact]
-	public void GetById_ValidData_Success()
+	public async Task GetById_ValidData_Success()
 	{
 		//Act
-		var result = _service.GetById(_eventId);
+		var result = await _service.GetById(_eventId, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -177,16 +181,16 @@ public class EventServiceUnitTests
 	/// Проверяет получение несуществующего события.
 	/// </summary>
 	[Fact]
-	public void GetById_NonExistentEvent_Failed()
+	public async Task GetById_NonExistentEvent_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
 
 		//Act
-		Action act = () => _service.GetById(eventId);
+		Func<Task> act = () => _service.GetById(eventId, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
+		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 	}
 
@@ -194,10 +198,10 @@ public class EventServiceUnitTests
 	/// Проверяет получение всех событий.
 	/// </summary>
 	[Fact]
-	public void GetBy_ValidData_Success()
+	public async Task GetBy_ValidData_Success()
 	{
 		//Act
-		var result = _service.GetBy(new Filters(), 1, 10);
+		var result = await _service.GetBy(new Filters(), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -214,10 +218,10 @@ public class EventServiceUnitTests
 	[InlineData("вра")]
 	[InlineData("аля")]
 	[InlineData("ФеВрАлЯ")]
-	public void GetBy_FilterByTitle_Success(string title)
+	public async Task GetBy_FilterByTitle_Success(string title)
 	{
 		//Act
-		var result = _service.GetBy(new Filters(Title: title), 1, 10);
+		var result = await _service.GetBy(new Filters(Title: title), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -232,10 +236,10 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(0, 2)]
 	[InlineData(-6, 3)]
-	public void GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
+	public async Task GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
 	{
 		//Act
-		var result = _service.GetBy(new Filters(From: _now.AddDays(daysToAdd)), 1, 10);
+		var result = await _service.GetBy(new Filters(From: _now.AddDays(daysToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -249,10 +253,10 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(0, 3)]
 	[InlineData(-5, 0)]
-	public void GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
+	public async Task GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
 	{
 		//Act
-		var result = _service.GetBy(new Filters(To: _now.AddMonths(monthToAdd)), 1, 10);
+		var result = await _service.GetBy(new Filters(To: _now.AddMonths(monthToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -266,12 +270,11 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(6, 1)]
 	[InlineData(8, 2)]
-	public void GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
+	public async Task GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
 	{
 		//Act
-		var result =
-			_service.GetBy(
-				new Filters(Title: "День", _now.AddDays(-1), _now.AddDays(endAtAddDays)), 1, 10);
+		var result = await _service.GetBy(new Filters(Title: "День", _now.AddDays(-1),
+			_now.AddDays(endAtAddDays)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Items.Should().HaveCount(filteredItems);
@@ -287,10 +290,10 @@ public class EventServiceUnitTests
 	[InlineData(1, 2, 2)]
 	[InlineData(2, 2, 2)]
 	[InlineData(3, 2, 1)]
-	public void GetBy_Pagination_Success(int page, int pageSize, int itemsPerPage)
+	public async Task GetBy_Pagination_Success(int page, int pageSize, int itemsPerPage)
 	{
 		//Act
-		var result = _service.GetBy(new Filters(), page, pageSize);
+		var result = await _service.GetBy(new Filters(), page, pageSize, CancellationToken.None);
 
 		//Assert
 		result.TotalItems.Should().Be(5);
