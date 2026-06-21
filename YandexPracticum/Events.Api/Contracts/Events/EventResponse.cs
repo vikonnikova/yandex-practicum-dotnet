@@ -8,4 +8,6 @@
 /// <param name="Description">Описание.</param>
 /// <param name="StartAt">Дата начала.</param>
 /// <param name="EndAt">Дата окончания.</param>
-public record EventResponse(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt);
+/// <param name="TotalSeats">Общее количество мест.</param>
+/// <param name="AvailableSeats">Количество свободных мест.</param>
+public record EventResponse(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats, int AvailableSeats);

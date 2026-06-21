@@ -11,6 +11,11 @@ public class InMemoryBookingStore : IBookingRepository
 	{
 		return _bookings.Find(b => b.Id == bookingId);
 	}
+	
+	public IReadOnlyCollection<Booking> GetPending()
+	{
+		return _bookings.Where(b => b.Status == BookingStatus.Pending).ToArray();
+	}
 
 	public void Add(Booking booking)
 	{

@@ -10,6 +10,7 @@ namespace Events.Api.Contracts;
 /// <param name="Description">Описание.</param>
 /// <param name="StartAt">Дата начала.</param>
 /// <param name="EndAt">Дата окончания.</param>
+/// <param name="TotalSeats">Общее количество мест.</param>
 public record EventRequest(
 	[Required(ErrorMessage = "Наименование события обязательно для заполнения.")]
 	string Title,
@@ -17,4 +18,7 @@ public record EventRequest(
 	[NotDefault(ErrorMessage = "Дата начала события обязательна для заполнения.")]
 	DateTime StartAt,
 	[NotDefault(ErrorMessage = "Дата окончания события обязательна для заполнения.")]
-	DateTime EndAt);
+	DateTime EndAt,
+	[NotDefault(ErrorMessage = "Общее количество мест на событии обязательно для заполнения.")]
+	[Range(1, int.MaxValue, ErrorMessage = "Общее количество мест должно быть больше нуля.")]
+	int TotalSeats);
