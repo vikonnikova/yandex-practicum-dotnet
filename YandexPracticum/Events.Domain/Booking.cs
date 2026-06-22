@@ -10,6 +10,10 @@ public class Booking
 		Status = BookingStatus.Pending;
 	}
 
+	private Booking()
+	{
+	}
+
 	public Guid Id { get; private set; }
 	public Guid EventId { get; private set; }
 	public BookingStatus Status { get; private set; }

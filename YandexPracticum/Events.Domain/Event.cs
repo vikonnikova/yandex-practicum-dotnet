@@ -12,16 +12,23 @@ public class Event
 		{
 			throw new ArgumentException("Общее количество мест должно быть больше нуля.");
 		}
+
 		TotalSeats = totalSeats;
 		AvailableSeats = totalSeats;
 	}
 
+	private Event()
+	{
+	}
+
 	public Guid Id { get; private set; }
-	public string Title { get; private set; }
+	public string Title { get; private set; } = null!;
 	public string? Description { get; private set; }
-	public EventPeriod Period { get; private set; }
+	public EventPeriod Period { get; private set; } = null!;
 	public int TotalSeats { get; private set; }
 	public int AvailableSeats { get; private set; }
+
+	public IReadOnlyCollection<Booking> Bookings { get; private set; } = null!;
 
 	public static Event Create(Guid id, string title, string? description, EventPeriod period, int totalSeats)
 	{
@@ -41,7 +48,7 @@ public class Event
 		{
 			return false;
 		}
-		
+
 		AvailableSeats -= count;
 		return true;
 	}

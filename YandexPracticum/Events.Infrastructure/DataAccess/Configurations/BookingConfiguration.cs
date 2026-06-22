@@ -8,6 +8,28 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 {
 	public void Configure(EntityTypeBuilder<Booking> builder)
 	{
-		throw new NotImplementedException();
+		builder.ToTable("bookings");
+		builder.HasKey(e => e.Id);
+
+		builder.Property(e => e.Id)
+			.IsRequired()
+			.ValueGeneratedNever();
+
+		builder.Property(b => b.EventId)
+			.IsRequired();
+
+		builder.Property(e => e.CreatedAt)
+			.HasColumnType("timestamp with time zone")
+			.IsRequired();
+
+		builder.Property(e => e.Status)
+			.IsRequired()
+			.HasConversion<string>();
+
+		builder.Property(b => b.ProcessedAt)
+			.HasColumnType("timestamp with time zone")
+			.IsRequired(false);
+
+		builder.HasIndex(b => b.EventId);
 	}
 }

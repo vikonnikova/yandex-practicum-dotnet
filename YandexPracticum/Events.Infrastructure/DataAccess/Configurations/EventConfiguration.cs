@@ -8,6 +8,43 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 {
 	public void Configure(EntityTypeBuilder<Event> builder)
 	{
-		throw new NotImplementedException();
+		builder.ToTable("events");
+
+		builder.HasKey(e => e.Id);
+		builder.Property(e => e.Id)
+			.IsRequired()
+			.ValueGeneratedNever();
+
+		builder.Property(e => e.Title)
+			.HasMaxLength(200)
+			.IsRequired();
+
+		builder.Property(e => e.Description)
+			.HasMaxLength(500)
+			.IsRequired();
+
+		builder.OwnsOne(e => e.Period, period =>
+		{
+			period.Property(p => p.StartAt)
+				.HasColumnName("start_at")
+				.HasColumnType("timestamp with time zone")
+				.IsRequired();
+
+			period.Property(p => p.EndAt)
+				.HasColumnName("end_at")
+				.HasColumnType("timestamp with time zone")
+				.IsRequired();
+		});
+
+		builder.Property(e => e.TotalSeats)
+			.IsRequired();
+
+		builder.Property(e => e.AvailableSeats)
+			.IsRequired();
+
+		builder.HasMany(e => e.Bookings)
+			.WithOne()
+			.HasForeignKey(b => b.EventId)
+			.OnDelete(DeleteBehavior.Cascade);
 	}
 }

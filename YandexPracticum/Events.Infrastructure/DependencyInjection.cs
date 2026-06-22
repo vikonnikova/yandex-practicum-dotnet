@@ -16,8 +16,8 @@ public static class DependencyInjection
 		
 		services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
-		services.AddSingleton<IEventRepository, EventRepository>();
-		services.AddSingleton<IBookingRepository, BookingRepository>();
+		services.AddScoped<IEventRepository, EventRepository>();
+		services.AddScoped<IBookingRepository, BookingRepository>();
 		services.AddHostedService<BookingBackgroundService>();
 	}
 }

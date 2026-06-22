@@ -1,0 +1,14 @@
+﻿using Events.Infrastructure.DataAccess;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Events.Infrastructure;
+
+public static class Initializer
+{
+	public static void DatabaseInit(this IServiceProvider serviceProvider)
+	{
+		using var scope = serviceProvider.CreateScope();
+		var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+		db.Database.EnsureCreated();
+	}
+}

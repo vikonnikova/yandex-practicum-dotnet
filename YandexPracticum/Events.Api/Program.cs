@@ -1,5 +1,4 @@
 using System.Reflection;
-using Events.Api.Extensions;
 using Events.Api.Middleware;
 using Events.Application;
 using Events.Infrastructure;
@@ -22,7 +21,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-app.SeedData();
+app.Services.DatabaseInit();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

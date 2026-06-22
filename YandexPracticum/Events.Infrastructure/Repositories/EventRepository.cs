@@ -38,4 +38,9 @@ public class EventRepository(AppDbContext context) : IEventRepository
 	{
 		return await context.Events.AnyAsync(e => e.Id == eventId, cancellationToken);
 	}
+
+	public async Task SaveChangesAsync(CancellationToken cancellationToken)
+	{
+		await context.SaveChangesAsync(cancellationToken);
+	}
 }

@@ -12,14 +12,20 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 		return await context.Bookings.FindAsync([bookingId], cancellationToken: cancellationToken);
 	}
 
-	public async Task<IReadOnlyCollection<Booking>> GetPending(CancellationToken cancellationToken)
+	public async Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken)
 	{
-		return await context.Bookings.Where(b => b.Status == BookingStatus.Pending).ToArrayAsync(cancellationToken);
+		return await context.Bookings.Where(b => b.Status == BookingStatus.Pending).Select(x => x.Id)
+			.ToArrayAsync(cancellationToken);
 	}
 
 	public async Task Add(Booking booking, CancellationToken cancellationToken)
 	{
 		context.Bookings.Add(booking);
+		await context.SaveChangesAsync(cancellationToken);
+	}
+
+	public async Task SaveChangesAsync(CancellationToken cancellationToken)
+	{
 		await context.SaveChangesAsync(cancellationToken);
 	}
 }

@@ -8,7 +8,7 @@ namespace Events.Application.UseCases;
 
 public class BookingService(IBookingRepository repository, IEventRepository eventRepository) : IBookingService
 {
-	private readonly SemaphoreSlim _additionSemaphore = new(1, 1);
+	private static readonly SemaphoreSlim _additionSemaphore = new(1, 1);
 
 	public async Task<BookingDto> GetById(Guid bookingId, CancellationToken cancellationToken)
 	{
