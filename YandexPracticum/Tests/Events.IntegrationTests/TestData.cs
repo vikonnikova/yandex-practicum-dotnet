@@ -53,9 +53,8 @@ internal static class TestData
 		[
 			new
 			{
-				Id = 1,
-				Title = "Наименование1",
-				Description = "Описание1",
+				Title = "Оперетта",
+				Description = "Музыкально-театральный жанр, сочетающий вокальное и драматическое искусство, хореографию и разговорные диалоги",
 				StartAt = new DateTime(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc),
 				EndAt = new DateTime(2026, 01, 01, 12, 45, 00, DateTimeKind.Utc),
 				TotalSeats = 30
@@ -63,18 +62,16 @@ internal static class TestData
 
 			new
 			{
-				Id = 2,
-				Title = "Наименование2",
-				Description = "Описание2",
+				Title = "Балет",
+				Description = "Театральный спектакль, в котором сюжет, характеры и эмоции героев передаются без слов — с помощью танца, пластики и музыки",
 				StartAt = new DateTime(2026, 02, 02, 03, 20, 00, DateTimeKind.Utc),
 				EndAt = new DateTime(2026, 02, 02, 22, 30, 00, DateTimeKind.Utc),
 				TotalSeats = 40
 			},
 			new
 			{
-				Id = 3,
-				Title = "Наименование3",
-				Description = "Описание3",
+				Title = "Кукольный театр",
+				Description = "Форма театра или представления, в которой используются куклы",
 				StartAt = new DateTime(2026, 03, 03, 15, 32, 00, DateTimeKind.Utc),
 				EndAt = new DateTime(2026, 03, 03, 17, 52, 00, DateTimeKind.Utc),
 				TotalSeats = 50

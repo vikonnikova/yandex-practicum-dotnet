@@ -11,13 +11,25 @@ public abstract class BaseUnitTest : IDisposable
 	protected static readonly Guid EventId2 = Guid.NewGuid();
 	protected static readonly Guid EventId3 = Guid.NewGuid();
 	protected static readonly Guid BookingId = Guid.NewGuid();
+	protected static readonly Guid EventId2BookingId = Guid.NewGuid();
 	protected const int EventTotalSeats = 10;
 
-	protected AppDbContext CreateContext(DbContextOptions<AppDbContext> options) => new(options);
+	private readonly DbContextOptions<AppDbContext> _options;
 
-	protected void SeedDatabase(DbContextOptions<AppDbContext> options)
+	protected BaseUnitTest()
 	{
-		using var context = CreateContext(options);
+		_options = new DbContextOptionsBuilder<AppDbContext>()
+			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+			.Options;
+
+		SeedDatabase();
+	}
+
+	protected AppDbContext CreateContext() => new(_options);
+
+	private void SeedDatabase()
+	{
+		using var context = CreateContext();
 
 		context.Events.AddRange(
 			Event.Create(EventId1, "День рождения", "Дед Мороз и снегурочка",
@@ -33,12 +45,14 @@ public abstract class BaseUnitTest : IDisposable
 		);
 
 		context.Bookings.AddRange(
-			Booking.Create(Guid.NewGuid(), EventId2, DateTime.UtcNow),
+			Booking.Create(EventId2BookingId, EventId2, DateTime.UtcNow),
 			Booking.Create(Guid.NewGuid(), EventId3, DateTime.UtcNow)
 		);
 
 		context.SaveChanges();
 	}
 
-	public abstract void Dispose();
+	public virtual void Dispose()
+	{
+	}
 }
