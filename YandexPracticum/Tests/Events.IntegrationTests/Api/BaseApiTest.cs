@@ -3,7 +3,7 @@ using Events.Api.Contracts;
 
 namespace Events.IntegrationTests.Api;
 
-public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposable
+public abstract class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposable
 {
 	protected readonly ApiWebApplicationFactory Factory;
 	protected readonly HttpClient Client;

@@ -11,8 +11,10 @@ public static class DependencyInjection
 {
 	public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
 	{
-		services.AddDbContext<AppDbContext>(options =>
-			options.UseNpgsql(configuration.GetConnectionString("Default")));
+		var connectionString = configuration.GetConnectionString("Default")
+		    ?? throw new InvalidOperationException("Connection string 'Default' not found.");
+		
+		services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 		services.AddSingleton<IEventRepository, EventRepository>();
 		services.AddSingleton<IBookingRepository, BookingRepository>();

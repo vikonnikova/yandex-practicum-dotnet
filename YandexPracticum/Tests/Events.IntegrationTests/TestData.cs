@@ -1,6 +1,6 @@
 ﻿namespace Events.IntegrationTests;
 
-public static class TestData
+internal static class TestData
 {
 	public static string Title => "Ярмарка мёда";
 	public static string Description => "Большой ассортимент мёда на главной площади города.";

@@ -2,30 +2,27 @@
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
 using Events.Infrastructure;
+using Events.Infrastructure.DataAccess;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Events.UnitTests.Application;
 
-public class EventServiceUnitTests
+public class EventServiceUnitTests : BaseUnitTest
 {
-	private readonly DateTime _now = DateTime.UtcNow;
-	private readonly Guid _eventId = Guid.NewGuid();
-	private readonly IEventService _service;
+	private readonly AppDbContext _context;
+	private readonly EventService _service;
 
 	public EventServiceUnitTests()
 	{
-		// TODO через контекст заполнить данными
-		_service = new EventService(new EventRepository());
-		await _service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка",
-			_now, _now.AddDays(7), 10), CancellationToken.None);
-		await _service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-			_now.AddHours(-12), _now.AddHours(-10), 20), CancellationToken.None);
-		await _service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 30), CancellationToken.None);
-		await _service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-			_now.AddDays(-7), _now.AddDays(-6), 40), CancellationToken.None);
-		await _service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют",
-			_now, _now.AddHours(14), 50), CancellationToken.None);
+		var options = new DbContextOptionsBuilder<AppDbContext>()
+			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+			.Options;
+
+		_context = new AppDbContext(options);
+		_service = new EventService(new EventRepository(_context));
+
+		SeedDatabase(options);
 	}
 
 	/// <summary>
@@ -37,7 +34,7 @@ public class EventServiceUnitTests
 		//Arrange
 		var eventId = Guid.NewGuid();
 		var dto = new EventDto(eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 100);
+			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 100);
 
 		//Act
 		var result = await _service.Add(dto, CancellationToken.None);
@@ -75,14 +72,14 @@ public class EventServiceUnitTests
 	public async Task Update_ValidData_Success()
 	{
 		//Arrange
-		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 10);
+		var dto = new EventDto(EventId1, "8 марта", "Международный женский день",
+			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 10);
 
 		//Act
 		await _service.Update(dto, CancellationToken.None);
 
 		//Assert
-		(await _service.GetById(_eventId, CancellationToken.None)).Should().BeEquivalentTo(dto);
+		(await _service.GetById(EventId1, CancellationToken.None)).Should().BeEquivalentTo(dto);
 	}
 
 	/// <summary>
@@ -92,7 +89,7 @@ public class EventServiceUnitTests
 	public async Task Update_InvalidData_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1), 10);
+		var dto = new EventDto(EventId1, "8 марта", "Международный женский день", Now, Now.AddDays(-1), 10);
 
 		//Act
 		Func<Task> act = () => _service.Update(dto, CancellationToken.None);
@@ -100,11 +97,11 @@ public class EventServiceUnitTests
 		//Assert
 		await act.Should().ThrowAsync<ArgumentException>()
 			.WithMessage("Начало события должно быть раньше его завершения.");
-		var @event = await _service.GetById(_eventId, CancellationToken.None);
+		var @event = await _service.GetById(EventId1, CancellationToken.None);
 		@event.Title.Should().Be("День рождения");
 		@event.Description.Should().Be("Дед Мороз и снегурочка");
-		@event.StartAt.Should().Be(_now);
-		@event.EndAt.Should().Be(_now.AddDays(7));
+		@event.StartAt.Should().Be(Now);
+		@event.EndAt.Should().Be(Now.AddDays(7));
 	}
 
 	/// <summary>
@@ -115,7 +112,7 @@ public class EventServiceUnitTests
 	{
 		//Arrange
 		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день",
-			_now, _now.AddDays(-1), 100);
+			Now, Now.AddDays(-1), 100);
 
 		//Act
 		Func<Task> act = () => _service.Update(dto, CancellationToken.None);
@@ -133,13 +130,13 @@ public class EventServiceUnitTests
 	public async Task Remove_ValidData_Success()
 	{
 		//Act
-		await _service.Remove(_eventId, CancellationToken.None);
+		await _service.Remove(EventId1, CancellationToken.None);
 
 		//Assert
 		(await _service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(4);
-		Func<Task> act = () => _service.GetById(_eventId, CancellationToken.None);
+		Func<Task> act = () => _service.GetById(EventId1, CancellationToken.None);
 		await act.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId.ToString()}] не найдена.");
+			.WithMessage($"Сущность [Событие] с идентификатором [{EventId1.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -167,14 +164,14 @@ public class EventServiceUnitTests
 	public async Task GetById_ValidData_Success()
 	{
 		//Act
-		var result = await _service.GetById(_eventId, CancellationToken.None);
+		var result = await _service.GetById(EventId1, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.Title.Should().Be("День рождения");
 		result.Description.Should().Be("Дед Мороз и снегурочка");
-		result.StartAt.Should().Be(_now);
-		result.EndAt.Should().Be(_now.AddDays(7));
+		result.StartAt.Should().Be(Now);
+		result.EndAt.Should().Be(Now.AddDays(7));
 	}
 
 	/// <summary>
@@ -239,12 +236,12 @@ public class EventServiceUnitTests
 	public async Task GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
 	{
 		//Act
-		var result = await _service.GetBy(new Filters(From: _now.AddDays(daysToAdd)), 1, 10, CancellationToken.None);
+		var result = await _service.GetBy(new Filters(From: Now.AddDays(daysToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Items.Should().OnlyContain(item => item.StartAt >= _now.AddDays(daysToAdd));
+		result.Items.Should().OnlyContain(item => item.StartAt >= Now.AddDays(daysToAdd));
 	}
 
 	/// <summary>
@@ -256,12 +253,12 @@ public class EventServiceUnitTests
 	public async Task GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
 	{
 		//Act
-		var result = await _service.GetBy(new Filters(To: _now.AddMonths(monthToAdd)), 1, 10, CancellationToken.None);
+		var result = await _service.GetBy(new Filters(To: Now.AddMonths(monthToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Items.Should().OnlyContain(item => item.EndAt <= _now.AddMonths(monthToAdd));
+		result.Items.Should().OnlyContain(item => item.EndAt <= Now.AddMonths(monthToAdd));
 	}
 
 	/// <summary>
@@ -273,8 +270,8 @@ public class EventServiceUnitTests
 	public async Task GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
 	{
 		//Act
-		var result = await _service.GetBy(new Filters(Title: "День", _now.AddDays(-1),
-			_now.AddDays(endAtAddDays)), 1, 10, CancellationToken.None);
+		var result = await _service.GetBy(new Filters(Title: "День", Now.AddDays(-1),
+			Now.AddDays(endAtAddDays)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Items.Should().HaveCount(filteredItems);
@@ -300,5 +297,10 @@ public class EventServiceUnitTests
 		result.CurrentPage.Should().Be(page);
 		result.ItemsPerPage.Should().Be(itemsPerPage);
 		result.Items.Should().HaveCount(itemsPerPage);
+	}
+
+	public override void Dispose()
+	{
+		_context.Dispose();
 	}
 }

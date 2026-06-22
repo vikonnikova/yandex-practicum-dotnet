@@ -1,41 +1,32 @@
 ﻿using System.Collections.Concurrent;
 using Events.Application.Exceptions;
-using Events.Application.Interfaces;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
 using Events.Domain;
 using Events.Infrastructure;
+using Events.Infrastructure.DataAccess;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Events.UnitTests.Application;
 
-public class BookingServiceUnitTests
+public class BookingServiceUnitTests : BaseUnitTest
 {
-	private readonly Guid _eventId1 = Guid.NewGuid();
-	private readonly Guid _eventId2 = Guid.NewGuid();
-	private readonly Guid _eventId3 = Guid.NewGuid();
-	private readonly Guid _bookingId = Guid.NewGuid();
-	private const int EventTotalSeats = 10;
-	private readonly IEventRepository _eventRepository = new EventRepository();
-	private readonly IBookingRepository _bookingRepository = new BookingRepository();
-	private readonly IBookingService _service;
+	private readonly AppDbContext _context;
+	private readonly EventRepository _eventRepository;
+	private readonly BookingService _service;
 
 	public BookingServiceUnitTests()
 	{
-		// TODO через контекст заполнить данными
-		
-		var now = DateTime.UtcNow;
+		var options = new DbContextOptionsBuilder<AppDbContext>()
+			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+			.Options;
 
-		await _eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
-			EventPeriod.Create(now, now.AddDays(7)), EventTotalSeats), CancellationToken.None);
-		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
-			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10)), 20), CancellationToken.None);
-		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
-			EventPeriod.Create(now, now.AddHours(14)), 100), CancellationToken.None);
+		_context = new AppDbContext(options);
+		_eventRepository = new EventRepository(_context);
+		_service = new BookingService(new BookingRepository(_context), _eventRepository);
 
-		_service = new BookingService(_bookingRepository, _eventRepository);
-		await _service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2), CancellationToken.None);
-		await _service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId3), CancellationToken.None);
+		SeedDatabase(options);
 	}
 
 	/// <summary>
@@ -45,18 +36,18 @@ public class BookingServiceUnitTests
 	public async Task Add_ValidData_Success()
 	{
 		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
+		var dto = new BookingToAddDto(BookingId, EventId1);
 
 		//Act
 		var result = await _service.Add(dto, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
+		result.BookingId.Should().Be(BookingId);
+		result.EventId.Should().Be(EventId1);
 		result.Status.Should().Be(BookingStatus.Pending);
-		(await _service.GetById(_bookingId, CancellationToken.None)).Should().BeEquivalentTo(dto);
-		(await _eventRepository.Find(_eventId1, CancellationToken.None))!.AvailableSeats.Should()
+		(await _service.GetById(BookingId, CancellationToken.None)).Should().BeEquivalentTo(dto);
+		(await _eventRepository.Find(EventId1, CancellationToken.None))!.AvailableSeats.Should()
 			.Be(EventTotalSeats - 1);
 	}
 
@@ -68,7 +59,7 @@ public class BookingServiceUnitTests
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		var dto = new BookingToAddDto(_bookingId, eventId);
+		var dto = new BookingToAddDto(BookingId, eventId);
 
 		//Act
 		Func<Task> act = () => _service.Add(dto, CancellationToken.None);
@@ -76,9 +67,9 @@ public class BookingServiceUnitTests
 		//Assert
 		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
-		Func<Task> act2 = () => _service.GetById(_bookingId, CancellationToken.None);
+		Func<Task> act2 = () => _service.GetById(BookingId, CancellationToken.None);
 		await act2.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+			.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -88,18 +79,19 @@ public class BookingServiceUnitTests
 	public async Task Add_ForDeletedEvent_Failed()
 	{
 		//Arrange
-		await _service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2), CancellationToken.None);
-		await new EventService(_eventRepository).Remove(_eventId2, CancellationToken.None);
+		await _service.Add(new BookingToAddDto(Guid.NewGuid(), EventId2), CancellationToken.None);
+		await new EventService(_eventRepository).Remove(EventId2, CancellationToken.None);
 
 		//Act
-		Func<Task> act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId2), CancellationToken.None);
+		Func<Task> act = () =>
+			_service.Add(new BookingToAddDto(BookingId, EventId2), CancellationToken.None);
 
 		//Assert
 		await act.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId2.ToString()}] не найдена.");
-		Func<Task> act2 = () => _service.GetById(_bookingId, CancellationToken.None);
+			.WithMessage($"Сущность [Событие] с идентификатором [{EventId2.ToString()}] не найдена.");
+		Func<Task> act2 = () => _service.GetById(BookingId, CancellationToken.None);
 		await act2.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+			.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -111,18 +103,19 @@ public class BookingServiceUnitTests
 		//Arrange
 		for (var i = 0; i < EventTotalSeats; i++)
 		{
-			await _service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1), CancellationToken.None);
+			await _service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
 		}
 
 		//Act
-		Func<Task> act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId1), CancellationToken.None);
+		Func<Task> act = () =>
+			_service.Add(new BookingToAddDto(BookingId, EventId1), CancellationToken.None);
 
 		//Assert
 		await act.Should().ThrowAsync<NoAvailableSeatsException>()
 			.WithMessage("No available seats for this event.");
-		Func<Task> act2 = () => _service.GetById(_bookingId, CancellationToken.None);
+		Func<Task> act2 = () => _service.GetById(BookingId, CancellationToken.None);
 		await act2.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+			.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
 	}
 
 	/// <summary>
@@ -144,7 +137,7 @@ public class BookingServiceUnitTests
 				{
 					var bookingId = Guid.NewGuid();
 					bookingIdsList.Add(bookingId);
-					await _service.Add(new BookingToAddDto(bookingId, _eventId1), CancellationToken.None);
+					await _service.Add(new BookingToAddDto(bookingId, EventId1), CancellationToken.None);
 					Interlocked.Increment(ref successCount);
 				}
 				catch (NoAvailableSeatsException)
@@ -158,7 +151,7 @@ public class BookingServiceUnitTests
 		//Assert
 		successCount.Should().Be(EventTotalSeats);
 		exceptionsCount.Should().Be(0);
-		(await _eventRepository.Find(_eventId1, CancellationToken.None))!.AvailableSeats.Should().Be(0);
+		(await _eventRepository.Find(EventId1, CancellationToken.None))!.AvailableSeats.Should().Be(0);
 		bookingIdsList.Distinct().Should().HaveCount(successCount);
 	}
 
@@ -179,7 +172,7 @@ public class BookingServiceUnitTests
 			{
 				try
 				{
-					await _service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1), CancellationToken.None);
+					await _service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
 					Interlocked.Increment(ref successCount);
 				}
 				catch (NoAvailableSeatsException)
@@ -193,7 +186,7 @@ public class BookingServiceUnitTests
 		//Assert
 		successCount.Should().Be(EventTotalSeats);
 		exceptionsCount.Should().Be(totalRequests - EventTotalSeats);
-		(await _eventRepository.Find(_eventId1, CancellationToken.None))!.AvailableSeats.Should().Be(0);
+		(await _eventRepository.Find(EventId1, CancellationToken.None))!.AvailableSeats.Should().Be(0);
 	}
 
 	/// <summary>
@@ -203,16 +196,16 @@ public class BookingServiceUnitTests
 	public async Task GetById_ValidData_Success()
 	{
 		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
+		var dto = new BookingToAddDto(BookingId, EventId1);
 		await _service.Add(dto, CancellationToken.None);
 
 		//Act
-		var result = await _service.GetById(_bookingId, CancellationToken.None);
+		var result = await _service.GetById(BookingId, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
+		result.BookingId.Should().Be(BookingId);
+		result.EventId.Should().Be(EventId1);
 		result.Status.Should().Be(BookingStatus.Pending);
 	}
 
@@ -223,10 +216,15 @@ public class BookingServiceUnitTests
 	public async Task GetById_NonExistentBooking_Failed()
 	{
 		//Act
-		Func<Task> act = () => _service.GetById(_bookingId, CancellationToken.None);
+		Func<Task> act = () => _service.GetById(BookingId, CancellationToken.None);
 
 		//Assert
 		await act.Should().ThrowAsync<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+			.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
+	}
+
+	public override void Dispose()
+	{
+		_context.Dispose();
 	}
 }
