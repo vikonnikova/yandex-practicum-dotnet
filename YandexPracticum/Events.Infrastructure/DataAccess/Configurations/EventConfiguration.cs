@@ -21,17 +21,17 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
 		builder.Property(e => e.Description)
 			.HasMaxLength(500)
-			.IsRequired();
+			.IsRequired(false);
 
 		builder.OwnsOne(e => e.Period, period =>
 		{
 			period.Property(p => p.StartAt)
-				.HasColumnName("start_at")
+				.HasColumnName("StartAt")
 				.HasColumnType("timestamp with time zone")
 				.IsRequired();
 
 			period.Property(p => p.EndAt)
-				.HasColumnName("end_at")
+				.HasColumnName("EndAt")
 				.HasColumnType("timestamp with time zone")
 				.IsRequired();
 		});
@@ -43,8 +43,8 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 			.IsRequired();
 
 		builder.HasMany(e => e.Bookings)
-			.WithOne()
+			.WithOne(b => b.Event)
 			.HasForeignKey(b => b.EventId)
-			.OnDelete(DeleteBehavior.Cascade);
+			.OnDelete(DeleteBehavior.Restrict);
 	}
 }

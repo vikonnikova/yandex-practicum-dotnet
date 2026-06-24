@@ -45,7 +45,9 @@ public class EventService(IEventRepository repository) : IEventService
 		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt), eventData.TotalSeats);
 
-		await repository.Add(@event, cancellationToken);
+		repository.Add(@event, cancellationToken);
+		
+		await repository.SaveChangesAsync(cancellationToken);
 
 		return @event.ToDto();
 	}
@@ -62,7 +64,7 @@ public class EventService(IEventRepository repository) : IEventService
 		eventToUpdate.Update(eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
 		
-		await repository.Update(cancellationToken);
+		await repository.SaveChangesAsync(cancellationToken);
 	}
 
 	public async Task Remove(Guid eventId, CancellationToken cancellationToken)
@@ -74,6 +76,8 @@ public class EventService(IEventRepository repository) : IEventService
 			throw new EntityNotFoundException("Событие", eventId);
 		}
 
-		await repository.Delete(eventToDelete, cancellationToken);
+		repository.Delete(eventToDelete, cancellationToken);
+		
+		await repository.SaveChangesAsync(cancellationToken);
 	}
 }

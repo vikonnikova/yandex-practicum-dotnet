@@ -1,6 +1,10 @@
-﻿using Events.Domain;
+﻿using Events.Application.Interfaces;
+using Events.Application.UseCases;
+using Events.Domain;
+using Events.Infrastructure;
 using Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.UnitTests;
 
@@ -14,22 +18,27 @@ public abstract class BaseUnitTest : IDisposable
 	protected static readonly Guid EventId2BookingId = Guid.NewGuid();
 	protected const int EventTotalSeats = 10;
 
-	private readonly DbContextOptions<AppDbContext> _options;
+	protected readonly IServiceProvider ServiceProvider;
 
 	protected BaseUnitTest()
 	{
-		_options = new DbContextOptionsBuilder<AppDbContext>()
-			.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-			.Options;
+		var dbName = Guid.NewGuid().ToString();
+
+		var services = new ServiceCollection();
+		services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(dbName));
+		services.AddScoped<IEventRepository, EventRepository>();
+		services.AddScoped<IBookingRepository, BookingRepository>();
+		services.AddScoped<IEventService, EventService>();
+		services.AddScoped<IBookingService, BookingService>();
+		ServiceProvider = services.BuildServiceProvider();
 
 		SeedDatabase();
 	}
 
-	protected AppDbContext CreateContext() => new(_options);
-
 	private void SeedDatabase()
 	{
-		using var context = CreateContext();
+		using var scope = ServiceProvider.CreateScope();
+		var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
 		context.Events.AddRange(
 			Event.Create(EventId1, "День рождения", "Дед Мороз и снегурочка",
@@ -52,7 +61,11 @@ public abstract class BaseUnitTest : IDisposable
 		context.SaveChanges();
 	}
 
-	public virtual void Dispose()
+	public void Dispose()
 	{
+		if (ServiceProvider is IDisposable disposable)
+		{
+			disposable.Dispose();
+		}
 	}
 }

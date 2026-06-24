@@ -18,10 +18,9 @@ public class BookingRepository(AppDbContext context) : IBookingRepository
 			.ToArrayAsync(cancellationToken);
 	}
 
-	public async Task Add(Booking booking, CancellationToken cancellationToken)
+	public void Add(Booking booking, CancellationToken cancellationToken)
 	{
 		context.Bookings.Add(booking);
-		await context.SaveChangesAsync(cancellationToken);
 	}
 
 	public async Task SaveChangesAsync(CancellationToken cancellationToken)

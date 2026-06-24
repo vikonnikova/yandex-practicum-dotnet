@@ -8,7 +8,7 @@ namespace Events.Application.UseCases;
 
 public class BookingService(IBookingRepository repository, IEventRepository eventRepository) : IBookingService
 {
-	private static readonly SemaphoreSlim _additionSemaphore = new(1, 1);
+	private static readonly SemaphoreSlim AdditionSemaphore = new(1, 1);
 
 	public async Task<BookingDto> GetById(Guid bookingId, CancellationToken cancellationToken)
 	{
@@ -21,7 +21,7 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 	{
 		Booking booking;
 
-		await _additionSemaphore.WaitAsync(cancellationToken);
+		await AdditionSemaphore.WaitAsync(cancellationToken);
 		try
 		{
 			var @event = await eventRepository.Find(bookingData.EventId, cancellationToken);
@@ -39,11 +39,13 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 			}
 
 			booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
-			await repository.Add(booking, cancellationToken);
+			repository.Add(booking, cancellationToken);
+			
+			await repository.SaveChangesAsync(cancellationToken);
 		}
 		finally
 		{
-			_additionSemaphore.Release();
+			AdditionSemaphore.Release();
 		}
 
 		return booking.ToDto();

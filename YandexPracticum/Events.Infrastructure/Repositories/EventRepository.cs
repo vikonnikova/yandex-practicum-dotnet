@@ -17,21 +17,14 @@ public class EventRepository(AppDbContext context) : IEventRepository
 		return await context.Events.FindAsync([eventId], cancellationToken);
 	}
 
-	public async Task Add(Event @event, CancellationToken cancellationToken)
+	public void Add(Event @event, CancellationToken cancellationToken)
 	{
 		context.Events.Add(@event);
-		await context.SaveChangesAsync(cancellationToken);
 	}
 
-	public async Task Update(CancellationToken cancellationToken)
-	{
-		await context.SaveChangesAsync(cancellationToken);
-	}
-
-	public async Task Delete(Event @event, CancellationToken cancellationToken)
+	public void Delete(Event @event, CancellationToken cancellationToken)
 	{
 		context.Events.Remove(@event);
-		await context.SaveChangesAsync(cancellationToken);
 	}
 
 	public async Task<bool> Exists(Guid eventId, CancellationToken cancellationToken)

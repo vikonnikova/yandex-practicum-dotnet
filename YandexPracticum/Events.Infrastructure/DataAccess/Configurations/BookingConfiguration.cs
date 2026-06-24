@@ -31,5 +31,9 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 			.IsRequired(false);
 
 		builder.HasIndex(b => b.EventId);
+
+		builder.HasOne(b => b.Event)
+			.WithMany(e => e.Bookings)
+			.HasForeignKey(b => b.EventId);
 	}
 }
