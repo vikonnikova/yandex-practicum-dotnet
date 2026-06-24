@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
-using Events.IntegrationTests.Api;
 
 namespace Events.IntegrationTests.EventsController;
 
-public class UpdateTests : BaseApiTest
+public class UpdateTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
 	/// <summary>
 	/// Проверяет обновление события.

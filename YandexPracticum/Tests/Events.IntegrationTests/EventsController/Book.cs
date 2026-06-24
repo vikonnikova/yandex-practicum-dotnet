@@ -2,12 +2,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
-using Events.IntegrationTests.Api;
 using FluentAssertions;
 
 namespace Events.IntegrationTests.EventsController;
 
-public class BookTests : BaseApiTest
+public class BookTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
 	/// <summary>
 	/// Проверяет создание заявки на бронирование.
@@ -32,6 +31,9 @@ public class BookTests : BaseApiTest
 		Assert.Equal(booking.BookingId, createdBooking.BookingId);
 		Assert.Equal(eventId, createdBooking.EventId);
 		Assert.Equal(BookingStatus.Pending, createdBooking.Status);
+		var bookedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
+		Assert.Equal(TestData.TotalSeats, bookedEvent.TotalSeats);
+		Assert.Equal(TestData.TotalSeats - 1, bookedEvent.AvailableSeats);
 	}
 
 	/// <summary>

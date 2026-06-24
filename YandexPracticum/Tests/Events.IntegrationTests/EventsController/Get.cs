@@ -1,11 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
-using Events.IntegrationTests.Api;
 
 namespace Events.IntegrationTests.EventsController;
 
-public class GetTests : BaseApiTest
+public class GetTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
 	/// <summary>
 	/// Проверяет получение всех событий.
