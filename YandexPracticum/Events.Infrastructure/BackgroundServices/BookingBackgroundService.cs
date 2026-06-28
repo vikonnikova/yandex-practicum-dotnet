@@ -9,8 +9,8 @@ namespace Events.Infrastructure.BackgroundServices;
 internal class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<BookingBackgroundService> logger)
 	: BackgroundService
 {
-	private readonly TimeSpan _delayTimeSpan = TimeSpan.FromSeconds(2);
-	private readonly TimeSpan _processBookingDelayTimeSpan = TimeSpan.FromSeconds(10);
+	private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(2);
+	private static readonly TimeSpan ProcessingDelay = TimeSpan.FromSeconds(10);
 
 	// TODO подумать над архитектурой, чтобы покрыть тестами механизм отклонения заявок.
 	protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -29,7 +29,7 @@ internal class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogg
 			var tasks = pendingBookingsIds.Select(bookingId => ProcessBookingAsync(bookingId, cancellationToken));
 			await Task.WhenAll(tasks);
 
-			await Task.Delay(_delayTimeSpan, cancellationToken);
+			await Task.Delay(PollingInterval, cancellationToken);
 		}
 
 		logger.LogInformation("Фоновая обработка бронирований остановлена.");
@@ -53,7 +53,7 @@ internal class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogg
 		try
 		{
 			// Имитация долгой обработки (вынесена за рамки транзакции БД)
-			await Task.Delay(_processBookingDelayTimeSpan, cancellationToken);
+			await Task.Delay(ProcessingDelay, cancellationToken);
 
 			await TryConfirm(booking, eventStore, cancellationToken);
 			await bookingStore.SaveChangesAsync(cancellationToken);
