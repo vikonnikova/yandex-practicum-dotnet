@@ -4,13 +4,15 @@ namespace Events.Application.Interfaces;
 
 public interface IEventRepository
 {
-	IReadOnlyCollection<Event> GetAll();
-	
-	Event? Find(Guid eventId);
+	Task<IReadOnlyCollection<Event>> GetAll(CancellationToken cancellationToken);
 
-	void Add(Event @event);
+	Task<Event?> Find(Guid eventId, CancellationToken cancellationToken);
 
-	void Delete(Event @event);
-	
-	bool Exists(Guid eventId);
+	void Add(Event @event, CancellationToken cancellationToken);
+
+	void Delete(Event @event, CancellationToken cancellationToken);
+
+	Task<bool> Exists(Guid eventId, CancellationToken cancellationToken);
+
+	Task SaveChangesAsync(CancellationToken cancellationToken);
 }

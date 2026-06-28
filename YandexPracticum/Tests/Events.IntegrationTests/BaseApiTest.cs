@@ -1,23 +1,22 @@
 ﻿using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.Infrastructure.DataAccess;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Events.IntegrationTests.Api;
+namespace Events.IntegrationTests;
 
-public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposable
+[Collection("Database Integration Tests")]
+public abstract class BaseApiTest : IClassFixture<ApiWebApplicationFactory>
 {
 	protected readonly ApiWebApplicationFactory Factory;
 	protected readonly HttpClient Client;
 
-	protected BaseApiTest()
+	protected BaseApiTest(ApiWebApplicationFactory factory)
 	{
-		Factory = new ApiWebApplicationFactory();
-		Client = Factory.CreateClient();
-	}
-
-	public void Dispose()
-	{
-		Client.Dispose();
-		Factory.Dispose();
+		Factory = factory;
+		Client = factory.CreateClient();
+		EnsureCreated();
+		CleanupDatabase();
 	}
 
 	protected async Task<Guid> CreateEvent()
@@ -50,5 +49,22 @@ public class BaseApiTest : /*IClassFixture<ApiWebApplicationFactory>,*/ IDisposa
 			.Select(_ => Task.Run(async () => { await Client.PostAsync($"/events/{eventId}/book", null); })).ToArray();
 
 		await Task.WhenAll(tasks);
+	}
+	
+	public void EnsureCreated()
+	{
+		using var scope = Factory.Services.CreateScope();
+		var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+		dbContext.Database.EnsureCreated();
+	}
+	
+	public void CleanupDatabase()
+	{
+		using var scope = Factory.Services.CreateScope();
+		var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+		
+		dbContext.Bookings.RemoveRange(dbContext.Bookings);
+		dbContext.Events.RemoveRange(dbContext.Events);
+		dbContext.SaveChanges();
 	}
 }

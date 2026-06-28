@@ -4,9 +4,11 @@ namespace Events.Application.Interfaces;
 
 public interface IBookingRepository
 {
-	Booking? Find(Guid bookingId);
+	Task<Booking?> Find(Guid bookingId, CancellationToken cancellationToken);
 
-	IReadOnlyCollection<Booking> GetPending();
+	Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken);
 
-	void Add(Booking booking);
+	void Add(Booking booking, CancellationToken cancellationToken);
+
+	Task SaveChangesAsync(CancellationToken cancellationToken);
 }

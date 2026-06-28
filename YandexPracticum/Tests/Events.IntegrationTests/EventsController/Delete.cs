@@ -1,8 +1,8 @@
 ﻿using System.Net;
 
-namespace Events.IntegrationTests.Api;
+namespace Events.IntegrationTests.EventsController;
 
-public class DeleteTests : BaseApiTest
+public class DeleteTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
 	/// <summary>
 	/// Проверяет успешное удаление события.

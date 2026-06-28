@@ -7,7 +7,7 @@ public static class DependencyInjection
 {
 	public static void AddApplicationServices(this IServiceCollection services)
 	{
-		services.AddSingleton<IEventService, EventService>();
-		services.AddSingleton<IBookingService, BookingService>();
+		services.AddScoped<IEventService, EventService>();
+		services.AddScoped<IBookingService, BookingService>();
 	}
 }

@@ -4,7 +4,7 @@ namespace Events.Application.UseCases;
 
 public interface IBookingService
 {
-	BookingDto GetById(Guid bookingId);
+	Task<BookingDto> GetById(Guid bookingId, CancellationToken cancellationToken);
 
-	BookingDto Add(BookingToAddDto bookingData);
+	Task<BookingDto> Add(BookingToAddDto bookingData, CancellationToken cancellationToken);
 }

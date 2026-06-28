@@ -1,127 +1,150 @@
 ﻿using System.Collections.Concurrent;
 using Events.Application.Exceptions;
-using Events.Application.Interfaces;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
 using Events.Domain;
-using Events.Infrastructure;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.UnitTests.Application;
 
-public class BookingServiceUnitTests
+public class BookingServiceUnitTests : BaseUnitTest
 {
-	private readonly Guid _eventId1 = Guid.NewGuid();
-	private readonly Guid _eventId2 = Guid.NewGuid();
-	private readonly Guid _eventId3 = Guid.NewGuid();
-	private readonly Guid _bookingId = Guid.NewGuid();
-	private const int EventTotalSeats = 10;
-	private readonly IEventRepository _eventRepository = new InMemoryEventStore();
-	private readonly IBookingRepository _bookingRepository = new InMemoryBookingStore();
-	private readonly IBookingService _service;
-
-	public BookingServiceUnitTests()
-	{
-		var now = DateTime.UtcNow;
-
-		_eventRepository.Add(Event.Create(_eventId1, "День рождения", "Дед Мороз и снегурочка",
-			EventPeriod.Create(now, now.AddDays(7)), EventTotalSeats));
-		_eventRepository.Add(Event.Create(_eventId2, "Пасха", "Красим яйца, печем куличи",
-			EventPeriod.Create(now.AddHours(-12), now.AddHours(-10)), 20));
-		_eventRepository.Add(Event.Create(_eventId3, "День победы", "Парад и салют",
-			EventPeriod.Create(now, now.AddHours(14)), 100));
-
-		_service = new BookingService(_bookingRepository, _eventRepository);
-		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
-		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId3));
-	}
-
 	/// <summary>
 	/// Проверяет создание брони.
 	/// </summary>
 	[Fact]
-	public void Add_ValidData_Success()
+	public async Task Add_ValidData_Success()
 	{
 		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
+		var dto = new BookingToAddDto(BookingId, EventId1);
+		BookingDto returnedResult;
 
 		//Act
-		var result = _service.Add(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			returnedResult = await service.Add(dto, CancellationToken.None);
+		}
 
 		//Assert
-		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
-		result.Status.Should().Be(BookingStatus.Pending);
-		_service.GetById(_bookingId).Should().BeEquivalentTo(dto);
-		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(EventTotalSeats - 1);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			returnedResult.Should().NotBeNull();
+			returnedResult.BookingId.Should().Be(BookingId);
+			returnedResult.EventId.Should().Be(EventId1);
+			returnedResult.Status.Should().Be(BookingStatus.Pending);
+
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			var result = await service.GetById(returnedResult.BookingId, CancellationToken.None);
+
+			result.Should().NotBeNull();
+			result.BookingId.Should().Be(BookingId);
+			result.EventId.Should().Be(EventId1);
+			result.Status.Should().Be(BookingStatus.Pending);
+
+			var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await eventService.GetById(EventId1, CancellationToken.None))
+				.AvailableSeats.Should().Be(EventTotalSeats - 1);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет создание брони на несуществующее событие.
 	/// </summary>
 	[Fact]
-	public void Add_ForNonExistentEvent_Failed()
+	public async Task Add_ForNonExistentEvent_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		var dto = new BookingToAddDto(_bookingId, eventId);
+		var dto = new BookingToAddDto(BookingId, eventId);
 
 		//Act
-		Action act = () => _service.Add(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act = () => service.Add(dto, CancellationToken.None);
+			await act.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+		}
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
-		Action act2 = () => _service.GetById(_bookingId);
-		act2.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act2 = () => service.GetById(BookingId, CancellationToken.None);
+			await act2.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
+		}
 	}
 
 	/// <summary>
-	/// Проверяет создание брони на несуществующее событие.
+	/// Проверяет создание брони на удаленное событие.
 	/// </summary>
 	[Fact]
-	public void Add_ForDeletedEvent_Failed()
+	public async Task Add_ForDeletedEvent_Failed()
 	{
 		//Arrange
-		_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId2));
-		new EventService(_eventRepository).Remove(_eventId2);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			await service.Remove(EventId2, CancellationToken.None);
+		}
 
 		//Act
-		Action act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId2));
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act = () => service.Add(new BookingToAddDto(BookingId, EventId2), CancellationToken.None);
+			await act.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{EventId2.ToString()}] не найдена.");
+		}
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId2.ToString()}] не найдена.");
-		Action act2 = () => _service.GetById(_bookingId);
-		act2.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act2 = () => service.GetById(BookingId, CancellationToken.None);
+			await act2.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
+		}
 	}
 
 	/// <summary>
 	/// Проверяет создание брони на недоступное количество мест.
 	/// </summary>
 	[Fact]
-	public void Add_NoAvailableSeats_ExceptionThrown()
+	public async Task Add_NoAvailableSeats_ExceptionThrown()
 	{
 		//Arrange
-		for (var i = 0; i < EventTotalSeats; i++)
+		using (var scope = ServiceProvider.CreateScope())
 		{
-			_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1));
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			for (var i = 0; i < EventTotalSeats; i++)
+			{
+				await service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
+			}
 		}
 
 		//Act
-		Action act = () => _service.Add(new BookingToAddDto(_bookingId, _eventId1));
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act = () => service.Add(new BookingToAddDto(BookingId, EventId1), CancellationToken.None);
+			await act.Should().ThrowAsync<NoAvailableSeatsException>()
+				.WithMessage("No available seats for this event.");
+		}
 
 		//Assert
-		act.Should().Throw<NoAvailableSeatsException>()
-			.WithMessage("No available seats for this event.");
-		Action act2 = () => _service.GetById(_bookingId);
-		act2.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+			Func<Task> act2 = () => service.GetById(BookingId, CancellationToken.None);
+			await act2.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
+		}
 	}
-	
+
 	/// <summary>
 	/// Проверяет создание нескольких броней с уникальными идентификаторами для одного события.
 	/// </summary>
@@ -135,28 +158,39 @@ public class BookingServiceUnitTests
 
 		//Act
 		var tasks = Enumerable.Range(0, EventTotalSeats)
-			.Select(_ => Task.Run(() =>
+			.Select(async _ =>
 			{
 				try
 				{
-					var bookingId = Guid.NewGuid();
-					bookingIdsList.Add(bookingId);
-					_service.Add(new BookingToAddDto(bookingId, _eventId1));
-					Interlocked.Increment(ref successCount);
+					using (var scope = ServiceProvider.CreateScope())
+					{
+						var bookingId = Guid.NewGuid();
+						bookingIdsList.Add(bookingId);
+
+						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+						await service.Add(new BookingToAddDto(bookingId, EventId1), CancellationToken.None);
+
+						Interlocked.Increment(ref successCount);
+					}
 				}
 				catch (NoAvailableSeatsException)
 				{
 					Interlocked.Increment(ref exceptionsCount);
 				}
-			})).ToArray();
+			}).ToArray();
 
 		await Task.WhenAll(tasks);
 
 		//Assert
 		successCount.Should().Be(EventTotalSeats);
 		exceptionsCount.Should().Be(0);
-		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(0);
 		bookingIdsList.Distinct().Should().HaveCount(successCount);
+
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await service.GetById(EventId1, CancellationToken.None))!.AvailableSeats.Should().Be(0);
+		}
 	}
 
 	/// <summary>
@@ -172,44 +206,54 @@ public class BookingServiceUnitTests
 
 		//Act
 		var tasks = Enumerable.Range(0, totalRequests)
-			.Select(_ => Task.Run(() =>
+			.Select(async _ =>
 			{
 				try
 				{
-					_service.Add(new BookingToAddDto(Guid.NewGuid(), _eventId1));
-					Interlocked.Increment(ref successCount);
+					using (var scope = ServiceProvider.CreateScope())
+					{
+						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+						await service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
+
+						Interlocked.Increment(ref successCount);
+					}
 				}
 				catch (NoAvailableSeatsException)
 				{
 					Interlocked.Increment(ref exceptionsCount);
 				}
-			})).ToArray();
+			}).ToArray();
 
 		await Task.WhenAll(tasks);
 
 		//Assert
 		successCount.Should().Be(EventTotalSeats);
 		exceptionsCount.Should().Be(totalRequests - EventTotalSeats);
-		_eventRepository.Find(_eventId1)!.AvailableSeats.Should().Be(0);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await service.GetById(EventId1, CancellationToken.None)).AvailableSeats.Should().Be(0);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет получение брони по идентификатору.
 	/// </summary>
 	[Fact]
-	public void GetById_ValidData_Success()
+	public async Task GetById_ValidData_Success()
 	{
+		using var scope = ServiceProvider.CreateScope();
+
 		//Arrange
-		var dto = new BookingToAddDto(_bookingId, _eventId1);
-		_service.Add(dto);
+		var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
 
 		//Act
-		var result = _service.GetById(_bookingId);
+		var result = await service.GetById(EventId2BookingId, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
-		result.BookingId.Should().Be(_bookingId);
-		result.EventId.Should().Be(_eventId1);
+		result.BookingId.Should().Be(EventId2BookingId);
+		result.EventId.Should().Be(EventId2);
 		result.Status.Should().Be(BookingStatus.Pending);
 	}
 
@@ -217,13 +261,18 @@ public class BookingServiceUnitTests
 	/// Проверяет получение несуществующей брони.
 	/// </summary>
 	[Fact]
-	public void GetById_NonExistentBooking_Failed()
+	public async Task GetById_NonExistentBooking_Failed()
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
 		//Act
-		Action act = () => _service.GetById(_bookingId);
+		Func<Task> act = () => service.GetById(BookingId, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Бронь] с идентификатором [{_bookingId.ToString()}] не найдена.");
+		await act.Should().ThrowAsync<EntityNotFoundException>()
+			.WithMessage($"Сущность [Бронь] с идентификатором [{BookingId.ToString()}] не найдена.");
 	}
 }

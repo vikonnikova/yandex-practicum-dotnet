@@ -1,192 +1,258 @@
 ﻿using Events.Application.Exceptions;
 using Events.Application.UseCases;
 using Events.Application.UseCases.Dto;
-using Events.Infrastructure;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.UnitTests.Application;
 
-public class EventServiceUnitTests
+public class EventServiceUnitTests : BaseUnitTest
 {
-	private readonly DateTime _now = DateTime.UtcNow;
-	private readonly Guid _eventId = Guid.NewGuid();
-	private readonly IEventService _service;
-
-	public EventServiceUnitTests()
-	{
-		_service = new EventService(new InMemoryEventStore());
-		_service.Add(new EventDto(_eventId, "День рождения", "Дед Мороз и снегурочка", _now, _now.AddDays(7), 10));
-		_service.Add(new EventDto(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-			_now.AddHours(-12), _now.AddHours(-10), 20));
-		_service.Add(new EventDto(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 30));
-		_service.Add(new EventDto(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-			_now.AddDays(-7), _now.AddDays(-6), 40));
-		_service.Add(new EventDto(Guid.NewGuid(), "День победы", "Парад и салют", _now, _now.AddHours(14), 50));
-	}
-
 	/// <summary>
 	/// Проверяет создание события.
 	/// </summary>
 	[Fact]
-	public void Add_ValidData_Success()
+	public async Task Add_ValidData_Success()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
 		var dto = new EventDto(eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 100);
+			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 100);
+		EventInfoDto returnedResult;
 
 		//Act
-		var result = _service.Add(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			returnedResult = await service.Add(dto, CancellationToken.None);
+		}
 
 		//Assert
-		result.Should().NotBeNull();
-		result.Title.Should().Be(dto.Title);
-		_service.GetById(eventId).Should().BeEquivalentTo(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			returnedResult.Should().NotBeNull();
+			returnedResult.Title.Should().Be(dto.Title);
+			returnedResult.Description.Should().Be(dto.Description);
+			returnedResult.StartAt.Should().Be(dto.StartAt);
+			returnedResult.EndAt.Should().Be(dto.EndAt);
+
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			var result = await service.GetById(eventId, CancellationToken.None);
+
+			result.Should().NotBeNull();
+			result.Title.Should().Be(dto.Title);
+			result.Description.Should().Be(dto.Description);
+			result.StartAt.Should().Be(dto.StartAt);
+			result.EndAt.Should().Be(dto.EndAt);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет создание события с невалидными даными.
 	/// </summary>
 	[Fact]
-	public void Add_InvalidData_Failed()
+	public async Task Add_InvalidData_Failed()
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
 		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default, 100);
 
 		//Act
-		Action act = () => _service.Add(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			Func<Task> act = () => service.Add(dto, CancellationToken.None);
+			await act.Should().ThrowAsync<ArgumentNullException>();
+		}
 
 		//Assert
-		act.Should().Throw<ArgumentNullException>();
-		Action act2 = () => _service.GetById(eventId);
-		act2.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			Func<Task> act2 = () => service.GetById(eventId, CancellationToken.None);
+			await act2.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+		}
 	}
 
 	/// <summary>
 	/// Проверяет обновление события.
 	/// </summary>
 	[Fact]
-	public void Update_ValidData_Success()
+	public async Task Update_ValidData_Success()
 	{
 		//Arrange
-		var dto = new EventDto(_eventId, "8 марта", "Международный женский день",
-			_now.AddMonths(-5), _now.AddMonths(-5).AddDays(2), 10);
+		var dto = new EventDto(EventId1, "8 марта", "Международный женский день",
+			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 10);
 
 		//Act
-		_service.Update(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			await service.Update(dto, CancellationToken.None);
+		}
 
 		//Assert
-		_service.GetById(_eventId).Should().BeEquivalentTo(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			var result = await service.GetById(EventId1, CancellationToken.None);
+			result.Id.Should().NotBeEmpty();
+			result.Title.Should().Be(dto.Title);
+			result.Description.Should().Be(dto.Description);
+			result.StartAt.Should().Be(dto.StartAt);
+			result.EndAt.Should().Be(dto.EndAt);
+			result.TotalSeats.Should().Be(dto.TotalSeats);
+			result.AvailableSeats.Should().Be(dto.TotalSeats);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет обновление события с невалидными данными.
 	/// </summary>
 	[Fact]
-	public void Update_InvalidData_Failed()
+	public async Task Update_InvalidData_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(_eventId, "8 марта", "Международный женский день", _now, _now.AddDays(-1), 10);
+		var dto = new EventDto(EventId1, "8 марта", "Международный женский день", Now, Now.AddDays(-1), 10);
 
 		//Act
-		Action act = () => _service.Update(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			Func<Task> act = () => service.Update(dto, CancellationToken.None);
+			await act.Should().ThrowAsync<ArgumentException>()
+				.WithMessage("Начало события должно быть раньше его завершения.");
+		}
 
 		//Assert
-		act.Should().Throw<ArgumentException>().WithMessage("Начало события должно быть раньше его завершения.");
-		var @event = _service.GetById(_eventId);
-		@event.Title.Should().Be("День рождения");
-		@event.Description.Should().Be("Дед Мороз и снегурочка");
-		@event.StartAt.Should().Be(_now);
-		@event.EndAt.Should().Be(_now.AddDays(7));
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			var @event = await service.GetById(EventId1, CancellationToken.None);
+			@event.Title.Should().Be("День рождения");
+			@event.Description.Should().Be("Дед Мороз и снегурочка");
+			@event.StartAt.Should().Be(Now);
+			@event.EndAt.Should().Be(Now.AddDays(7));
+		}
 	}
 
 	/// <summary>
 	/// Проверяет обновление несуществующего события.
 	/// </summary>
 	[Fact]
-	public void Update_NonExistentEvent_Failed()
+	public async Task Update_NonExistentEvent_Failed()
 	{
 		//Arrange
 		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день",
-			_now, _now.AddDays(-1), 100);
+			Now, Now.AddDays(-1), 100);
 
 		//Act
-		Action act = () => _service.Update(dto);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			Func<Task> act = () => service.Update(dto, CancellationToken.None);
+			await act.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{dto.Id.ToString()}] не найдена.");
+		}
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{dto.Id.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет удаление события.
 	/// </summary>
 	[Fact]
-	public void Remove_ValidData_Success()
+	public async Task Remove_ValidData_Success()
 	{
 		//Act
-		_service.Remove(_eventId);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			await service.Remove(EventId1, CancellationToken.None);
+		}
 
 		//Assert
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(4);
-		Action act = () => _service.GetById(_eventId);
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{_eventId.ToString()}] не найдена.");
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(4);
+			Func<Task> act = () => service.GetById(EventId1, CancellationToken.None);
+			await act.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{EventId1.ToString()}] не найдена.");
+		}
 	}
 
 	/// <summary>
 	/// Проверяет удаление несуществующего события.
 	/// </summary>
 	[Fact]
-	public void Remove_NonExistentEvent_Failed()
+	public async Task Remove_NonExistentEvent_Failed()
 	{
-		//Arrange
-		var eventId = Guid.NewGuid();
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			//Arrange
+			var eventId = Guid.NewGuid();
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
-		//Act
-		Action act = () => _service.Remove(eventId);
+			//Act
+			Func<Task> act = () => service.Remove(eventId, CancellationToken.None);
+			await act.Should().ThrowAsync<EntityNotFoundException>()
+				.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+		}
 
-		//Assert
-		act.Should().Throw<EntityNotFoundException>()
-			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
-		_service.GetBy(new Filters(), 1, 10).Items.Should().HaveCount(5);
+		using (var scope = ServiceProvider.CreateScope())
+		{
+			//Assert
+			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
+		}
 	}
 
 	/// <summary>
 	/// Проверяет получение события по идентификатору.
 	/// </summary>
 	[Fact]
-	public void GetById_ValidData_Success()
+	public async Task GetById_ValidData_Success()
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetById(_eventId);
+		var result = await service.GetById(EventId1, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.Title.Should().Be("День рождения");
 		result.Description.Should().Be("Дед Мороз и снегурочка");
-		result.StartAt.Should().Be(_now);
-		result.EndAt.Should().Be(_now.AddDays(7));
+		result.StartAt.Should().Be(Now);
+		result.EndAt.Should().Be(Now.AddDays(7));
 	}
 
 	/// <summary>
 	/// Проверяет получение несуществующего события.
 	/// </summary>
 	[Fact]
-	public void GetById_NonExistentEvent_Failed()
+	public async Task GetById_NonExistentEvent_Failed()
 	{
+		using var scope = ServiceProvider.CreateScope();
+
 		//Arrange
 		var eventId = Guid.NewGuid();
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		Action act = () => _service.GetById(eventId);
+		Func<Task> act = () => service.GetById(eventId, CancellationToken.None);
 
 		//Assert
-		act.Should().Throw<EntityNotFoundException>()
+		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
 	}
 
@@ -194,10 +260,15 @@ public class EventServiceUnitTests
 	/// Проверяет получение всех событий.
 	/// </summary>
 	[Fact]
-	public void GetBy_ValidData_Success()
+	public async Task GetBy_ValidData_Success()
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetBy(new Filters(), 1, 10);
+		var result = await service.GetBy(new Filters(), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -214,10 +285,15 @@ public class EventServiceUnitTests
 	[InlineData("вра")]
 	[InlineData("аля")]
 	[InlineData("ФеВрАлЯ")]
-	public void GetBy_FilterByTitle_Success(string title)
+	public async Task GetBy_FilterByTitle_Success(string title)
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetBy(new Filters(Title: title), 1, 10);
+		var result = await service.GetBy(new Filters(Title: title), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -232,15 +308,20 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(0, 2)]
 	[InlineData(-6, 3)]
-	public void GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
+	public async Task GetBy_FilterByFrom_Success(int daysToAdd, int totalItems)
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetBy(new Filters(From: _now.AddDays(daysToAdd)), 1, 10);
+		var result = await service.GetBy(new Filters(From: Now.AddDays(daysToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Items.Should().OnlyContain(item => item.StartAt >= _now.AddDays(daysToAdd));
+		result.Items.Should().OnlyContain(item => item.StartAt >= Now.AddDays(daysToAdd));
 	}
 
 	/// <summary>
@@ -249,15 +330,20 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(0, 3)]
 	[InlineData(-5, 0)]
-	public void GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
+	public async Task GetBy_FilterByTo_Success(int monthToAdd, int totalItems)
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetBy(new Filters(To: _now.AddMonths(monthToAdd)), 1, 10);
+		var result = await service.GetBy(new Filters(To: Now.AddMonths(monthToAdd)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Items.Should().OnlyContain(item => item.EndAt <= _now.AddMonths(monthToAdd));
+		result.Items.Should().OnlyContain(item => item.EndAt <= Now.AddMonths(monthToAdd));
 	}
 
 	/// <summary>
@@ -266,12 +352,16 @@ public class EventServiceUnitTests
 	[Theory]
 	[InlineData(6, 1)]
 	[InlineData(8, 2)]
-	public void GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
+	public async Task GetBy_CombinedFilterBy_Success(int endAtAddDays, int filteredItems)
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result =
-			_service.GetBy(
-				new Filters(Title: "День", _now.AddDays(-1), _now.AddDays(endAtAddDays)), 1, 10);
+		var result = await service.GetBy(new Filters(Title: "День", Now.AddDays(-1),
+			Now.AddDays(endAtAddDays)), 1, 10, CancellationToken.None);
 
 		//Assert
 		result.Items.Should().HaveCount(filteredItems);
@@ -287,10 +377,15 @@ public class EventServiceUnitTests
 	[InlineData(1, 2, 2)]
 	[InlineData(2, 2, 2)]
 	[InlineData(3, 2, 1)]
-	public void GetBy_Pagination_Success(int page, int pageSize, int itemsPerPage)
+	public async Task GetBy_Pagination_Success(int page, int pageSize, int itemsPerPage)
 	{
+		using var scope = ServiceProvider.CreateScope();
+
+		//Arrange
+		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
+
 		//Act
-		var result = _service.GetBy(new Filters(), page, pageSize);
+		var result = await service.GetBy(new Filters(), page, pageSize, CancellationToken.None);
 
 		//Assert
 		result.TotalItems.Should().Be(5);
