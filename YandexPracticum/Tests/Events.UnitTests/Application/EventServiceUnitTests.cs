@@ -1,6 +1,7 @@
-﻿using Events.Application.Exceptions;
-using Events.Application.UseCases;
-using Events.Application.UseCases.Dto;
+﻿using Events.Application;
+using Events.Application.Exceptions;
+using Events.Application.Services;
+using Events.Application.Services.Dto;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -159,7 +160,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
-			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
+			(await service.GetBy(1, 10, new Filters(), CancellationToken.None)).Items.Should().HaveCount(5);
 		}
 	}
 
@@ -180,7 +181,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
-			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(4);
+			(await service.GetBy(1, 10, new Filters(), CancellationToken.None)).Items.Should().HaveCount(4);
 			Func<Task> act = () => service.GetById(EventId1, CancellationToken.None);
 			await act.Should().ThrowAsync<EntityNotFoundException>()
 				.WithMessage($"Сущность [Событие] с идентификатором [{EventId1.ToString()}] не найдена.");
@@ -209,7 +210,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		{
 			//Assert
 			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
-			(await service.GetBy(new Filters(), 1, 10, CancellationToken.None)).Items.Should().HaveCount(5);
+			(await service.GetBy(1, 10, new Filters(), CancellationToken.None)).Items.Should().HaveCount(5);
 		}
 	}
 
@@ -267,7 +268,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(), 1, 10, CancellationToken.None);
+		var result = await service.GetBy(1, 10, new Filters(), CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -292,7 +293,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(Title: title), 1, 10, CancellationToken.None);
+		var result = await service.GetBy(1, 10, new Filters(Title: title), CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -315,7 +316,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(From: Now.AddDays(daysToAdd)), 1, 10, CancellationToken.None);
+		var result = await service.GetBy(1, 10, new Filters(From: Now.AddDays(daysToAdd)), CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -337,7 +338,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(To: Now.AddMonths(monthToAdd)), 1, 10, CancellationToken.None);
+		var result = await service.GetBy(1, 10, new Filters(To: Now.AddMonths(monthToAdd)), CancellationToken.None);
 
 		//Assert
 		result.Should().NotBeNull();
@@ -359,8 +360,8 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(Title: "День", Now.AddDays(-1),
-			Now.AddDays(endAtAddDays)), 1, 10, CancellationToken.None);
+		var result = await service.GetBy(1, 10, new Filters(Title: "День", Now.AddDays(-1),
+			Now.AddDays(endAtAddDays)), CancellationToken.None);
 
 		//Assert
 		result.Items.Should().HaveCount(filteredItems);
@@ -384,7 +385,7 @@ public class EventServiceUnitTests : BaseUnitTest
 		var service = scope.ServiceProvider.GetRequiredService<IEventService>();
 
 		//Act
-		var result = await service.GetBy(new Filters(), page, pageSize, CancellationToken.None);
+		var result = await service.GetBy(page, pageSize, new Filters(), CancellationToken.None);
 
 		//Assert
 		result.TotalItems.Should().Be(5);

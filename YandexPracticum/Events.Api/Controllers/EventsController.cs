@@ -1,6 +1,7 @@
 using Events.Api.Contracts;
 using Events.Api.Mappings;
-using Events.Application.UseCases;
+using Events.Application;
+using Events.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -23,8 +24,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	public async Task<ActionResult<PaginatedResult<EventResponse>>> GetAll([FromQuery] GetEventsQuery query,
 		CancellationToken cancellationToken)
 	{
-		var result = await eventService.GetBy(new Filters(query.Title, query.From, query.To),
-			query.Page, query.PageSize, cancellationToken);
+		var result = await eventService.GetBy(query.Page, query.PageSize,
+			new Filters(query.Title, query.From, query.To), cancellationToken);
+		
 		return Ok(result.ToPaginatedResponse());
 	}
 

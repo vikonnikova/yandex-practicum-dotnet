@@ -1,38 +1,20 @@
 ﻿using Events.Application.Exceptions;
 using Events.Application.Interfaces;
 using Events.Application.Mappings;
-using Events.Application.UseCases.Dto;
+using Events.Application.Services.Dto;
 using Events.Domain;
 
-namespace Events.Application.UseCases;
+namespace Events.Application.Services;
 
 public class EventService(IEventRepository repository) : IEventService
 {
-	public async Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize,
+	public async Task<PaginatedResult<EventInfoDto>> GetBy(int page, int pageSize, Filters filters,
 		CancellationToken cancellationToken)
 	{
-		IEnumerable<Event> filteredEvents = await repository.GetAll(cancellationToken); // TODO перенести в репозиторий
+		var result = await repository.GetFiltered(page, pageSize, filters, cancellationToken);
 
-		if (filters.Title != null)
-		{
-			filteredEvents =
-				filteredEvents.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
-		}
-
-		if (filters.From.HasValue)
-		{
-			filteredEvents = filteredEvents.Where(x => x.Period.StartAt >= filters.From);
-		}
-
-		if (filters.To.HasValue)
-		{
-			filteredEvents = filteredEvents.Where(x => x.Period.EndAt <= filters.To);
-		}
-
-		var totalItems = filteredEvents.Count();
-		var result = filteredEvents.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x.ToDto()).ToArray();
-
-		return new PaginatedResult<EventInfoDto>(totalItems, page, result.Length, result);
+		return new PaginatedResult<EventInfoDto>(result.TotalItems, page, result.Data.Count,
+			result.Data.Select(x => x.ToDto()).ToArray());
 	}
 
 	public async Task<EventInfoDto> GetById(Guid eventId, CancellationToken cancellationToken)

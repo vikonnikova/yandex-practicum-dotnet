@@ -1,4 +1,4 @@
-﻿namespace Events.Application.UseCases.Dto;
+﻿namespace Events.Application.Services.Dto;
 
 public record EventDto(string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats);
 

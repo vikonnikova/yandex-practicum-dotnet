@@ -1,10 +1,10 @@
 ﻿using Events.Application.Exceptions;
 using Events.Application.Interfaces;
 using Events.Application.Mappings;
-using Events.Application.UseCases.Dto;
+using Events.Application.Services.Dto;
 using Events.Domain;
 
-namespace Events.Application.UseCases;
+namespace Events.Application.Services;
 
 public class BookingService(IBookingRepository repository, IEventRepository eventRepository) : IBookingService
 {

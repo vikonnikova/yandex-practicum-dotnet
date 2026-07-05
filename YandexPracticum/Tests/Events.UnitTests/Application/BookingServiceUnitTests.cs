@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Events.Application.Exceptions;
-using Events.Application.UseCases;
-using Events.Application.UseCases.Dto;
+using Events.Application.Services;
+using Events.Application.Services.Dto;
 using Events.Domain;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;

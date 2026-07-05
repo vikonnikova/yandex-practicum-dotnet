@@ -1,5 +1,5 @@
 ﻿using Events.Application.Interfaces;
-using Events.Application.UseCases;
+using Events.Application.Services;
 using Events.Domain;
 using Events.Infrastructure;
 using Events.Infrastructure.DataAccess;

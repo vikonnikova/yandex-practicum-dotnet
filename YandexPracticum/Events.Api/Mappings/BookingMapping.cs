@@ -1,5 +1,5 @@
 ﻿using Events.Api.Contracts;
-using Events.Application.UseCases.Dto;
+using Events.Application.Services.Dto;
 
 namespace Events.Api.Mappings;
 

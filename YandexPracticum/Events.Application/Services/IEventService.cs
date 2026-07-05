@@ -1,10 +1,11 @@
-﻿using Events.Application.UseCases.Dto;
+﻿using Events.Application.Services.Dto;
 
-namespace Events.Application.UseCases;
+namespace Events.Application.Services;
 
 public interface IEventService
 {
-	Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize, CancellationToken cancellationToken);
+	Task<PaginatedResult<EventInfoDto>> GetBy(int page, int pageSize, Filters filters,
+		CancellationToken cancellationToken);
 
 	Task<EventInfoDto> GetById(Guid eventId, CancellationToken cancellationToken);
 
