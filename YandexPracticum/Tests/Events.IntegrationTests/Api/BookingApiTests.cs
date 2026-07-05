@@ -2,9 +2,9 @@
 using System.Net.Http.Json;
 using Events.Api.Contracts;
 
-namespace Events.IntegrationTests.BookingsController;
+namespace Events.IntegrationTests.Api;
 
-public class GetTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
+public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
 	/// <summary>
 	/// Проверяет получение брони по идентификатору.
