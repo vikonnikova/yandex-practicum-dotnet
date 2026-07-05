@@ -1,4 +1,5 @@
 ﻿using Events.Infrastructure.DataAccess;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.Infrastructure;
@@ -9,6 +10,6 @@ public static class Initializer
 	{
 		using var scope = serviceProvider.CreateScope();
 		var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-		db.Database.EnsureCreated();
+		db.Database.Migrate();
 	}
 }
