@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Events.Infrastructure;
 
-public class EventRepository(AppDbContext context) : IEventRepository
+internal class EventRepository(AppDbContext context) : IEventRepository
 {
 	public async Task<IReadOnlyCollection<Event>> GetAll(CancellationToken cancellationToken)
 	{

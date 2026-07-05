@@ -1,6 +1,8 @@
 ﻿namespace Events.Application.UseCases.Dto;
 
-public record EventDto(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats);
+public record EventDto(string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats);
+
+public record EventToUpdateDto(Guid Id, string Title, string? Description, DateTime StartAt, DateTime EndAt, int TotalSeats);
 
 public record EventInfoDto(
 	Guid Id,

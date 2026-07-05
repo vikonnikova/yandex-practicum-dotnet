@@ -52,8 +52,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	public async Task<ActionResult<EventResponse>> Create([FromBody] EventRequest eventRequest,
 		CancellationToken cancellationToken)
 	{
-		var eventId = Guid.NewGuid();
-		var result = await eventService.Add(eventRequest.ToDto(eventId), cancellationToken);
+		var result = await eventService.Add(eventRequest.ToDto(), cancellationToken);
 
 		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
@@ -100,10 +99,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		var bookingId = Guid.NewGuid();
-		var result = await bookingService.Add(BookingMapping.ToDto(bookingId, id), cancellationToken);
+		var result = await bookingService.Add(BookingMapping.ToDto(id), cancellationToken);
 
-		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = bookingId });
+		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
 		Response.Headers.Location = statusUrl;
 
 		return Accepted(result);

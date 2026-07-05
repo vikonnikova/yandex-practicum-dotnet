@@ -17,4 +17,8 @@
       <ProjectReference Include="..\Events.Infrastructure\Events.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="Events.UnitTests" />
+    </ItemGroup>
+
 </Project>

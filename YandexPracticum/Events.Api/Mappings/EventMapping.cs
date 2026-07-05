@@ -5,9 +5,15 @@ namespace Events.Api.Mappings;
 
 internal static class EventMapping
 {
-	internal static EventDto ToDto(this EventRequest eventData, Guid eventId)
+	internal static EventDto ToDto(this EventRequest eventData)
 	{
-		return new EventDto(eventId, eventData.Title, eventData.Description,
+		return new EventDto(eventData.Title, eventData.Description, eventData.StartAt, eventData.EndAt,
+			eventData.TotalSeats);
+	}
+	
+	internal static EventToUpdateDto ToDto(this EventRequest eventData, Guid eventId)
+	{
+		return new EventToUpdateDto(eventId, eventData.Title, eventData.Description,
 			eventData.StartAt, eventData.EndAt, eventData.TotalSeats);
 	}
 

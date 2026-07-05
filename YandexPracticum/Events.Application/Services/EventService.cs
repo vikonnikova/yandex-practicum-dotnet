@@ -8,13 +8,15 @@ namespace Events.Application.UseCases;
 
 public class EventService(IEventRepository repository) : IEventService
 {
-	public async Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize, CancellationToken cancellationToken)
+	public async Task<PaginatedResult<EventInfoDto>> GetBy(Filters filters, int page, int pageSize,
+		CancellationToken cancellationToken)
 	{
 		IEnumerable<Event> filteredEvents = await repository.GetAll(cancellationToken); // TODO перенести в репозиторий
 
 		if (filters.Title != null)
 		{
-			filteredEvents = filteredEvents.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
+			filteredEvents =
+				filteredEvents.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
 		}
 
 		if (filters.From.HasValue)
@@ -42,17 +44,17 @@ public class EventService(IEventRepository repository) : IEventService
 
 	public async Task<EventInfoDto> Add(EventDto eventData, CancellationToken cancellationToken)
 	{
-		var @event = Event.Create(eventData.Id, eventData.Title, eventData.Description,
+		var @event = Event.Create(Guid.NewGuid(), eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt), eventData.TotalSeats);
 
 		repository.Add(@event, cancellationToken);
-		
+
 		await repository.SaveChangesAsync(cancellationToken);
 
 		return @event.ToDto();
 	}
 
-	public async Task Update(EventDto eventData, CancellationToken cancellationToken)
+	public async Task Update(EventToUpdateDto eventData, CancellationToken cancellationToken)
 	{
 		var eventToUpdate = await repository.Find(eventData.Id, cancellationToken);
 
@@ -63,7 +65,7 @@ public class EventService(IEventRepository repository) : IEventService
 
 		eventToUpdate.Update(eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt));
-		
+
 		await repository.SaveChangesAsync(cancellationToken);
 	}
 
@@ -77,7 +79,7 @@ public class EventService(IEventRepository repository) : IEventService
 		}
 
 		repository.Delete(eventToDelete, cancellationToken);
-		
+
 		await repository.SaveChangesAsync(cancellationToken);
 	}
 }

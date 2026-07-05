@@ -15,8 +15,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	public async Task Add_ValidData_Success()
 	{
 		//Arrange
-		var eventId = Guid.NewGuid();
-		var dto = new EventDto(eventId, "8 марта", "Международный женский день",
+		var dto = new EventDto("8 марта", "Международный женский день",
 			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 100);
 		EventInfoDto returnedResult;
 
@@ -37,7 +36,7 @@ public class EventServiceUnitTests : BaseUnitTest
 			returnedResult.EndAt.Should().Be(dto.EndAt);
 
 			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
-			var result = await service.GetById(eventId, CancellationToken.None);
+			var result = await service.GetById(returnedResult.Id, CancellationToken.None);
 
 			result.Should().NotBeNull();
 			result.Title.Should().Be(dto.Title);
@@ -55,7 +54,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		var dto = new EventDto(eventId, "8 марта", "Международный женский день", default, default, 100);
+		var dto = new EventDto("8 марта", "Международный женский день", default, default, 100);
 
 		//Act
 		using (var scope = ServiceProvider.CreateScope())
@@ -82,7 +81,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	public async Task Update_ValidData_Success()
 	{
 		//Arrange
-		var dto = new EventDto(EventId1, "8 марта", "Международный женский день",
+		var dto = new EventToUpdateDto(EventId1, "8 марта", "Международный женский день",
 			Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2), 10);
 
 		//Act
@@ -114,7 +113,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	public async Task Update_InvalidData_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(EventId1, "8 марта", "Международный женский день", Now, Now.AddDays(-1), 10);
+		var dto = new EventToUpdateDto(EventId1, "8 марта", "Международный женский день", Now, Now.AddDays(-1), 10);
 
 		//Act
 		using (var scope = ServiceProvider.CreateScope())
@@ -144,7 +143,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	public async Task Update_NonExistentEvent_Failed()
 	{
 		//Arrange
-		var dto = new EventDto(Guid.NewGuid(), "8 марта", "Международный женский день",
+		var dto = new EventToUpdateDto(Guid.NewGuid(), "8 марта", "Международный женский день",
 			Now, Now.AddDays(-1), 100);
 
 		//Act

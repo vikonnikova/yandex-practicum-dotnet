@@ -10,7 +10,7 @@ public interface IEventService
 
 	Task<EventInfoDto> Add(EventDto eventData, CancellationToken cancellationToken);
 
-	Task Update(EventDto eventData, CancellationToken cancellationToken);
+	Task Update(EventToUpdateDto eventData, CancellationToken cancellationToken);
 
 	Task Remove(Guid eventId, CancellationToken cancellationToken);
 }

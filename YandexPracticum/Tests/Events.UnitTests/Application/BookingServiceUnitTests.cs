@@ -17,7 +17,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 	public async Task Add_ValidData_Success()
 	{
 		//Arrange
-		var dto = new BookingToAddDto(BookingId, EventId1);
+		var dto = new BookingToAddDto(EventId1);
 		BookingDto returnedResult;
 
 		//Act
@@ -31,7 +31,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			returnedResult.Should().NotBeNull();
-			returnedResult.BookingId.Should().Be(BookingId);
+			returnedResult.BookingId.Should().NotBe(Guid.Empty);
 			returnedResult.EventId.Should().Be(EventId1);
 			returnedResult.Status.Should().Be(BookingStatus.Pending);
 
@@ -39,7 +39,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 			var result = await service.GetById(returnedResult.BookingId, CancellationToken.None);
 
 			result.Should().NotBeNull();
-			result.BookingId.Should().Be(BookingId);
+			result.BookingId.Should().Be(returnedResult.BookingId);
 			result.EventId.Should().Be(EventId1);
 			result.Status.Should().Be(BookingStatus.Pending);
 
@@ -57,7 +57,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 	{
 		//Arrange
 		var eventId = Guid.NewGuid();
-		var dto = new BookingToAddDto(BookingId, eventId);
+		var dto = new BookingToAddDto(eventId);
 
 		//Act
 		using (var scope = ServiceProvider.CreateScope())
@@ -95,7 +95,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-			Func<Task> act = () => service.Add(new BookingToAddDto(BookingId, EventId2), CancellationToken.None);
+			Func<Task> act = () => service.Add(new BookingToAddDto(EventId2), CancellationToken.None);
 			await act.Should().ThrowAsync<EntityNotFoundException>()
 				.WithMessage($"Сущность [Событие] с идентификатором [{EventId2.ToString()}] не найдена.");
 		}
@@ -122,7 +122,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
 			for (var i = 0; i < EventTotalSeats; i++)
 			{
-				await service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
+				await service.Add(new BookingToAddDto(EventId1), CancellationToken.None);
 			}
 		}
 
@@ -130,7 +130,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-			Func<Task> act = () => service.Add(new BookingToAddDto(BookingId, EventId1), CancellationToken.None);
+			Func<Task> act = () => service.Add(new BookingToAddDto(EventId1), CancellationToken.None);
 			await act.Should().ThrowAsync<NoAvailableSeatsException>()
 				.WithMessage("No available seats for this event.");
 		}
@@ -168,7 +168,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 						bookingIdsList.Add(bookingId);
 
 						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-						await service.Add(new BookingToAddDto(bookingId, EventId1), CancellationToken.None);
+						await service.Add(new BookingToAddDto(EventId1), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}
@@ -213,7 +213,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 					using (var scope = ServiceProvider.CreateScope())
 					{
 						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-						await service.Add(new BookingToAddDto(Guid.NewGuid(), EventId1), CancellationToken.None);
+						await service.Add(new BookingToAddDto(EventId1), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}

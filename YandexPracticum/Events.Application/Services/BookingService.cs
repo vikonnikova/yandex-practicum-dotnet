@@ -38,7 +38,7 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 				throw new NoAvailableSeatsException();
 			}
 
-			booking = Booking.Create(bookingData.BookingId, bookingData.EventId, DateTime.UtcNow);
+			booking = Booking.Create(Guid.NewGuid(), bookingData.EventId, DateTime.UtcNow);
 			repository.Add(booking, cancellationToken);
 			
 			await repository.SaveChangesAsync(cancellationToken);

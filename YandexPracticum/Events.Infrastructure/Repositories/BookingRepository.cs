@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Events.Infrastructure;
 
-public class BookingRepository(AppDbContext context) : IBookingRepository
+internal class BookingRepository(AppDbContext context) : IBookingRepository
 {
 	public async Task<Booking?> Find(Guid bookingId, CancellationToken cancellationToken)
 	{
