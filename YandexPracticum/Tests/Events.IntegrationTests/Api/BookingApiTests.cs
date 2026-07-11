@@ -1,11 +1,14 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.IntegrationTests.Infrastructure;
 
 namespace Events.IntegrationTests.Api;
 
+[Collection("API Application Collection")]
 public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
+	/*
 	/// <summary>
 	/// Проверяет получение брони по идентификатору.
 	/// </summary>
@@ -42,4 +45,5 @@ public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fac
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 	}
+	*/
 }

@@ -1,4 +1,4 @@
-﻿namespace Events.IntegrationTests;
+﻿namespace Events.IntegrationTests.Infrastructure;
 
 internal static class TestData
 {

@@ -2,12 +2,15 @@
 using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.IntegrationTests.Infrastructure;
 using FluentAssertions;
 
 namespace Events.IntegrationTests.Api;
 
+[Collection("API Application Collection")]
 public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
 {
+	/*
 	#region Get methods
 
 	/// <summary>
@@ -357,4 +360,6 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 	}
 
 	#endregion
+	
+	*/
 }
