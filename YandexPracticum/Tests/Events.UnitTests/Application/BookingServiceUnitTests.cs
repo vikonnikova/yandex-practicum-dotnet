@@ -152,7 +152,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var service = scope.ServiceProvider.GetRequiredService<IEventService>();
-			(await service.GetById(EventId, CancellationToken.None))!.AvailableSeats.Should().Be(0);
+			(await service.GetById(EventId, CancellationToken.None)).AvailableSeats.Should().Be(0);
 		}
 	}
 
@@ -227,7 +227,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 	/// Проверяет получение несуществующей брони.
 	/// </summary>
 	[Fact]
-	public async Task GetById_WhenNonExistentBooking_ShouldThrowEntityNotFoundException()
+	public async Task GetById_WhenBookingDoesNotExist_ShouldThrowEntityNotFoundException()
 	{
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();

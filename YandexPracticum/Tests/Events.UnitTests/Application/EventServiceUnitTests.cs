@@ -56,9 +56,16 @@ public class EventServiceUnitTests : BaseUnitTest
 
 		//Act
 		Func<Task> act = () => service.Add(dto, CancellationToken.None);
+		await act.Should().ThrowAsync<ArgumentNullException>();
 
 		//Assert
-		await act.Should().ThrowAsync<ArgumentNullException>();
+		EventRepositoryMock.Verify(
+			repo => repo.Add(It.IsAny<Event>()),
+			Times.Never);
+
+		EventRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Never);
 	}
 
 	/// <summary>
@@ -90,7 +97,7 @@ public class EventServiceUnitTests : BaseUnitTest
 	/// Проверяет обновление несуществующего события.
 	/// </summary>
 	[Fact]
-	public async Task Update_WhenNonExistentEvent_ShouldThrowEntityNotFoundException()
+	public async Task Update_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
 	{
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();
@@ -108,6 +115,10 @@ public class EventServiceUnitTests : BaseUnitTest
 		EventRepositoryMock.Verify(
 			repo => repo.Find(It.Is<Guid>(x => x == eventId), It.IsAny<CancellationToken>()),
 			Times.Once);
+
+		EventRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Never);
 	}
 
 	/// <summary>
@@ -124,6 +135,10 @@ public class EventServiceUnitTests : BaseUnitTest
 		await service.Remove(EventId, CancellationToken.None);
 
 		//Assert
+		EventRepositoryMock.Verify(
+			repo => repo.Find(It.Is<Guid>(x => x == EventId), It.IsAny<CancellationToken>()),
+			Times.Once);
+
 		EventRepositoryMock.Verify(
 			repo => repo.Delete(
 				It.Is<Event>(x => x.Title == EventTitle && x.Description == EventDescription)),
@@ -154,6 +169,14 @@ public class EventServiceUnitTests : BaseUnitTest
 		EventRepositoryMock.Verify(
 			repo => repo.Find(It.Is<Guid>(x => x == eventId), It.IsAny<CancellationToken>()),
 			Times.Once);
+
+		EventRepositoryMock.Verify(
+			repo => repo.Delete(It.IsAny<Event>()),
+			Times.Never);
+
+		EventRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Never);
 	}
 
 	/// <summary>
@@ -196,17 +219,20 @@ public class EventServiceUnitTests : BaseUnitTest
 
 		//Act
 		Func<Task> act = () => service.GetById(eventId, CancellationToken.None);
-
-		//Assert
 		await act.Should().ThrowAsync<EntityNotFoundException>()
 			.WithMessage($"Сущность [Событие] с идентификатором [{eventId.ToString()}] не найдена.");
+
+		//Assert
+		EventRepositoryMock.Verify(
+			repo => repo.Find(It.Is<Guid>(x => x == eventId), It.IsAny<CancellationToken>()),
+			Times.Once);
 	}
 
 	/// <summary>
-	/// Проверяет, что сервис правильно маппит и возвращает результат, полученный из репозитория.
+	/// Проверяет получение событий с пагинацией и фильтрацией.
 	/// </summary>
 	[Fact]
-	public async Task GetBy_WhenFiltersAndPagination_ShouldWorkCorrectly()
+	public async Task GetBy_WhenFiltersAndPaginationProvided_ShouldWorkCorrectly()
 	{
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();
