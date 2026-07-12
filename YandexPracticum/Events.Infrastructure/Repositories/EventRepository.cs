@@ -15,7 +15,7 @@ internal class EventRepository(AppDbContext context) : IEventRepository
 
 		if (filters.Title != null)
 		{
-			query = query.Where(x => x.Title.Contains(filters.Title));
+			query = query.Where(x => EF.Functions.Like(x.Title, $"%{filters.Title}%"));
 		}
 
 		if (filters.From.HasValue)
@@ -29,7 +29,8 @@ internal class EventRepository(AppDbContext context) : IEventRepository
 		}
 
 		var totalItems = await query.CountAsync(cancellationToken);
-		var result = query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x).ToArray();
+		var result = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x)
+			.ToArrayAsync(cancellationToken);
 
 		return new FilteredResult<Event>(totalItems, result);
 	}

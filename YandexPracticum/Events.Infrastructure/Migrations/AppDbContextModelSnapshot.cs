@@ -77,7 +77,7 @@ namespace Events.Infrastructure.Migrations
                     b.HasOne("Events.Domain.Event", "Event")
                         .WithMany("Bookings")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Event");

@@ -23,4 +23,23 @@ public class DbFixture : IAsyncLifetime
 	{
 		await _postgres.DisposeAsync();
 	}
+
+	public AppDbContext CreateContext()
+	{
+		var options = new DbContextOptionsBuilder<AppDbContext>()
+			.UseNpgsql(ConnectionString)
+			.Options;
+
+		return new AppDbContext(options);
+	}
+
+	public async Task ClearTablesAsync()
+	{
+		var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(ConnectionString);
+		await using var context = new AppDbContext(optionsBuilder.Options);
+
+		var sql = "TRUNCATE TABLE \"bookings\", \"events\" RESTART IDENTITY CASCADE;";
+
+		await context.Database.ExecuteSqlRawAsync(sql);
+	}
 }

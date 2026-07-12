@@ -45,8 +45,7 @@ namespace Events.Infrastructure.Migrations
                         name: "FK_bookings_events_EventId",
                         column: x => x.EventId,
                         principalTable: "events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(

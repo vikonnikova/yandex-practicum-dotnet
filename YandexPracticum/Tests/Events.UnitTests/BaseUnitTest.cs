@@ -11,11 +11,11 @@ namespace Events.UnitTests;
 public abstract class BaseUnitTest : IDisposable
 {
 	protected readonly DateTime Now = DateTime.UtcNow;
-	protected static readonly Guid EventId1 = Guid.NewGuid();
-	protected static readonly Guid EventId2 = Guid.NewGuid();
-	protected static readonly Guid EventId3 = Guid.NewGuid();
-	protected static readonly Guid BookingId = Guid.NewGuid();
-	protected static readonly Guid EventId2BookingId = Guid.NewGuid();
+	protected readonly Guid EventId1 = Guid.NewGuid();
+	protected readonly Guid EventId2 = Guid.NewGuid();
+	protected readonly Guid EventId3 = Guid.NewGuid();
+	protected readonly Guid BookingId = Guid.NewGuid();
+	protected readonly Guid EventId2BookingId = Guid.NewGuid();
 	protected const int EventTotalSeats = 10;
 
 	protected readonly IServiceProvider ServiceProvider;

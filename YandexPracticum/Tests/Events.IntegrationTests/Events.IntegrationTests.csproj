@@ -27,8 +27,4 @@
       <ProjectReference Include="..\..\Events.Api\Events.Api.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Repositories\Base\" />
-    </ItemGroup>
-
 </Project>
