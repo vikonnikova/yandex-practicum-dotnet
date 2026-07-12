@@ -1,7 +1,7 @@
 ﻿using Events.Application;
 using Events.Domain;
 using Events.Infrastructure;
-using Events.IntegrationTests.Infrastructure;
+using Events.IntegrationTests.Api.Base;
 using Events.IntegrationTests.Repositories.Base;
 using FluentAssertions;
 

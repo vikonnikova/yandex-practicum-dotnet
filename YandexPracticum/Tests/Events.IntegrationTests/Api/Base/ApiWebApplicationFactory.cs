@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Events.IntegrationTests.Infrastructure;
+namespace Events.IntegrationTests.Api.Base;
 
+//TODO разобраться с применением ApiWebApplicationFactory и DbFixture одновременно
 public class ApiWebApplicationFactory : WebApplicationFactory<Program>
 {
 	private readonly DbFixture _dbFixture = new();

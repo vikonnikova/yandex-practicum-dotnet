@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
 
-namespace Events.IntegrationTests.Infrastructure;
+namespace Events.IntegrationTests;
 
 public class DbFixture : IAsyncLifetime
 {

@@ -1,5 +1,5 @@
 ﻿using Events.Domain;
-using Events.IntegrationTests.Infrastructure;
+using Events.IntegrationTests.Api.Base;
 
 namespace Events.IntegrationTests.Repositories.Base;
 
