@@ -81,7 +81,7 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 	public async Task Create_ValidData_201Returned()
 	{
 		//Act
-		var response = await Client.PostAsJsonAsync("/events", TestData.CreateTestEvent());
+		var response = await Client.PostAsJsonAsync("/events", CreateTestEvent());
 
 		//Assert
 		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
@@ -109,7 +109,7 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 	public async Task Create_InvalidData_400Returned()
 	{
 		//Act
-		var response = await Client.PostAsJsonAsync("/events", TestData.CreateInvalidTestEvent());
+		var response = await Client.PostAsJsonAsync("/events", CreateInvalidTestEvent());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -129,7 +129,7 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{eventId}", TestData.CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}", CreateTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -152,7 +152,7 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{eventId}", TestData.CreateInvalidTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}", CreateInvalidTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -168,7 +168,7 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 		await CreateEvent();
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{Guid.NewGuid()}", TestData.CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{Guid.NewGuid()}", CreateTestEventToUpdate());
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -360,6 +360,5 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 	}
 
 	#endregion
-	
 	*/
 }
