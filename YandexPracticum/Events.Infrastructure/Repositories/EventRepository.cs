@@ -15,7 +15,7 @@ internal class EventRepository(AppDbContext context) : IEventRepository
 
 		if (filters.Title != null)
 		{
-			query = query.Where(x => EF.Functions.Like(x.Title, $"%{filters.Title}%"));
+			query = query.Where(x => EF.Functions.ILike(x.Title, $"%{filters.Title}%"));
 		}
 
 		if (filters.From.HasValue)
@@ -40,12 +40,12 @@ internal class EventRepository(AppDbContext context) : IEventRepository
 		return await context.Events.FindAsync([eventId], cancellationToken);
 	}
 
-	public void Add(Event @event, CancellationToken cancellationToken)
+	public void Add(Event @event)
 	{
 		context.Events.Add(@event);
 	}
 
-	public void Delete(Event @event, CancellationToken cancellationToken)
+	public void Delete(Event @event)
 	{
 		context.Events.Remove(@event);
 	}

@@ -14,7 +14,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	/// Проверяет поиск события по идентификатору.
 	/// </summary>
 	[Fact]
-	public async Task Find_WithValidData_ShouldReturnEvent()
+	public async Task Find_WhenValidData_ShouldReturnEvent()
 	{
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
@@ -60,13 +60,13 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	/// Проверяет сохранение события.
 	/// </summary>
 	[Fact]
-	public async Task Add_And_SaveChangesAsync_WithValidData_ShouldSaveCorrectly()
+	public async Task Add_And_SaveChangesAsync_WhenValidData_ShouldSaveCorrectly()
 	{
 		// Act
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new EventRepository(context);
-			repository.Add(CreateEvent(), CancellationToken.None);
+			repository.Add(CreateEvent());
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
@@ -90,7 +90,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	/// Проверяет удаление события.
 	/// </summary>
 	[Fact]
-	public async Task Delete_And_SaveChangesAsync_WithValidData_ShouldDeleteCorrectly()
+	public async Task Delete_And_SaveChangesAsync_WhenValidData_ShouldDeleteCorrectly()
 	{
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
@@ -104,7 +104,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		{
 			var repository = new EventRepository(context);
 			var eventToDelete = await repository.Find(EventId, CancellationToken.None);
-			repository.Delete(eventToDelete!, CancellationToken.None);
+			repository.Delete(eventToDelete!);
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
@@ -135,7 +135,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 			// Act
 			var repository = new EventRepository(context);
 			var eventToDelete = await repository.Find(EventId, CancellationToken.None);
-			repository.Delete(eventToDelete!, CancellationToken.None);
+			repository.Delete(eventToDelete!);
 
 			//Assert
 			Func<Task> act = async () => await repository.SaveChangesAsync(CancellationToken.None);
@@ -226,12 +226,12 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Act
 		await using var context = DbFixture.CreateContext();
 		var result = await new EventRepository(context).GetFiltered(page: 1, pageSize: 10,
-			new Filters(From: Now.AddDays(daysToAdd)), CancellationToken.None);
+			new Filters(From: Date.AddDays(daysToAdd)), CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Data.Should().OnlyContain(item => item.Period.StartAt >= Now.AddDays(daysToAdd));
+		result.Data.Should().OnlyContain(item => item.Period.StartAt >= Date.AddDays(daysToAdd));
 	}
 
 	/// <summary>
@@ -248,12 +248,12 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Act
 		await using var context = DbFixture.CreateContext();
 		var result = await new EventRepository(context).GetFiltered(page: 1, pageSize: 10,
-			new Filters(To: Now.AddMonths(monthToAdd)), CancellationToken.None);
+			new Filters(To: Date.AddMonths(monthToAdd)), CancellationToken.None);
 
 		// Assert
 		result.Should().NotBeNull();
 		result.TotalItems.Should().Be(totalItems);
-		result.Data.Should().OnlyContain(item => item.Period.EndAt <= Now.AddMonths(monthToAdd));
+		result.Data.Should().OnlyContain(item => item.Period.EndAt <= Date.AddMonths(monthToAdd));
 	}
 
 	/// <summary>
@@ -271,7 +271,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Act
 		await using var context = DbFixture.CreateContext();
 		var result = await new EventRepository(context).GetFiltered(page: 1, pageSize: 10,
-			new Filters(Title: "День", Now.AddDays(-1), Now.AddDays(endAtAddDays)), CancellationToken.None);
+			new Filters(Title: "День", Date.AddDays(-1), Date.AddDays(endAtAddDays)), CancellationToken.None);
 
 		// Assert
 		result.Data.Should().HaveCount(filteredItems);

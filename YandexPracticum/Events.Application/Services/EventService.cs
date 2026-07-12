@@ -29,7 +29,7 @@ public class EventService(IEventRepository repository) : IEventService
 		var @event = Event.Create(Guid.NewGuid(), eventData.Title, eventData.Description,
 			EventPeriod.Create(eventData.StartAt, eventData.EndAt), eventData.TotalSeats);
 
-		repository.Add(@event, cancellationToken);
+		repository.Add(@event);
 
 		await repository.SaveChangesAsync(cancellationToken);
 
@@ -60,7 +60,7 @@ public class EventService(IEventRepository repository) : IEventService
 			throw new EntityNotFoundException("Событие", eventId);
 		}
 
-		repository.Delete(eventToDelete, cancellationToken);
+		repository.Delete(eventToDelete);
 
 		await repository.SaveChangesAsync(cancellationToken);
 	}

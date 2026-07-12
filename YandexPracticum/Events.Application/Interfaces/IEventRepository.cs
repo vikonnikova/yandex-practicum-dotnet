@@ -9,9 +9,9 @@ public interface IEventRepository
 
 	Task<Event?> Find(Guid eventId, CancellationToken cancellationToken);
 
-	void Add(Event @event, CancellationToken cancellationToken);
+	void Add(Event @event);
 
-	void Delete(Event @event, CancellationToken cancellationToken);
+	void Delete(Event @event);
 
 	Task<bool> Exists(Guid eventId, CancellationToken cancellationToken);
 

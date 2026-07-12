@@ -1,64 +1,72 @@
-﻿using Events.Application.Interfaces;
+﻿using Events.Application;
+using Events.Application.Interfaces;
 using Events.Application.Services;
 using Events.Domain;
-using Events.Infrastructure;
-using Events.Infrastructure.DataAccess;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 
 namespace Events.UnitTests;
 
 public abstract class BaseUnitTest : IDisposable
 {
-	protected readonly DateTime Now = DateTime.UtcNow;
-	protected readonly Guid EventId1 = Guid.NewGuid();
-	protected readonly Guid EventId2 = Guid.NewGuid();
-	protected readonly Guid EventId3 = Guid.NewGuid();
+	protected readonly Guid EventId = Guid.NewGuid();
 	protected readonly Guid BookingId = Guid.NewGuid();
-	protected readonly Guid EventId2BookingId = Guid.NewGuid();
-	protected const int EventTotalSeats = 10;
+	protected const string EventTitle = "Новый год";
+	protected const string EventDescription = "Дед Мороз и снегурочка";
+	protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
+	protected readonly DateTime EventEndAt = new(2022, 01, 10, 23, 59, 59, DateTimeKind.Utc);
+	protected const int EventTotalSeats = 7;
+	protected const int Page = 3;
+	protected const int PageSize = 15;
+
+	protected readonly Mock<IEventRepository> EventRepositoryMock = new();
+	protected readonly Mock<IBookingRepository> BookingRepositoryMock = new();
 
 	protected readonly IServiceProvider ServiceProvider;
 
 	protected BaseUnitTest()
 	{
-		var dbName = Guid.NewGuid().ToString();
-
 		var services = new ServiceCollection();
-		services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(dbName));
-		services.AddScoped<IEventRepository, EventRepository>();
-		services.AddScoped<IBookingRepository, BookingRepository>();
+		ConfigureRepositories(services);
 		services.AddScoped<IEventService, EventService>();
 		services.AddScoped<IBookingService, BookingService>();
 		ServiceProvider = services.BuildServiceProvider();
-
-		SeedDatabase();
 	}
 
-	private void SeedDatabase()
+	private void ConfigureRepositories(IServiceCollection services)
 	{
-		using var scope = ServiceProvider.CreateScope();
-		var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+		var @event = Event.Create(EventId, EventTitle, EventDescription,
+			EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
+		var booking = Booking.Create(BookingId, EventId, DateTime.UtcNow);
 
-		context.Events.AddRange(
-			Event.Create(EventId1, "День рождения", "Дед Мороз и снегурочка",
-				EventPeriod.Create(Now, Now.AddDays(7)), EventTotalSeats),
-			Event.Create(EventId2, "Пасха", "Красим яйца, печем куличи",
-				EventPeriod.Create(Now.AddHours(-12), Now.AddHours(-10)), 20),
-			Event.Create(EventId3, "Рождество", "описание рождества, подарки, игрушки",
-				EventPeriod.Create(Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2)), 100),
-			Event.Create(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-				EventPeriod.Create(Now.AddDays(-7), Now.AddDays(-6)), 5),
-			Event.Create(Guid.NewGuid(), "День победы", "Парад и салют",
-				EventPeriod.Create(Now, Now.AddHours(14)), 7)
-		);
+		EventRepositoryMock
+			.Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),
+				It.IsAny<CancellationToken>()))
+			.ReturnsAsync(new FilteredResult<Event>(TotalItems: 100, Data: [@event]));
 
-		context.Bookings.AddRange(
-			Booking.Create(EventId2BookingId, EventId2, DateTime.UtcNow),
-			Booking.Create(Guid.NewGuid(), EventId3, DateTime.UtcNow)
-		);
+		EventRepositoryMock.Setup(repo => repo.Find(EventId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(@event);
 
-		context.SaveChanges();
+		EventRepositoryMock.Setup(repo => repo.Add(@event));
+
+		EventRepositoryMock.Setup(repo => repo.Delete(@event));
+
+		EventRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+			.Returns(Task.CompletedTask);
+
+		BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(booking);
+
+		BookingRepositoryMock.Setup(repo => repo.GetPending(It.IsAny<CancellationToken>()))
+			.ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
+
+		BookingRepositoryMock.Setup(repo => repo.Add(booking));
+
+		BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+			.Returns(Task.CompletedTask);
+
+		services.AddSingleton(EventRepositoryMock.Object);
+		services.AddSingleton(BookingRepositoryMock.Object);
 	}
 
 	public void Dispose()

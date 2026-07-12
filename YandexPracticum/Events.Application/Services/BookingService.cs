@@ -39,7 +39,7 @@ public class BookingService(IBookingRepository repository, IEventRepository even
 			}
 
 			booking = Booking.Create(Guid.NewGuid(), bookingData.EventId, DateTime.UtcNow);
-			repository.Add(booking, cancellationToken);
+			repository.Add(booking);
 			
 			await repository.SaveChangesAsync(cancellationToken);
 		}

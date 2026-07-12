@@ -6,7 +6,7 @@ namespace Events.IntegrationTests.Repositories.Base;
 public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 {
 	protected readonly DbFixture DbFixture = dbFixture;
-	protected readonly DateTime Now = DateTime.UtcNow;
+	protected readonly DateTime Date = new(2022, 05, 04, 12, 00, 00, DateTimeKind.Utc);
 	protected readonly Guid EventId = Guid.NewGuid();
 	protected readonly Guid BookingId = Guid.NewGuid();
 
@@ -19,19 +19,18 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 	protected async Task SeedData()
 	{
 		await using var context = DbFixture.CreateContext();
-
-
+		
 		context.Events.AddRange(
 			Event.Create(Guid.NewGuid(), "День рождения", "Дед Мороз и снегурочка",
-				EventPeriod.Create(Now, Now.AddDays(7)), 17),
+				EventPeriod.Create(Date, Date.AddDays(7)), 17),
 			Event.Create(Guid.NewGuid(), "Пасха", "Красим яйца, печем куличи",
-				EventPeriod.Create(Now.AddHours(-12), Now.AddHours(-10)), 20),
+				EventPeriod.Create(Date.AddHours(-12), Date.AddHours(-10)), 20),
 			Event.Create(Guid.NewGuid(), "Рождество", "описание рождества, подарки, игрушки",
-				EventPeriod.Create(Now.AddMonths(-5), Now.AddMonths(-5).AddDays(2)), 100),
+				EventPeriod.Create(Date.AddMonths(-5), Date.AddMonths(-5).AddDays(2)), 100),
 			Event.Create(Guid.NewGuid(), "23 февраля", "День защитника отечества",
-				EventPeriod.Create(Now.AddDays(-7), Now.AddDays(-6)), 5),
+				EventPeriod.Create(Date.AddDays(-7), Date.AddDays(-6)), 5),
 			Event.Create(Guid.NewGuid(), "День победы", "Парад и салют",
-				EventPeriod.Create(Now, Now.AddHours(14)), 7)
+				EventPeriod.Create(Date, Date.AddHours(14)), 7)
 		);
 
 		await context.SaveChangesAsync();

@@ -13,7 +13,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	/// Проверяет поиск брони по идентификатору.
 	/// </summary>
 	[Fact]
-	public async Task Find_WithValidData_ShouldReturnBooking()
+	public async Task Find_WhenValidData_ShouldReturnBooking()
 	{
 		// Arrange
 		var booking = Booking.Create(BookingId, EventId, DateTime.UtcNow);
@@ -91,7 +91,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	/// Проверяет сохранение брони.
 	/// </summary>
 	[Fact]
-	public async Task Add_And_SaveChangesAsync_WithValidData_ShouldSaveCorrectly()
+	public async Task Add_And_SaveChangesAsync_WhenValidData_ShouldSaveCorrectly()
 	{
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -101,7 +101,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 
 			// Act
 			var repository = new BookingRepository(context);
-			repository.Add(Booking.Create(BookingId, EventId, DateTime.UtcNow), CancellationToken.None);
+			repository.Add(Booking.Create(BookingId, EventId, DateTime.UtcNow));
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
