@@ -58,7 +58,7 @@ dotnet ef migrations add <Имя_Миграции> --project Events.Infrastructu
 
 ```bash
 # применение миграций (обновление базы данных):
-dotnet ef migrations update --project Events.Infrastructure --startup-project Events.Api
+dotnet ef database update --project Events.Infrastructure --startup-project Events.Api
 ```
 
 ### Технологии

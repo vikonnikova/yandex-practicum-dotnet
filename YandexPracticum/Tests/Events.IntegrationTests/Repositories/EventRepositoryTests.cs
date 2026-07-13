@@ -57,10 +57,10 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	}
 
 	/// <summary>
-	/// Проверяет сохранение события.
+	/// Проверяет сохранение события (через цепочку Add + SaveChangesAsync).
 	/// </summary>
 	[Fact]
-	public async Task Add_And_SaveChangesAsync_WhenValidData_ShouldSaveCorrectly()
+	public async Task Add_WhenValidData_ShouldSaveCorrectly()
 	{
 		// Act
 		await using (var context = DbFixture.CreateContext())
@@ -81,6 +81,45 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 			result.Description.Should().Be(TestData.Description);
 			result.Period.StartAt.Should().Be(TestData.StartAt);
 			result.Period.EndAt.Should().Be(TestData.EndAt);
+			result.TotalSeats.Should().Be(TestData.TotalSeats);
+			result.AvailableSeats.Should().Be(TestData.TotalSeats);
+		}
+	}
+
+	/// <summary>
+	/// Проверяет обновление события (через цепочку Find + Update + SaveChangesAsync).
+	/// </summary>
+	[Fact]
+	public async Task Update_WhenValidData_ShouldUpdateCorrectly()
+	{
+		// Arrange
+		await using (var context = DbFixture.CreateContext())
+		{
+			context.Events.Add(CreateEvent());
+			await context.SaveChangesAsync();
+		}
+
+		// Act
+		await using (var context = DbFixture.CreateContext())
+		{
+			var repository = new EventRepository(context);
+			var @event = (await repository.Find(EventId, CancellationToken.None))!;
+			@event.Update(TestData.UpdatedTitle, TestData.UpdatedDescription,
+				EventPeriod.Create(TestData.UpdatedStartAt, TestData.UpdatedEndAt));
+			await repository.SaveChangesAsync(CancellationToken.None);
+		}
+
+		// Assert
+		await using (var context = DbFixture.CreateContext())
+		{
+			var result = await context.Events.FindAsync(EventId);
+
+			result.Should().NotBeNull();
+			result.Id.Should().Be(EventId);
+			result.Title.Should().Be(TestData.UpdatedTitle);
+			result.Description.Should().Be(TestData.UpdatedDescription);
+			result.Period.StartAt.Should().Be(TestData.UpdatedStartAt);
+			result.Period.EndAt.Should().Be(TestData.UpdatedEndAt);
 			result.TotalSeats.Should().Be(TestData.TotalSeats);
 			result.AvailableSeats.Should().Be(TestData.TotalSeats);
 		}

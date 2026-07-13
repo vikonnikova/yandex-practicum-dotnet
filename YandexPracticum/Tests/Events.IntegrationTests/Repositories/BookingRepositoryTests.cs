@@ -15,7 +15,8 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	public async Task Find_WhenValidData_ShouldReturnBooking()
 	{
 		// Arrange
-		var booking = Booking.Create(BookingId, EventId, DateTime.UtcNow);
+		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
+		var booking = Booking.Create(BookingId, EventId, createdAt);
 
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -33,6 +34,8 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 			result.Should().NotBeNull();
 			result.Id.Should().Be(BookingId);
 			result.EventId.Should().Be(EventId);
+			result.CreatedAt.Should().Be(createdAt);
+			result.Status.Should().Be(BookingStatus.Pending);
 		}
 	}
 
@@ -87,20 +90,24 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	}
 
 	/// <summary>
-	/// Проверяет сохранение брони.
+	/// Проверяет сохранение брони (через цепочку Add + SaveChangesAsync).
 	/// </summary>
 	[Fact]
-	public async Task Add_And_SaveChangesAsync_WhenValidData_ShouldSaveCorrectly()
+	public async Task Add_WhenValidData_ShouldSaveCorrectly()
 	{
+		// Arrange
+		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
 		await using (var context = DbFixture.CreateContext())
 		{
-			// Arrange
 			context.Events.Add(CreateEvent());
 			await context.SaveChangesAsync();
+		}
 
-			// Act
+		// Act
+		await using (var context = DbFixture.CreateContext())
+		{
 			var repository = new BookingRepository(context);
-			repository.Add(Booking.Create(BookingId, EventId, DateTime.UtcNow));
+			repository.Add(Booking.Create(BookingId, EventId, createdAt));
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
@@ -112,6 +119,87 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 			result.Should().NotBeNull();
 			result.Id.Should().Be(BookingId);
 			result.EventId.Should().Be(EventId);
+			result.CreatedAt.Should().Be(createdAt);
+			result.Status.Should().Be(BookingStatus.Pending);
+			result.ProcessedAt.Should().BeNull();
+		}
+	}
+	
+	/// <summary>
+	/// Проверяет подтверждение заявки на бронь (через цепочку Find + Confirm + SaveChangesAsync).
+	/// </summary>
+	[Fact]
+	public async Task Confirm_WhenValidData_ShouldSaveCorrectly()
+	{
+		// Arrange
+		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
+		var processedAt = new DateTime(2022, 04, 05, 15, 37, 00, DateTimeKind.Utc);
+		await using (var context = DbFixture.CreateContext())
+		{
+			context.Events.Add(CreateEvent());
+			context.Bookings.Add(Booking.Create(BookingId, EventId, createdAt));
+			await context.SaveChangesAsync();
+		}
+
+		// Act
+		await using (var context = DbFixture.CreateContext())
+		{
+			var repository = new BookingRepository(context);
+			var booking = (await repository.Find(BookingId, CancellationToken.None))!;
+			booking.Confirm(processedAt);
+			await repository.SaveChangesAsync(CancellationToken.None);
+		}
+
+		// Assert
+		await using (var context = DbFixture.CreateContext())
+		{
+			var result = await context.Bookings.FindAsync(BookingId);
+
+			result.Should().NotBeNull();
+			result.Id.Should().Be(BookingId);
+			result.EventId.Should().Be(EventId);
+			result.CreatedAt.Should().Be(createdAt);
+			result.Status.Should().Be(BookingStatus.Confirmed);
+			result.ProcessedAt.Should().Be(processedAt);
+		}
+	}
+	
+	/// <summary>
+	/// Проверяет отклонение заявки на бронь (через цепочку Find + Reject + SaveChangesAsync).
+	/// </summary>
+	[Fact]
+	public async Task Reject_WhenValidData_ShouldSaveCorrectly()
+	{
+		// Arrange
+		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
+		var processedAt = new DateTime(2022, 04, 05, 15, 37, 00, DateTimeKind.Utc);
+		await using (var context = DbFixture.CreateContext())
+		{
+			context.Events.Add(CreateEvent());
+			context.Bookings.Add(Booking.Create(BookingId, EventId, createdAt));
+			await context.SaveChangesAsync();
+		}
+
+		// Act
+		await using (var context = DbFixture.CreateContext())
+		{
+			var repository = new BookingRepository(context);
+			var booking = (await repository.Find(BookingId, CancellationToken.None))!;
+			booking.Reject(processedAt);
+			await repository.SaveChangesAsync(CancellationToken.None);
+		}
+
+		// Assert
+		await using (var context = DbFixture.CreateContext())
+		{
+			var result = await context.Bookings.FindAsync(BookingId);
+
+			result.Should().NotBeNull();
+			result.Id.Should().Be(BookingId);
+			result.EventId.Should().Be(EventId);
+			result.CreatedAt.Should().Be(createdAt);
+			result.Status.Should().Be(BookingStatus.Rejected);
+			result.ProcessedAt.Should().Be(processedAt);
 		}
 	}
 }
