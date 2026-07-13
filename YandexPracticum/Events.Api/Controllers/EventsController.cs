@@ -1,6 +1,7 @@
 using Events.Api.Contracts;
 using Events.Api.Mappings;
-using Events.Application.UseCases;
+using Events.Application;
+using Events.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -23,8 +24,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	public async Task<ActionResult<PaginatedResult<EventResponse>>> GetAll([FromQuery] GetEventsQuery query,
 		CancellationToken cancellationToken)
 	{
-		var result = await eventService.GetBy(new Filters(query.Title, query.From, query.To),
-			query.Page, query.PageSize, cancellationToken);
+		var result = await eventService.GetBy(query.Page, query.PageSize,
+			new Filters(query.Title, query.From, query.To), cancellationToken);
+		
 		return Ok(result.ToPaginatedResponse());
 	}
 
@@ -52,8 +54,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	public async Task<ActionResult<EventResponse>> Create([FromBody] EventRequest eventRequest,
 		CancellationToken cancellationToken)
 	{
-		var eventId = Guid.NewGuid();
-		var result = await eventService.Add(eventRequest.ToDto(eventId), cancellationToken);
+		var result = await eventService.Add(eventRequest.ToDto(), cancellationToken);
 
 		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 	}
@@ -100,10 +101,9 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		var bookingId = Guid.NewGuid();
-		var result = await bookingService.Add(BookingMapping.ToDto(bookingId, id), cancellationToken);
+		var result = await bookingService.Add(BookingMapping.ToDto(id), cancellationToken);
 
-		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = bookingId });
+		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
 		Response.Headers.Location = statusUrl;
 
 		return Accepted(result);

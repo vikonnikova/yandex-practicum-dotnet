@@ -21,7 +21,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-app.Services.DatabaseInit();
+app.Services.InitDatabase();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

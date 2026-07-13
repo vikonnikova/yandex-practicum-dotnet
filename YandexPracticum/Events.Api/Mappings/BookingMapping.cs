@@ -1,13 +1,13 @@
 ﻿using Events.Api.Contracts;
-using Events.Application.UseCases.Dto;
+using Events.Application.Services.Dto;
 
 namespace Events.Api.Mappings;
 
 internal static class BookingMapping
 {
-	internal static BookingToAddDto ToDto(Guid bookingId, Guid eventId)
+	internal static BookingToAddDto ToDto(Guid eventId)
 	{
-		return new BookingToAddDto(bookingId, eventId);
+		return new BookingToAddDto(eventId);
 	}
 
 	internal static BookingResponse ToResponse(this BookingDto dto)

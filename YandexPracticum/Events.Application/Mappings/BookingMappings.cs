@@ -1,4 +1,4 @@
-﻿using Events.Application.UseCases.Dto;
+﻿using Events.Application.Services.Dto;
 using Events.Domain;
 
 namespace Events.Application.Mappings;

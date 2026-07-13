@@ -1,6 +1,6 @@
 ﻿using Events.Api.Contracts;
 using Events.Api.Mappings;
-using Events.Application.UseCases;
+using Events.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;

@@ -1,4 +1,4 @@
-﻿using Events.Application.UseCases;
+﻿using Events.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.Application;

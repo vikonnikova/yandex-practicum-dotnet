@@ -1,15 +1,38 @@
-﻿using Events.Application.Interfaces;
+﻿using Events.Application;
+using Events.Application.Interfaces;
 using Events.Domain;
 using Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
 
 namespace Events.Infrastructure;
 
-public class EventRepository(AppDbContext context) : IEventRepository
+internal class EventRepository(AppDbContext context) : IEventRepository
 {
-	public async Task<IReadOnlyCollection<Event>> GetAll(CancellationToken cancellationToken)
+	public async Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters filters,
+		CancellationToken cancellationToken)
 	{
-		return await context.Events.ToListAsync(cancellationToken);
+		var query = context.Events.AsQueryable();
+
+		if (filters.Title != null)
+		{
+			query = query.Where(x => EF.Functions.ILike(x.Title, $"%{filters.Title}%"));
+		}
+
+		if (filters.From.HasValue)
+		{
+			query = query.Where(x => x.Period.StartAt >= filters.From);
+		}
+
+		if (filters.To.HasValue)
+		{
+			query = query.Where(x => x.Period.EndAt <= filters.To);
+		}
+
+		var totalItems = await query.CountAsync(cancellationToken);
+		var result = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x)
+			.ToArrayAsync(cancellationToken);
+
+		return new FilteredResult<Event>(totalItems, result);
 	}
 
 	public async Task<Event?> Find(Guid eventId, CancellationToken cancellationToken)
@@ -17,12 +40,12 @@ public class EventRepository(AppDbContext context) : IEventRepository
 		return await context.Events.FindAsync([eventId], cancellationToken);
 	}
 
-	public void Add(Event @event, CancellationToken cancellationToken)
+	public void Add(Event @event)
 	{
 		context.Events.Add(@event);
 	}
 
-	public void Delete(Event @event, CancellationToken cancellationToken)
+	public void Delete(Event @event)
 	{
 		context.Events.Remove(@event);
 	}
