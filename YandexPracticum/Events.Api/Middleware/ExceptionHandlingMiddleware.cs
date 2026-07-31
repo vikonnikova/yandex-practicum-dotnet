@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Events.Application.Exceptions;
+using Events.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Middleware;
