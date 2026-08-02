@@ -7,30 +7,32 @@ namespace Events.IntegrationTests.Api.Base;
 public class ApiFixture : IAsyncLifetime
 {
 	private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:16-alpine").Build();
+	private ApiWebApplicationFactory Factory { get; set; } = null!;
+	private string ConnectionString => _postgres.GetConnectionString();
 
-	public string ConnectionString => _postgres.GetConnectionString();
+	public HttpClient Client { get; private set; } = null!;
 
 	public async Task InitializeAsync()
 	{
 		await _postgres.StartAsync();
 
-		var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(ConnectionString);
-		await using var context = new AppDbContext(optionsBuilder.Options);
-		await context.Database.MigrateAsync();
+		Factory = new ApiWebApplicationFactory(ConnectionString);
+		Client = Factory.CreateClient();
 	}
 
 	public async Task DisposeAsync()
 	{
-		await _postgres.DisposeAsync();
-	}
-
-	public AppDbContext CreateContext()
-	{
-		var options = new DbContextOptionsBuilder<AppDbContext>()
-			.UseNpgsql(ConnectionString)
-			.Options;
-
-		return new AppDbContext(options);
+		Client?.Dispose();
+		
+		if (Factory != null)
+		{
+			await Factory.DisposeAsync();
+		}
+    
+		if (_postgres != null)
+		{
+			await _postgres.DisposeAsync(); 
+		}
 	}
 
 	public async Task ClearTablesAsync()

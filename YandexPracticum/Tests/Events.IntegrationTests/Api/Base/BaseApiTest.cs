@@ -4,17 +4,9 @@ using Events.Api.Contracts;
 namespace Events.IntegrationTests.Api.Base;
 
 [Collection("Api Collection")]
-public abstract class BaseApiTest : IAsyncLifetime
+public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 {
-	private ApiFixture _fixture;
-	protected readonly HttpClient Client;
-
-	protected BaseApiTest(ApiFixture fixture)
-	{
-		_fixture = fixture;
-		var factory = new ApiWebApplicationFactory(fixture.ConnectionString);
-		Client = factory.CreateClient();
-	}
+	protected readonly HttpClient Client = fixture.Client;
 
 	protected static object CreateTestEvent()
 	{
@@ -115,13 +107,13 @@ public abstract class BaseApiTest : IAsyncLifetime
 		await Task.WhenAll(tasks);
 	}
 
-	public Task InitializeAsync()
+	public async Task InitializeAsync()
 	{
-		return Task.CompletedTask;
+		await fixture.ClearTablesAsync();
 	}
 
-	public async Task DisposeAsync()
+	public Task DisposeAsync()
 	{
-		await _fixture.ClearTablesAsync();
+		return Task.CompletedTask;
 	}
 }
