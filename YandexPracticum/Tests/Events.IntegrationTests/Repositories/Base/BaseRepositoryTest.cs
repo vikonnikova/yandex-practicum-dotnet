@@ -18,7 +18,7 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 	protected async Task SeedData()
 	{
 		await using var context = DbFixture.CreateContext();
-		
+
 		context.Events.AddRange(
 			Event.Create(Guid.NewGuid(), "День рождения", "Дед Мороз и снегурочка",
 				EventPeriod.Create(Date, Date.AddDays(7)), 17),
@@ -35,13 +35,13 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 		await context.SaveChangesAsync();
 	}
 
-	public Task InitializeAsync()
-	{
-		return Task.CompletedTask;
-	}
-
-	public async Task DisposeAsync()
+	public async Task InitializeAsync()
 	{
 		await DbFixture.ClearTablesAsync();
+	}
+
+	public Task DisposeAsync()
+	{
+		return Task.CompletedTask;
 	}
 }
