@@ -7,10 +7,8 @@ using FluentAssertions;
 
 namespace Events.IntegrationTests.Api;
 
-[Collection("API Application Collection")]
-public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
+public class EventsApiTests : BaseApiTest
 {
-	/*
 	#region Get methods
 
 	/// <summary>
@@ -360,5 +358,4 @@ public class EventsApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fact
 	}
 
 	#endregion
-	*/
 }

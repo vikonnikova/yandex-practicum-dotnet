@@ -1,11 +1,29 @@
 ﻿using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.Infrastructure.DataAccess;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Events.IntegrationTests.Api.Base;
 
-public abstract class BaseApiTest(ApiWebApplicationFactory factory)
+public class BaseApiTest : IDisposable
 {
-	protected readonly HttpClient Client = factory.CreateClient();
+	protected readonly ApiWebApplicationFactory Factory;
+	protected readonly HttpClient Client;
+
+	protected BaseApiTest()
+	{
+		Factory = new ApiWebApplicationFactory();
+		Client = Factory.CreateClient();
+	}
+	
+	public void Dispose()
+	{
+		Client?.Dispose();
+		Factory?.Dispose();
+	}
 
 	protected static object CreateTestEvent()
 	{

@@ -5,10 +5,8 @@ using Events.IntegrationTests.Api.Base;
 
 namespace Events.IntegrationTests.Api;
 
-[Collection("API Application Collection")]
-public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(factory)
+public class BookingApiTests: BaseApiTest
 {
-	/*
 	/// <summary>
 	/// Проверяет получение брони по идентификатору.
 	/// </summary>
@@ -29,7 +27,7 @@ public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fac
 		Assert.Equal(eventId, responseData.EventId);
 		Assert.Equal(BookingStatus.Pending, responseData.Status);
 	}
-	
+
 	/// <summary>
 	/// Проверяет получение несуществующего бронирования.
 	/// </summary>
@@ -45,5 +43,4 @@ public class BookingApiTests(ApiWebApplicationFactory factory) : BaseApiTest(fac
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 	}
-	*/
 }
