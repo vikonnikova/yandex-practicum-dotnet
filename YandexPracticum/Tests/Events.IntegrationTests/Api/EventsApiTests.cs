@@ -7,7 +7,7 @@ using FluentAssertions;
 
 namespace Events.IntegrationTests.Api;
 
-public class EventsApiTests : BaseApiTest
+public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 {
 	#region Get methods
 

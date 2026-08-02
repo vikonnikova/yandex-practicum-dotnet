@@ -5,7 +5,7 @@ using Events.IntegrationTests.Api.Base;
 
 namespace Events.IntegrationTests.Api;
 
-public class BookingApiTests: BaseApiTest
+public class BookingApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 {
 	/// <summary>
 	/// Проверяет получение брони по идентификатору.
