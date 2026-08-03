@@ -1,3 +1,3 @@
-﻿namespace Events.Application.Exceptions;
+﻿namespace Events.Domain.Exceptions;
 
 public class NoAvailableSeatsException() : Exception("No available seats for this event.");

@@ -3,9 +3,10 @@ using Events.Api.Contracts;
 
 namespace Events.IntegrationTests.Api.Base;
 
-public abstract class BaseApiTest(ApiWebApplicationFactory factory)
+[Collection("Api Collection")]
+public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 {
-	protected readonly HttpClient Client = factory.CreateClient();
+	protected readonly HttpClient Client = fixture.Client;
 
 	protected static object CreateTestEvent()
 	{
@@ -104,5 +105,15 @@ public abstract class BaseApiTest(ApiWebApplicationFactory factory)
 			.Select(_ => Task.Run(async () => { await Client.PostAsync($"/events/{eventId}/book", null); })).ToArray();
 
 		await Task.WhenAll(tasks);
+	}
+
+	public async Task InitializeAsync()
+	{
+		await fixture.ClearTablesAsync();
+	}
+
+	public Task DisposeAsync()
+	{
+		return Task.CompletedTask;
 	}
 }

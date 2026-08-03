@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using Events.Application.Exceptions;
 using Events.Application.Services;
 using Events.Application.Services.Dto;
 using Events.Domain;
+using Events.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

@@ -19,6 +19,15 @@ builder.Services.AddSwaggerGen(options =>
 	options.IncludeXmlComments(xmlPath);
 });
 
+if (builder.Environment.IsDevelopment())
+{
+	builder.Host.UseDefaultServiceProvider(options =>
+	{
+		options.ValidateScopes = true;
+		options.ValidateOnBuild = true;
+	});
+}
+
 var app = builder.Build();
 
 app.Services.InitDatabase();
@@ -28,12 +37,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	builder.Host.UseDefaultServiceProvider(options =>
-	{
-		options.ValidateScopes = true;
-		options.ValidateOnBuild = true;
-	});
-
 	app.MapOpenApi();
 
 	app.UseSwagger();
