@@ -1,14 +1,14 @@
-﻿using Events.Infrastructure.DataAccess;
+﻿using Events.Infrastructure.HealthChecker;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
 
 /// <summary>
-/// Представляет контроллер для бронирования.
+/// Представляет контроллер для проверки «здоровья» приложения.
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class HealthController(AppDbContext context) : ControllerBase
+public class HealthController(IDatabaseHealthChecker dbHealthChecker) : ControllerBase
 {
 	/// <summary>
 	/// Проверяет доступ до базы данных.
@@ -18,9 +18,9 @@ public class HealthController(AppDbContext context) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	public IActionResult CheckDbConnection()
 	{
-		var canConnect = context.Database.CanConnect();
+		var canConnect = dbHealthChecker.Check();
 		return canConnect
-			? Ok("Connected to database")
+			? Ok("Connection is Ok")
 			: StatusCode(500, "Cannot connect to database");
 	}
 }
