@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.Api.Contracts.Bookings;
+using Events.Api.Contracts.Events;
 using Events.IntegrationTests.Api.Base;
 using FluentAssertions;
 

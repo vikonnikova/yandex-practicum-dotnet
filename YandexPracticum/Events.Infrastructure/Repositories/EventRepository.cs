@@ -8,24 +8,27 @@ namespace Events.Infrastructure;
 
 internal class EventRepository(AppDbContext context) : IEventRepository
 {
-	public async Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters filters,
+	public async Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
 		CancellationToken cancellationToken)
 	{
 		var query = context.Events.AsQueryable();
 
-		if (filters.Title != null)
+		if (filters is not null)
 		{
-			query = query.Where(x => EF.Functions.ILike(x.Title, $"%{filters.Title}%"));
-		}
+			if (filters.Title != null)
+			{
+				query = query.Where(x => EF.Functions.ILike(x.Title, $"%{filters.Title}%"));
+			}
 
-		if (filters.From.HasValue)
-		{
-			query = query.Where(x => x.Period.StartAt >= filters.From);
-		}
+			if (filters.From.HasValue)
+			{
+				query = query.Where(x => x.Period.StartAt >= filters.From);
+			}
 
-		if (filters.To.HasValue)
-		{
-			query = query.Where(x => x.Period.EndAt <= filters.To);
+			if (filters.To.HasValue)
+			{
+				query = query.Where(x => x.Period.EndAt <= filters.To);
+			}
 		}
 
 		var totalItems = await query.CountAsync(cancellationToken);

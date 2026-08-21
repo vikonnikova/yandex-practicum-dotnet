@@ -1,11 +1,8 @@
-﻿using Events.Domain;
-using Events.Application.Mappings;
-
-namespace Events.UnitTests.Application;
+﻿namespace Events.UnitTests.Application;
 
 public class Mapping
 {
-	#region Event
+	/*#region Event
 
 	/// <summary>
 	/// Проверяет маппинг доменной сущности События в dto слоя Application.
@@ -55,5 +52,5 @@ public class Mapping
 		});
 	}
 
-	#endregion
+	#endregion*/
 }

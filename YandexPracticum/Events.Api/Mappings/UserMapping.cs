@@ -1,5 +1,5 @@
 ﻿using Events.Api.Contracts.Users;
-using Events.Application.Contracts;
+using Events.Application.Contracts.Commands.Users;
 
 namespace Events.Api.Mappings;
 

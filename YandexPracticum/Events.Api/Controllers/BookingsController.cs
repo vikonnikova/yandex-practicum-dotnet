@@ -1,6 +1,7 @@
-﻿using Events.Api.Contracts;
+﻿using Events.Api.Contracts.Bookings;
 using Events.Api.Mappings;
-using Events.Application.Services;
+using Events.Application.Contracts.Queries.Bookings;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -10,7 +11,7 @@ namespace Events.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class BookingsController(IBookingService bookingService) : ControllerBase
+public class BookingsController(ISender sender) : ControllerBase
 {
 	/// <summary>
 	/// Возвращает бронь по идентификатору.
@@ -22,6 +23,6 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<ActionResult<BookingResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		return Ok((await bookingService.GetById(id, cancellationToken)).ToResponse());
+		return Ok((await sender.Send(new GetBookingByIdQuery(id), cancellationToken)).ToResponse());
 	}
 }

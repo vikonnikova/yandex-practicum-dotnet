@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Events.Api.Contracts;
+using Events.Api.Contracts.Bookings;
+using Events.Api.Contracts.Events;
 
 namespace Events.IntegrationTests.Api.Base;
 

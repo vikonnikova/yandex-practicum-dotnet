@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Events.Api.Contracts;
+namespace Events.Api.Contracts.Events;
 
 /// <summary>
 /// Представляет данные для пагинации и фильтрации.

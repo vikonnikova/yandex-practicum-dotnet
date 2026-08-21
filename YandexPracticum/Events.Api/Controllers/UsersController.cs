@@ -1,6 +1,6 @@
 ﻿using Events.Api.Contracts.Users;
 using Events.Api.Mappings;
-using Events.Application.UseCases;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -10,7 +10,7 @@ namespace Events.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class UsersController(AddUserCommandHandler handler) : ControllerBase
+public class UsersController(ISender sender) : ControllerBase
 {
 	/// <summary>
 	/// Создает пользователя.
@@ -23,7 +23,7 @@ public class UsersController(AddUserCommandHandler handler) : ControllerBase
 	public async Task<ActionResult<UserResponse>> Create([FromBody] UserRequest data,
 		CancellationToken cancellationToken)
 	{
-		await handler.Handle(data.ToCommand(), cancellationToken);
+		await sender.Send(data.ToCommand(), cancellationToken);
 
 		return Ok();
 	}
