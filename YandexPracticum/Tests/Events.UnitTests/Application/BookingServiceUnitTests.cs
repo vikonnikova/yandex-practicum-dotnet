@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Events.Application.Exceptions;
 using Events.Application.Services;
 using Events.Application.Services.Dto;
 using Events.Domain;
@@ -20,7 +21,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();
 		var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-		var dto = new BookingToAddDto(EventId);
+		var dto = new BookingToAddDto(EventId, UserId);
 
 		//Act
 		var result = await service.Add(dto, CancellationToken.None);
@@ -53,7 +54,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 		using var scope = ServiceProvider.CreateScope();
 		var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
 		var nonExistentEventId = Guid.NewGuid();
-		var dto = new BookingToAddDto(nonExistentEventId);
+		var dto = new BookingToAddDto(nonExistentEventId, UserId);
 
 		//Act
 		Func<Task> act = () => service.Add(dto, CancellationToken.None);
@@ -86,13 +87,13 @@ public class BookingServiceUnitTests : BaseUnitTest
 
 		for (var i = 0; i < EventTotalSeats; i++)
 		{
-			await service.Add(new BookingToAddDto(EventId), CancellationToken.None);
+			await service.Add(new BookingToAddDto(EventId, UserId), CancellationToken.None);
 		}
 
 		//Act
-		Func<Task> act = () => service.Add(new BookingToAddDto(EventId), CancellationToken.None);
+		Func<Task> act = () => service.Add(new BookingToAddDto(EventId, UserId), CancellationToken.None);
 		await act.Should().ThrowAsync<NoAvailableSeatsException>()
-			.WithMessage("No available seats for this event.");
+			.WithMessage("Нет доступных мест для бронирования на запрашиваемое событие.");
 
 		//Assert
 		EventRepositoryMock.Verify(
@@ -131,7 +132,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 						bookingIdsList.Add(bookingId);
 
 						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-						await service.Add(new BookingToAddDto(EventId), CancellationToken.None);
+						await service.Add(new BookingToAddDto(EventId, UserId), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}
@@ -176,7 +177,7 @@ public class BookingServiceUnitTests : BaseUnitTest
 					using (var scope = ServiceProvider.CreateScope())
 					{
 						var service = scope.ServiceProvider.GetRequiredService<IBookingService>();
-						await service.Add(new BookingToAddDto(EventId), CancellationToken.None);
+						await service.Add(new BookingToAddDto(EventId, UserId), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}

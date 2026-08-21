@@ -5,9 +5,9 @@ namespace Events.Api.Mappings;
 
 internal static class BookingMapping
 {
-	internal static BookingToAddDto ToDto(Guid eventId)
+	internal static BookingToAddDto ToDto(Guid eventId, BookingRequest data)
 	{
-		return new BookingToAddDto(eventId);
+		return new BookingToAddDto(eventId, data.UserId);
 	}
 
 	internal static BookingResponse ToResponse(this BookingDto dto)

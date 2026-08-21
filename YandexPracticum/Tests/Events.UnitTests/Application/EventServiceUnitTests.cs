@@ -1,4 +1,5 @@
 ﻿using Events.Application;
+using Events.Application.Exceptions;
 using Events.Application.Services;
 using Events.Application.Services.Dto;
 using Events.Domain;

@@ -1,4 +1,4 @@
-﻿namespace Events.Domain.Exceptions;
+﻿namespace Events.Application.Exceptions;
 
 public class EntityNotFoundException : Exception
 {

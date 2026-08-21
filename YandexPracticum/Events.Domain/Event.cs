@@ -21,7 +21,7 @@ public class Event
 	{
 	}
 
-	public Guid Id { get; private set; }
+	public Guid Id { get; init; }
 	public string Title { get; private set; } = null!;
 	public string? Description { get; private set; }
 	public EventPeriod Period { get; private set; } = null!;

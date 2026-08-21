@@ -11,6 +11,7 @@ public abstract class BaseUnitTest : IDisposable
 {
 	protected readonly Guid EventId = Guid.NewGuid();
 	protected readonly Guid BookingId = Guid.NewGuid();
+	protected readonly Guid UserId = Guid.NewGuid();
 	protected const string EventTitle = "Новый год";
 	protected const string EventDescription = "Дед Мороз и снегурочка";
 	protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -37,7 +38,7 @@ public abstract class BaseUnitTest : IDisposable
 	{
 		var @event = Event.Create(EventId, EventTitle, EventDescription,
 			EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
-		var booking = Booking.Create(BookingId, EventId, DateTime.UtcNow);
+		var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
 
 		EventRepositoryMock
 			.Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),

@@ -43,7 +43,7 @@ public class Mapping
 	[Fact]
 	public void Booking_ToDto_Success()
 	{
-		var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+		var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
 
 		var bookingDto = booking.ToDto();
 

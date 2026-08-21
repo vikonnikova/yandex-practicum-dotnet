@@ -8,6 +8,7 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 	protected readonly DateTime Date = new(2022, 05, 04, 12, 00, 00, DateTimeKind.Utc);
 	protected readonly Guid EventId = Guid.NewGuid();
 	protected readonly Guid BookingId = Guid.NewGuid();
+	protected readonly Guid UserId = Guid.NewGuid();
 
 	protected Event CreateEvent()
 	{

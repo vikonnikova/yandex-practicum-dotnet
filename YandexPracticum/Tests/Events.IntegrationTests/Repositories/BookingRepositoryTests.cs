@@ -16,7 +16,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	{
 		// Arrange
 		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
-		var booking = Booking.Create(BookingId, EventId, createdAt);
+		var booking = Booking.Create(BookingId, EventId, UserId, createdAt);
 
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -62,10 +62,10 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 	public async Task GetPending_WhenDifferentStatuses_ShouldReturnOnlyPendingBookings()
 	{
 		// Arrange
-		var pendingBooking1 = Booking.Create(Guid.NewGuid(), EventId, DateTime.UtcNow);
-		var pendingBooking2 = Booking.Create(Guid.NewGuid(), EventId, DateTime.UtcNow);
-		var confirmedBooking = Booking.Create(Guid.NewGuid(), EventId, DateTime.UtcNow);
-		var rejectedBooking = Booking.Create(Guid.NewGuid(), EventId, DateTime.UtcNow);
+		var pendingBooking1 = Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow);
+		var pendingBooking2 = Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow);
+		var confirmedBooking = Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow);
+		var rejectedBooking = Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow);
 
 		confirmedBooking.Confirm(DateTime.UtcNow);
 		rejectedBooking.Reject(DateTime.UtcNow);
@@ -107,7 +107,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new BookingRepository(context);
-			repository.Add(Booking.Create(BookingId, EventId, createdAt));
+			repository.Add(Booking.Create(BookingId, EventId, UserId, createdAt));
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
@@ -137,7 +137,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		await using (var context = DbFixture.CreateContext())
 		{
 			context.Events.Add(CreateEvent());
-			context.Bookings.Add(Booking.Create(BookingId, EventId, createdAt));
+			context.Bookings.Add(Booking.Create(BookingId, EventId, UserId, createdAt));
 			await context.SaveChangesAsync();
 		}
 
@@ -176,7 +176,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		await using (var context = DbFixture.CreateContext())
 		{
 			context.Events.Add(CreateEvent());
-			context.Bookings.Add(Booking.Create(BookingId, EventId, createdAt));
+			context.Bookings.Add(Booking.Create(BookingId, EventId, UserId, createdAt));
 			await context.SaveChangesAsync();
 		}
 

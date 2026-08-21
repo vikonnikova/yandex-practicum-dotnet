@@ -19,8 +19,4 @@
         <InternalsVisibleTo Include="Events.UnitTests" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Exceptions\" />
-    </ItemGroup>
-
 </Project>

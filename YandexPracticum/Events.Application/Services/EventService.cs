@@ -1,4 +1,5 @@
-﻿using Events.Application.Interfaces;
+﻿using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Events.Application.Mappings;
 using Events.Application.Services.Dto;
 using Events.Domain;

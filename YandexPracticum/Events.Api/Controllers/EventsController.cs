@@ -26,7 +26,7 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	{
 		var result = await eventService.GetBy(query.Page, query.PageSize,
 			new Filters(query.Title, query.From, query.To), cancellationToken);
-		
+
 		return Ok(result.ToPaginatedResponse());
 	}
 
@@ -94,14 +94,16 @@ public class EventsController(IEventService eventService, IBookingService bookin
 	/// Создает заявку на бронирование.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
+	/// <param name="data">Данные для бронирования.</param>
 	/// <param name="cancellationToken">Токен отмены.</param>
 	[HttpPost("{id:guid}/book")]
 	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
-	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
+	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, [FromBody] BookingRequest data,
+		CancellationToken cancellationToken)
 	{
-		var result = await bookingService.Add(BookingMapping.ToDto(id), cancellationToken);
+		var result = await bookingService.Add(BookingMapping.ToDto(id, data), cancellationToken);
 
 		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
 		Response.Headers.Location = statusUrl;

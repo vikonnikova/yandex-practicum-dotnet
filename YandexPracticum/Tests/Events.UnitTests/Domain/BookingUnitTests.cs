@@ -13,12 +13,14 @@ public class BookingUnitTests
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
+		var userId = Guid.NewGuid();
 		var now = DateTime.UtcNow;
 
-		var booking = Booking.Create(bookingId, eventId, now);
+		var booking = Booking.Create(bookingId, eventId, userId, now);
 		
 		booking.Id.Should().Be(bookingId);
 		booking.EventId.Should().Be(eventId);
+		booking.UserId.Should().Be(userId);
 		booking.CreatedAt.Should().Be(now);
 		booking.Status.Should().Be(BookingStatus.Pending);
 		booking.ProcessedAt.Should().BeNull();
@@ -32,14 +34,16 @@ public class BookingUnitTests
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
+		var userId = Guid.NewGuid();
 		var now = DateTime.UtcNow;
 		var confirmedAt = DateTime.UtcNow.AddDays(5).AddHours(4).AddMinutes(8);
-		var booking = Booking.Create(bookingId, eventId, now);
+		var booking = Booking.Create(bookingId, eventId, userId, now);
 		
 		booking.Confirm(confirmedAt);
 		
 		booking.Id.Should().Be(bookingId);
 		booking.EventId.Should().Be(eventId);
+		booking.UserId.Should().Be(userId);
 		booking.CreatedAt.Should().Be(now);
 		booking.Status.Should().Be(BookingStatus.Confirmed);
 		booking.ProcessedAt.Should().Be(confirmedAt);
@@ -53,14 +57,16 @@ public class BookingUnitTests
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
+		var userId = Guid.NewGuid();
 		var now = DateTime.UtcNow;
 		var rejectedAt = DateTime.UtcNow.AddDays(1).AddHours(6).AddMinutes(20);
-		var booking = Booking.Create(bookingId, eventId, now);
+		var booking = Booking.Create(bookingId, eventId, userId, now);
 		
 		booking.Reject(rejectedAt);
 		
 		booking.Id.Should().Be(bookingId);
 		booking.EventId.Should().Be(eventId);
+		booking.UserId.Should().Be(userId);
 		booking.CreatedAt.Should().Be(now);
 		booking.Status.Should().Be(BookingStatus.Rejected);
 		booking.ProcessedAt.Should().Be(rejectedAt);

@@ -1,3 +1,3 @@
 ﻿namespace Events.Domain.Exceptions;
 
-public class NoAvailableSeatsException() : Exception("No available seats for this event.");
+public class NoAvailableSeatsException() : Exception("Нет доступных мест для бронирования на запрашиваемое событие.");
