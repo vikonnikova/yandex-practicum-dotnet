@@ -9,7 +9,7 @@ public class BookingTests
 	/// Проверяет создание бронирования.
 	/// </summary>
 	[Fact]
-	public void Create_Success()
+	public void Create_WhenValidData_ShouldWorkCorrectly()
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
@@ -30,7 +30,7 @@ public class BookingTests
 	/// Проверяет подтверждение бронирования.
 	/// </summary>
 	[Fact]
-	public void Confirm_Success()
+	public void Confirm_WhenValidData_ShouldWorkCorrectly()
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
@@ -53,7 +53,7 @@ public class BookingTests
 	/// Проверяет отклонение бронирования.
 	/// </summary>
 	[Fact]
-	public void Reject_Success()
+	public void Reject_WhenValidData_ShouldWorkCorrectly()
 	{
 		var bookingId = Guid.NewGuid();
 		var eventId = Guid.NewGuid();
@@ -70,5 +70,28 @@ public class BookingTests
 		booking.CreatedAt.Should().Be(now);
 		booking.Status.Should().Be(BookingStatus.Rejected);
 		booking.ProcessedAt.Should().Be(rejectedAt);
+	}
+	
+	/// <summary>
+	/// Проверяет отклонение бронирования.
+	/// </summary>
+	[Fact]
+	public void Cancel_WhenValidData_ShouldWorkCorrectly()
+	{
+		var bookingId = Guid.NewGuid();
+		var eventId = Guid.NewGuid();
+		var userId = Guid.NewGuid();
+		var now = DateTime.UtcNow;
+		var cancelledAt = DateTime.UtcNow.AddDays(1).AddHours(6).AddMinutes(20);
+		var booking = Booking.Create(bookingId, eventId, userId, now);
+		
+		booking.Cancel(cancelledAt);
+		
+		booking.Id.Should().Be(bookingId);
+		booking.EventId.Should().Be(eventId);
+		booking.UserId.Should().Be(userId);
+		booking.CreatedAt.Should().Be(now);
+		booking.Status.Should().Be(BookingStatus.Cancelled);
+		booking.ProcessedAt.Should().Be(cancelledAt);
 	}
 }

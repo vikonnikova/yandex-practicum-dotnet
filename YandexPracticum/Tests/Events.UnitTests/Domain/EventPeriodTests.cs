@@ -8,7 +8,7 @@ public class EventPeriodTests
 	/// Проверяет создание периода события.
 	/// </summary>
 	[Fact]
-	public void Create_Success()
+	public void Create_WhenValidData_ShouldWorkCorrectly()
 	{
 		var startAt = DateTime.UtcNow;
 		var endAt = startAt.AddDays(2);
@@ -23,7 +23,7 @@ public class EventPeriodTests
 	/// Проверяет, что выбрасывается исключение, если не передать дату начала события или передать дефолтное значение.
 	/// </summary>
 	[Fact]
-	public void Create_StartAtIsDefault_ExceptionThrown()
+	public void Create_WhenStartAtIsDefault_ShouldThrowArgumentNullException()
 	{
 		Assert.Throws<ArgumentNullException>(() => EventPeriod.Create(default, DateTime.UtcNow));
 	}
@@ -32,7 +32,7 @@ public class EventPeriodTests
 	/// Проверяет, что выбрасывается исключение, если не передать дату окончания события или передать дефолтное значение.
 	/// </summary>
 	[Fact]
-	public void Create_EndAtIsDefault_ExceptionThrown()
+	public void Create_WhenEndAtIsDefault_ShouldThrowArgumentNullException()
 	{
 		Assert.Throws<ArgumentNullException>(() => EventPeriod.Create(DateTime.UtcNow, default));
 	}
@@ -41,7 +41,7 @@ public class EventPeriodTests
 	/// Проверяет, что выбрасывается исключение, если даты начала и окончания равны.
 	/// </summary>
 	[Fact]
-	public void Create_EndAtEqualStartAt_ExceptionThrown()
+	public void Create_WhenEndAtEqualStartAt_ShouldThrowArgumentException()
 	{
 		var date = DateTime.UtcNow;
 		Assert.Throws<ArgumentException>(() => EventPeriod.Create(date, date));
@@ -51,7 +51,7 @@ public class EventPeriodTests
 	/// Проверяет, что выбрасывается исключение, если дата окончания события меньше даты начала.
 	/// </summary>
 	[Fact]
-	public void Create_EndAtLessThanStartAt_ExceptionThrown()
+	public void Create_WhenEndAtLessThanStartAt_ShouldThrowArgumentException()
 	{
 		var startAt = DateTime.UtcNow;
 		Assert.Throws<ArgumentException>(() => EventPeriod.Create(startAt, startAt.AddDays(-1)));

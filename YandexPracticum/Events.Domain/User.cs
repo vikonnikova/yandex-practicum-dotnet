@@ -19,4 +19,14 @@ public class User
 	{
 		return new User(id, login, passwordHash, role);
 	}
+	
+	public void UpdatePassword(string passwordHash)
+	{
+		PasswordHash = passwordHash;
+	}
+	
+	public void UpdateRole(UserRole role)
+	{
+		Role = role;
+	}
 }

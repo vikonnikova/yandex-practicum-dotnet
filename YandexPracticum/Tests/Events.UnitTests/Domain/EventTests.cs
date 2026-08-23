@@ -8,7 +8,7 @@ public class EventTests
 	/// Проверяет создание события.
 	/// </summary>
 	[Fact]
-	public void Create_Success()
+	public void Create_WhenValidData_ShouldWorkCorrectly()
 	{
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
@@ -35,7 +35,7 @@ public class EventTests
 	[Theory]
 	[InlineData(0)]
 	[InlineData(-1)]
-	public void Create_InvalidTotalSeats_ExceptionThrown(int totalSeats)
+	public void Create_WhenInvalidTotalSeats_ShouldThrowArgumentException(int totalSeats)
 	{
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
@@ -49,7 +49,7 @@ public class EventTests
 	/// Проверяет обновление события.
 	/// </summary>
 	[Fact]
-	public void Update_Success()
+	public void Update_WhenValidData_ShouldWorkCorrectly()
 	{
 		var eventId = Guid.NewGuid();
 		var utcNow = DateTime.UtcNow;
@@ -77,7 +77,7 @@ public class EventTests
 	/// Проверяет бронирование мест на событии при условии их наличия.
 	/// </summary>
 	[Fact]
-	public void TryReserveSeats_SeatsAreAvailable_Success()
+	public void TryReserveSeats_WhenSeatsAreAvailable_ShouldWorkCorrectly()
 	{
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
@@ -104,7 +104,7 @@ public class EventTests
 	/// Проверяет бронирование мест на событии при условии их отсутствия.
 	/// </summary>
 	[Fact]
-	public void TryReserveSeats_SeatsAreNotAvailable_Success()
+	public void TryReserveSeats_WhenSeatsAreNotAvailable_ShouldWorkCorrectly()
 	{
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
@@ -132,7 +132,7 @@ public class EventTests
 	/// Проверяет освобождение забронированных мест на событии.
 	/// </summary>
 	[Fact]
-	public void ReleaseSeats_Success()
+	public void ReleaseSeats_WhenValidData_ShouldWorkCorrectly()
 	{
 		var eventId = Guid.NewGuid();
 		var startAt = DateTime.UtcNow;
