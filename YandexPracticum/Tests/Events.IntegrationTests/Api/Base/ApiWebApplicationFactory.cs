@@ -11,7 +11,7 @@ public class ApiWebApplicationFactory(string connectionString) : WebApplicationF
 {
 	protected override void ConfigureWebHost(IWebHostBuilder builder)
 	{
-		builder.UseEnvironment("Testing");
+		builder.UseEnvironment("Development");
 
 		builder.ConfigureTestServices(services =>
 		{

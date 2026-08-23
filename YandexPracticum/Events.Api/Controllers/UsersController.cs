@@ -27,20 +27,4 @@ public class UsersController(ISender sender) : ControllerBase
 	{
 		return Ok((await sender.Send(new GetUserByIdQuery(id), cancellationToken)).ToResponse());
 	}
-	
-	/// <summary>
-	/// Создает пользователя.
-	/// </summary>
-	/// <param name="data">Данные для создания.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpPost]
-	[ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<UserResponse>> Create([FromBody] UserRequest data,
-		CancellationToken cancellationToken)
-	{
-		var userId = await sender.Send(data.ToCommand(), cancellationToken);
-
-		return CreatedAtAction(nameof(GetById), new { id = userId }, userId);
-	}
 }

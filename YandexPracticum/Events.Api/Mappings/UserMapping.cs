@@ -1,5 +1,4 @@
 ﻿using Events.Api.Contracts.Users;
-using Events.Application.Contracts.Commands.Users;
 using Events.Domain;
 using UserRole = Events.Api.Contracts.Users.UserRole;
 
@@ -10,11 +9,6 @@ internal static class UserMapping
 	internal static UserResponse ToResponse(this User data)
 	{
 		return new UserResponse(data.Id, data.Login, MapRole(data.Role));
-	}
-
-	internal static AddUserCommand ToCommand(this UserRequest dto)
-	{
-		return new AddUserCommand(dto.Login, dto.Password, MapRole(dto.Role));
 	}
 
 	private static Events.Domain.UserRole MapRole(UserRole value)
