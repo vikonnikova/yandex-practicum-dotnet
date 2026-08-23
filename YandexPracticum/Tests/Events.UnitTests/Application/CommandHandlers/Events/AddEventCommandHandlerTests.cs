@@ -44,10 +44,10 @@ public class AddEventCommandHandlerTests : BaseUnitTest
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();
 		var handler = scope.ServiceProvider.GetRequiredService<AddEventCommandHandler>();
-		var dto = new AddEventCommand("8 марта", "Международный женский день", default, default, 100);
+		var command = new AddEventCommand("8 марта", "Международный женский день", default, default, 100);
 
 		//Act
-		Func<Task> act = () => handler.Handle(dto, CancellationToken.None);
+		Func<Task> act = () => handler.Handle(command, CancellationToken.None);
 		await act.Should().ThrowAsync<ArgumentNullException>();
 
 		//Assert

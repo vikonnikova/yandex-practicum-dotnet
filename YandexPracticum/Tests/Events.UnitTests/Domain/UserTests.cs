@@ -13,14 +13,14 @@ public class UserTests
 	{
 		var userId = Guid.NewGuid();
 		const string login = "vika_7486";
-		const string password = "qwerty1234";
+		const string passwordHash = "qwerty1234";
 		const UserRole role = UserRole.Admin;
 
-		var user = User.Create(userId, login, password, role);
+		var user = User.Create(userId, login, passwordHash, role);
 
 		user.Id.Should().Be(userId);
 		user.Login.Should().Be(login);
-		user.PasswordHash.Should().Be(password);
+		user.PasswordHash.Should().Be(passwordHash);
 		user.Role.Should().Be(role);
 	}
 }
