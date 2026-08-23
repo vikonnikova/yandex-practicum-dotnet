@@ -33,6 +33,7 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
 				break;
 
 			case ArgumentException:
+			case BookingMustBeInPendingStatusException:
 			case PastEventBookingException:
 				statusCode = StatusCodes.Status400BadRequest;
 				break;
@@ -45,6 +46,10 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
 			
 			case AuthenticationException:
 				statusCode = StatusCodes.Status401Unauthorized;
+				break;
+			
+			case AccessDeniedException:
+				statusCode = StatusCodes.Status403Forbidden;
 				break;
 
 			default:

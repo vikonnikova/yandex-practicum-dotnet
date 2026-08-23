@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using Events.Api.Middleware;
 using Events.Application;
@@ -48,7 +49,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 			ValidIssuer = builder.Configuration["Jwt:Issuer"],
 			ValidAudience = builder.Configuration["Jwt:Audience"],
 			IssuerSigningKey = new SymmetricSecurityKey(
-				Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!))
+				Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
+			RoleClaimType = ClaimTypes.Role
 		};
 	});
 

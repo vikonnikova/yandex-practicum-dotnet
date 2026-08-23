@@ -1,4 +1,6 @@
-﻿namespace Events.Domain;
+﻿using Events.Domain.Exceptions;
+
+namespace Events.Domain;
 
 public class Booking
 {
@@ -31,19 +33,34 @@ public class Booking
 
 	public void Confirm(DateTime processedAt)
 	{
+		if (Status != BookingStatus.Pending)
+		{
+			throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование подтверждено.");
+		}
+
 		Status = BookingStatus.Confirmed;
 		ProcessedAt = processedAt;
 	}
 
 	public void Reject(DateTime processedAt)
 	{
+		if (Status != BookingStatus.Pending)
+		{
+			throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование отклонено.");
+		}
+
 		Status = BookingStatus.Rejected;
 		ProcessedAt = processedAt;
 	}
 
 	public void Cancel(DateTime processedAt)
 	{
+		if (Status != BookingStatus.Pending)
+		{
+			throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование отменено.");
+		}
+
 		Status = BookingStatus.Cancelled;
-		ProcessedAt = processedAt; //TODO защита от повторной отмены
+		ProcessedAt = processedAt;
 	}
 }
