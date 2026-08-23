@@ -47,8 +47,7 @@ namespace Events.Infrastructure.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -109,8 +108,8 @@ namespace Events.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Events.Domain.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Events.Domain.Booking", "UserId")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

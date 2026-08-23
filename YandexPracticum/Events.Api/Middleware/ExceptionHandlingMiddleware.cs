@@ -34,11 +34,13 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
 				break;
 
 			case ArgumentException:
+			case PastEventBookingException:
 				statusCode = StatusCodes.Status400BadRequest;
 				message = exception.Message;
 				break;
 			
 			case NoAvailableSeatsException:
+			case BookingLimitReachingException:
 				statusCode = StatusCodes.Status409Conflict;
 				message = exception.Message;
 				break;

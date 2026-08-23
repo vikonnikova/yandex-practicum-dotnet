@@ -1,5 +1,6 @@
 ﻿using Events.Api.Contracts.Users;
 using Events.Api.Mappings;
+using Events.Application.Contracts.Queries.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,19 @@ namespace Events.Api.Controllers;
 public class UsersController(ISender sender) : ControllerBase
 {
 	/// <summary>
+	/// Возвращает пользователя по идентификатору.
+	/// </summary>
+	/// <param name="id">Идентификатор пользователя.</param>
+	/// <param name="cancellationToken">Токен отмены.</param>
+	[HttpGet("{id:guid}")]
+	[ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<UserResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
+	{
+		return Ok((await sender.Send(new GetUserByIdQuery(id), cancellationToken)).ToResponse());
+	}
+	
+	/// <summary>
 	/// Создает пользователя.
 	/// </summary>
 	/// <param name="data">Данные для создания.</param>
@@ -23,8 +37,8 @@ public class UsersController(ISender sender) : ControllerBase
 	public async Task<ActionResult<UserResponse>> Create([FromBody] UserRequest data,
 		CancellationToken cancellationToken)
 	{
-		await sender.Send(data.ToCommand(), cancellationToken);
+		var userId = await sender.Send(data.ToCommand(), cancellationToken);
 
-		return Ok();
+		return CreatedAtAction(nameof(GetById), new { id = userId }, userId);
 	}
 }

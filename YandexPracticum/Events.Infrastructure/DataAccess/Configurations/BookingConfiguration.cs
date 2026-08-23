@@ -40,6 +40,6 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
 			.HasForeignKey(b => b.EventId);
 
 		builder.HasOne(b => b.User)
-			.WithOne();
+			.WithMany();
 	}
 }

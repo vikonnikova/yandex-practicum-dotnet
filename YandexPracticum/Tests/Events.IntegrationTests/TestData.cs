@@ -1,7 +1,13 @@
-﻿namespace Events.IntegrationTests;
+﻿using Events.Api.Contracts.Users;
+
+namespace Events.IntegrationTests;
 
 internal static class TestData
 {
+	public static string Login => "vika_7486";
+	public static string Password => "qwerty1234";
+	public static UserRole Role => UserRole.User;
+	
 	public static string Title => "Ярмарка мёда";
 	public static string Description => "Большой ассортимент мёда на главной площади города.";
 	public static DateTime StartAt => new(2026, 01, 01, 10, 30, 00, DateTimeKind.Utc);

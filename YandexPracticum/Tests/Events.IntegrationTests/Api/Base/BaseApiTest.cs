@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Json;
-using Events.Api.Contracts;
 using Events.Api.Contracts.Bookings;
-using Events.Api.Contracts.Events;
+using Events.Api.Contracts.Users;
 
 namespace Events.IntegrationTests.Api.Base;
 
@@ -9,6 +8,56 @@ namespace Events.IntegrationTests.Api.Base;
 public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 {
 	protected readonly HttpClient Client = fixture.Client;
+
+	protected static object CreateTestUser()
+	{
+		return new { TestData.Login, TestData.Password, Role = UserRole.User };
+	}
+
+	protected static object CreateInvalidTestUser()
+	{
+		return new { TestData.Password, Role = UserRole.User };
+	}
+
+	private static object[] CreateTestUsers()
+	{
+		return
+		[
+			new
+			{
+				Login = "Anton_1187",
+				Password = "Qwerty5678",
+				Role = UserRole.User
+			},
+
+			new
+			{
+				Login = "Kate_433",
+				Password = "567890ytrewq",
+				Role = UserRole.User
+			},
+			new
+			{
+				Login = "Ivan_585",
+				Password = "12345qwerty",
+				Role = UserRole.User
+			}
+		];
+	}
+
+	protected async Task<Guid> CreateUser()
+	{
+		var response = await Client.PostAsJsonAsync("/users", CreateTestUser());
+		return await response.Content.ReadFromJsonAsync<Guid>();
+	}
+
+	protected async Task CreateUsers()
+	{
+		foreach (var user in CreateTestUsers())
+		{
+			await Client.PostAsJsonAsync("/users", user);
+		}
+	}
 
 	protected static object CreateTestEvent()
 	{
@@ -80,9 +129,7 @@ public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 	protected async Task<Guid> CreateEvent()
 	{
 		var response = await Client.PostAsJsonAsync("/events", CreateTestEvent());
-		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
-
-		return responseData.Id;
+		return await response.Content.ReadFromJsonAsync<Guid>();
 	}
 
 	protected async Task CreateEvents()
@@ -93,18 +140,21 @@ public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 		}
 	}
 
-	protected async Task<Guid> CreateBooking(Guid eventId)
+	protected async Task<Guid> CreateBooking(Guid eventId, Guid userId)
 	{
-		var response = await Client.PostAsync($"/events/{eventId}/book", null);
+		var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
 		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
 
 		return booking.BookingId;
 	}
 
-	protected async Task CreateBookings(Guid eventId, int bookCount)
+	protected async Task CreateBookings(Guid eventId, Guid userId, int bookCount)
 	{
 		var tasks = Enumerable.Range(0, bookCount)
-			.Select(_ => Task.Run(async () => { await Client.PostAsync($"/events/{eventId}/book", null); })).ToArray();
+			.Select(_ => Task.Run(async () =>
+			{
+				await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
+			})).ToArray();
 
 		await Task.WhenAll(tasks);
 	}

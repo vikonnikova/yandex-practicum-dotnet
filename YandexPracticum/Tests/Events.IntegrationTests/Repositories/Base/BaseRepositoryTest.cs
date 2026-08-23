@@ -10,6 +10,11 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 	protected readonly Guid BookingId = Guid.NewGuid();
 	protected readonly Guid UserId = Guid.NewGuid();
 
+	protected User CreateUser()
+	{
+		return User.Create(UserId, TestData.Login, TestData.Password, UserRole.User);
+	}
+
 	protected Event CreateEvent()
 	{
 		return Event.Create(EventId, TestData.Title, TestData.Description,
@@ -19,6 +24,8 @@ public abstract class BaseRepositoryTest(DbFixture dbFixture) : IAsyncLifetime
 	protected async Task SeedData()
 	{
 		await using var context = DbFixture.CreateContext();
+		
+		context.Users.Add(CreateUser());
 
 		context.Events.AddRange(
 			Event.Create(Guid.NewGuid(), "День рождения", "Дед Мороз и снегурочка",

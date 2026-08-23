@@ -15,8 +15,9 @@ public class BookingApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task GetById_ValidData_200Returned()
 	{
 		//Arrange
+		var userId = await CreateUser();
 		var eventId = await CreateEvent();
-		var bookingId = await CreateBooking(eventId);
+		var bookingId = await CreateBooking(eventId, userId);
 
 		//Act
 		var response = await Client.GetAsync($"/bookings/{bookingId}");

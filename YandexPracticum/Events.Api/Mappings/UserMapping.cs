@@ -1,13 +1,20 @@
 ﻿using Events.Api.Contracts.Users;
 using Events.Application.Contracts.Commands.Users;
+using Events.Domain;
+using UserRole = Events.Api.Contracts.Users.UserRole;
 
 namespace Events.Api.Mappings;
 
 internal static class UserMapping
 {
-	internal static AddUserCommand ToCommand(this UserRequest data)
+	internal static UserResponse ToResponse(this User data)
 	{
-		return new AddUserCommand(data.Login, data.Password, MapRole(data.Role));
+		return new UserResponse(data.Id, data.Login, MapRole(data.Role));
+	}
+
+	internal static AddUserCommand ToCommand(this UserRequest dto)
+	{
+		return new AddUserCommand(dto.Login, dto.Password, MapRole(dto.Role));
 	}
 
 	private static Events.Domain.UserRole MapRole(UserRole value)
@@ -16,6 +23,16 @@ internal static class UserMapping
 		{
 			UserRole.User => Domain.UserRole.User,
 			UserRole.Admin => Domain.UserRole.Admin,
+			_ => throw new ArgumentException($"Не найден маппинг для {value}")
+		};
+	}
+
+	private static UserRole MapRole(Events.Domain.UserRole value)
+	{
+		return value switch
+		{
+			Domain.UserRole.User => UserRole.User,
+			Domain.UserRole.Admin => UserRole.Admin,
 			_ => throw new ArgumentException($"Не найден маппинг для {value}")
 		};
 	}

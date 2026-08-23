@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Events.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260821135038_UserAdded")]
+    [Migration("20260823073739_UserAdded")]
     partial class UserAdded
     {
         /// <inheritdoc />
@@ -50,8 +50,7 @@ namespace Events.Infrastructure.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("bookings", (string)null);
                 });
@@ -112,8 +111,8 @@ namespace Events.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Events.Domain.User", "User")
-                        .WithOne()
-                        .HasForeignKey("Events.Domain.Booking", "UserId")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

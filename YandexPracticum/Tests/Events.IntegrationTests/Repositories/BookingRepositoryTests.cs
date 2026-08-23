@@ -20,6 +20,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.Add(booking);
 			await context.SaveChangesAsync();
@@ -72,6 +73,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.AddRange(pendingBooking1, pendingBooking2, confirmedBooking, rejectedBooking);
 			await context.SaveChangesAsync();
@@ -99,6 +101,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		var createdAt = new DateTime(2022, 04, 04, 12, 00, 00, DateTimeKind.Utc);
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			await context.SaveChangesAsync();
 		}
@@ -136,6 +139,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		var processedAt = new DateTime(2022, 04, 05, 15, 37, 00, DateTimeKind.Utc);
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.Add(Booking.Create(BookingId, EventId, UserId, createdAt));
 			await context.SaveChangesAsync();
@@ -175,6 +179,7 @@ public class BookingRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(db
 		var processedAt = new DateTime(2022, 04, 05, 15, 37, 00, DateTimeKind.Utc);
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.Add(Booking.Create(BookingId, EventId, UserId, createdAt));
 			await context.SaveChangesAsync();

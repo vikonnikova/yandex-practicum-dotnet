@@ -164,6 +164,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.Add(Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow));
 			await context.SaveChangesAsync();
@@ -191,6 +192,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
+			context.Users.Add(CreateUser());
 			context.Events.Add(CreateEvent());
 			context.Bookings.Add(Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow));
 			await context.SaveChangesAsync();

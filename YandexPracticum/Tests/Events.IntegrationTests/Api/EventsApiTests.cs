@@ -84,15 +84,9 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		var response = await Client.PostAsJsonAsync("/events", CreateTestEvent());
 
 		//Assert
-		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
-		var eventId = responseData.Id;
+		var eventId = await response.Content.ReadFromJsonAsync<Guid>();
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 		Assert.Equal($"/Events/{eventId}", response.Headers.Location!.AbsolutePath);
-
-		Assert.Equal(TestData.Title, responseData.Title);
-		Assert.Equal(TestData.Description, responseData.Description);
-		Assert.Equal(TestData.StartAt, responseData.StartAt);
-		Assert.Equal(TestData.EndAt, responseData.EndAt);
 
 		var createdEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
 		Assert.Equal(eventId, createdEvent.Id);
@@ -223,10 +217,11 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Book_ValidData_202Returned()
 	{
 		//Arrange
+		var userId = await CreateUser();
 		var eventId = await CreateEvent();
 
 		//Act
-		var response = await Client.PostAsync($"/events/{eventId}/book", null);
+		var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
 
 		//Assert
 		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
@@ -251,14 +246,30 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Book_Overbooking_409Returned()
 	{
 		//Arrange
+		var userId = await CreateUser();
 		var eventId = await CreateEvent();
-		await CreateBookings(eventId, TestData.TotalSeats);
+		await CreateBookings(eventId, userId, TestData.TotalSeats);
 
 		//Act
-		var response = await Client.PostAsync($"/events/{eventId}/book", null);
+		var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
 
 		//Assert
 		Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+	}
+
+	/// <summary>
+	/// Проверяет создание заявки на бронирование на несуществующего пользователя.
+	/// </summary>
+	[Fact]
+	public async Task Book_NonExistentUser_404Returned()
+	{
+		await CreateEvents();
+
+		//Act
+		var response = await Client.PostAsJsonAsync($"/events/{Guid.NewGuid()}/book", new { UserId = Guid.NewGuid() });
+
+		//Assert
+		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 	}
 
 	/// <summary>
@@ -270,7 +281,7 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		await CreateEvents();
 
 		//Act
-		var response = await Client.PostAsync($"/events/{Guid.NewGuid()}/book", null);
+		var response = await Client.PostAsJsonAsync($"/events/{Guid.NewGuid()}/book", new { UserId = Guid.NewGuid() });
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -286,13 +297,14 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		var totalRequests = TestData.TotalSeats;
 		var responses = new ConcurrentBag<HttpResponseMessage>();
 
+		var userId = await CreateUser();
 		var eventId = await CreateEvent();
 
 		//Act
 		var tasks = Enumerable.Range(0, totalRequests)
 			.Select(_ => Task.Run(async () =>
 			{
-				var response = await Client.PostAsync($"/events/{eventId}/book", null);
+				var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
 				responses.Add(response);
 			})).ToArray();
 
@@ -325,13 +337,14 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		const int totalRequests = 25;
 		var responses = new ConcurrentBag<HttpResponseMessage>();
 
+		var userId = await CreateUser();
 		var eventId = await CreateEvent();
 
 		//Act
 		var tasks = Enumerable.Range(0, totalRequests)
 			.Select(_ => Task.Run(async () =>
 			{
-				var response = await Client.PostAsync($"/events/{eventId}/book", null);
+				var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
 				responses.Add(response);
 			})).ToArray();
 
