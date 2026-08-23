@@ -2,6 +2,7 @@
 using Events.Api.Mappings;
 using Events.Application.Contracts.Queries.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -9,6 +10,7 @@ namespace Events.Api.Controllers;
 /// <summary>
 /// Представляет контроллер для пользователей.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class UsersController(ISender sender) : ControllerBase

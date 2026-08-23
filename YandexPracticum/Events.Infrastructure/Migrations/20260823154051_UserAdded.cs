@@ -37,6 +37,12 @@ namespace Events.Infrastructure.Migrations
                 table: "bookings",
                 column: "UserId");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_users_Login",
+                table: "users",
+                column: "Login",
+                unique: true);
+
             migrationBuilder.AddForeignKey(
                 name: "FK_bookings_users_UserId",
                 table: "bookings",

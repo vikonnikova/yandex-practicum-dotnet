@@ -5,6 +5,7 @@ using Events.Api.Mappings;
 using Events.Application.Contracts.Commands.Events;
 using Events.Application.Contracts.Queries.Events;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -12,6 +13,7 @@ namespace Events.Api.Controllers;
 /// <summary>
 /// Представляет контроллер для событий.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class EventsController(ISender sender)
@@ -50,6 +52,7 @@ public class EventsController(ISender sender)
 	/// </summary>
 	/// <param name="data">Данные для создания.</param>
 	/// <param name="cancellationToken">Токен отмены.</param>
+	[Authorize(Roles = "Admin")]
 	[HttpPost]
 	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,6 +70,7 @@ public class EventsController(ISender sender)
 	/// <param name="id">Идентификатор события.</param>
 	/// <param name="data">Данные для обновления.</param>
 	/// <param name="cancellationToken">Токен отмены.</param>
+	[Authorize(Roles = "Admin")]
 	[HttpPut("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -83,6 +87,7 @@ public class EventsController(ISender sender)
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
 	/// <param name="cancellationToken">Токен отмены.</param>
+	[Authorize(Roles = "Admin")]
 	[HttpDelete("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]

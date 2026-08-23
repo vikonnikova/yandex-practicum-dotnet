@@ -1,4 +1,5 @@
 ﻿using Events.Application.Interfaces;
+using Events.Infrastructure.Auth;
 using Events.Infrastructure.BackgroundServices;
 using Events.Infrastructure.DataAccess;
 using Events.Infrastructure.HealthChecker;
@@ -21,6 +22,9 @@ public static class DependencyInjection
 		services.AddScoped<IEventRepository, EventRepository>();
 		services.AddScoped<IBookingRepository, BookingRepository>();
 		services.AddScoped<IDatabaseHealthChecker, DatabaseHealthChecker>();
+		
+		services.AddScoped<IPasswordHasher, PasswordHasher>();
+		services.AddScoped<IJwtProvider, JwtProvider>();
 
 		services.AddHostedService<BookingBackgroundService>();
 	}

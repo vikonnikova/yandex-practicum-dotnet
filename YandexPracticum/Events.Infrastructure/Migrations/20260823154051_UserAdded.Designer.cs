@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Events.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260823073739_UserAdded")]
+    [Migration("20260823154051_UserAdded")]
     partial class UserAdded
     {
         /// <inheritdoc />
@@ -98,6 +98,9 @@ namespace Events.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Login")
+                        .IsUnique();
 
                     b.ToTable("users", (string)null);
                 });

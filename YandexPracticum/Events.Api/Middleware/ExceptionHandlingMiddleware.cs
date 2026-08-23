@@ -23,26 +23,28 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
 	{
 		var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
 		context.Response.ContentType = "application/json";
+		var message = exception.Message;
 		int statusCode;
-		string message;
 
 		switch (exception)
 		{
 			case EntityNotFoundException:
 				statusCode = StatusCodes.Status404NotFound;
-				message = exception.Message;
 				break;
 
 			case ArgumentException:
 			case PastEventBookingException:
 				statusCode = StatusCodes.Status400BadRequest;
-				message = exception.Message;
 				break;
 			
+			case UserAlreadyExistsException:
 			case NoAvailableSeatsException:
 			case BookingLimitReachingException:
 				statusCode = StatusCodes.Status409Conflict;
-				message = exception.Message;
+				break;
+			
+			case AuthenticationException:
+				statusCode = StatusCodes.Status401Unauthorized;
 				break;
 
 			default:

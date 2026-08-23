@@ -1,4 +1,5 @@
 ﻿using Events.Infrastructure.HealthChecker;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -6,6 +7,7 @@ namespace Events.Api.Controllers;
 /// <summary>
 /// Представляет контроллер для проверки «здоровья» приложения.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class HealthController(IDatabaseHealthChecker dbHealthChecker) : ControllerBase
