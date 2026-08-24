@@ -5,10 +5,10 @@ using MediatR;
 
 namespace Events.Application.UseCases.Bookings;
 
-public class RemoveBookingCommandHandler(TimeProvider timeProvider, ICurrentUserContext userContext, IBookingRepository bookingRepository)
-	: IRequestHandler<RemoveBookingCommand>
+public class CancelBookingCommandHandler(TimeProvider timeProvider, ICurrentUserContext userContext, IBookingRepository bookingRepository)
+	: IRequestHandler<CancelBookingCommand>
 {
-	public async Task Handle(RemoveBookingCommand command, CancellationToken cancellationToken)
+	public async Task Handle(CancelBookingCommand command, CancellationToken cancellationToken)
 	{
 		var booking = await bookingRepository.Find(command.BookingId, cancellationToken);
 
@@ -17,7 +17,7 @@ public class RemoveBookingCommandHandler(TimeProvider timeProvider, ICurrentUser
 			throw new EntityNotFoundException("Бронь", command.BookingId);
 		}
 
-		if (booking.UserId != userContext.UserId) // TODO тут или не тут пользователя доставать, подумать
+		if (booking.UserId != userContext.UserId)
 		{
 			throw new AccessDeniedException("Недостаточно прав.");
 		}

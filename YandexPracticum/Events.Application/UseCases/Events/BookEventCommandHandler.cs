@@ -14,12 +14,13 @@ internal class BookEventCommandHandler(
 	IEventRepository eventRepository)
 	: IRequestHandler<BookEventCommand, Booking>
 {
+	private const int BookingLimitPerUser = 10;
 	private static readonly SemaphoreSlim AdditionSemaphore = new(1, 1);
 
 	public async Task<Booking> Handle(BookEventCommand command, CancellationToken cancellationToken)
 	{
 		//TODO обработчик команды взял на себя координацию инвариантов
-		
+
 		Booking booking;
 
 		await AdditionSemaphore.WaitAsync(cancellationToken);
@@ -35,6 +36,14 @@ internal class BookEventCommandHandler(
 			if (@event.Period.StartAt < timeProvider.GetUtcNow().UtcDateTime)
 			{
 				throw new PastEventBookingException();
+			}
+
+			var bookingsCount = await bookingRepository.CountBy(command.EventId, userContext.UserId, cancellationToken);
+
+			if (bookingsCount >= BookingLimitPerUser)
+			{
+				throw new BookingLimitReachingException(
+					$"Достигнут лимит [{BookingLimitPerUser}] бронирования у события.");
 			}
 
 			var seatsExist = @event.TryReserveSeats();

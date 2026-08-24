@@ -37,9 +37,9 @@ public class BookingsController(ISender sender) : ControllerBase
 	[HttpDelete("{id:guid}")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<BookingResponse>> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+	public async Task<ActionResult<BookingResponse>> Cancel([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		await sender.Send(new RemoveBookingCommand(id), cancellationToken);
+		await sender.Send(new CancelBookingCommand(id), cancellationToken);
 		return Ok();
 	}
 }

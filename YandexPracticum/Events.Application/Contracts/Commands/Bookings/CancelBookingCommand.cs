@@ -2,4 +2,4 @@
 
 namespace Events.Application.Contracts.Commands.Bookings;
 
-public record RemoveBookingCommand(Guid BookingId) : IRequest;
+public record CancelBookingCommand(Guid BookingId) : IRequest;

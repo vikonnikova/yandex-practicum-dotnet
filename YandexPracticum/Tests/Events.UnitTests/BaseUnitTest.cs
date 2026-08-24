@@ -102,6 +102,8 @@ public abstract class BaseUnitTest : IDisposable
 			.ReturnsAsync(booking);
 		BookingRepositoryMock.Setup(repo => repo.GetPending(It.IsAny<CancellationToken>()))
 			.ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
+		BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(1);
 		BookingRepositoryMock.Setup(repo => repo.Add(booking));
 		BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
 			.Returns(Task.CompletedTask);

@@ -18,6 +18,11 @@ internal class BookingRepository(AppDbContext context) : IBookingRepository
 			.ToArrayAsync(cancellationToken);
 	}
 
+	public async Task<int> CountBy(Guid eventId, Guid userId, CancellationToken cancellationToken)
+	{
+		return await context.Bookings.CountAsync(x => x.EventId == eventId && x.UserId == userId, cancellationToken);
+	}
+
 	public void Add(Booking booking)
 	{
 		context.Bookings.Add(booking);

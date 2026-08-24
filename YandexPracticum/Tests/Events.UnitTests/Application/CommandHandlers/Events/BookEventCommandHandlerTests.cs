@@ -8,6 +8,7 @@ using Events.Domain;
 using Events.Domain.Exceptions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Events.UnitTests.Application.CommandHandlers.Events;
@@ -75,6 +76,101 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 		BookingRepositoryMock.Verify(
 			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
 			Times.Never);
+	}
+
+	/// <summary>
+	/// Проверяет создание брони на прошедшее событие.
+	/// </summary>
+	[Fact]
+	public async Task Add_WhenPastEvent_ShouldThrowPastEventBookingException()
+	{
+		//Arrange
+		using var scope = ServiceProvider.CreateScope();
+		var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
+		var timeProvider = scope.ServiceProvider.GetRequiredService<TimeProvider>() as FakeTimeProvider;
+		timeProvider?.SetUtcNow(DateTime.UtcNow);
+
+		//Act
+		Func<Task> act = () => handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
+		await act.Should().ThrowAsync<PastEventBookingException>()
+			.WithMessage("Попытка забронировать прошедшее событие.");
+
+		//Assert
+		EventRepositoryMock.Verify(
+			repo => repo.Find(It.Is<Guid>(x => x == EventId), CancellationToken.None),
+			Times.Once);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.Add(It.IsAny<Booking>()),
+			Times.Never);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Never);
+	}
+
+	/// <summary>
+	/// Проверяет создание брони при достижении лимита пользователем.
+	/// </summary>
+	[Fact]
+	public async Task Add_WhenBookingLimitReached_ShouldThrowBookingLimitReachingException()
+	{
+		//Arrange
+		using var scope = ServiceProvider.CreateScope();
+		BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
+			.ReturnsAsync(10);
+		var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
+
+		//Act
+		Func<Task> act = () => handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
+		await act.Should().ThrowAsync<BookingLimitReachingException>()
+			.WithMessage("Достигнут лимит [10] бронирования у события.");
+
+		//Assert
+		EventRepositoryMock.Verify(
+			repo => repo.Find(It.Is<Guid>(x => x == EventId), CancellationToken.None),
+			Times.Once);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.Add(It.IsAny<Booking>()),
+			Times.Never);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Never);
+	}
+
+	/// <summary>
+	/// Проверяет, что лимиты разных пользователей не влияют друг на друга.
+	/// </summary>
+	[Fact]
+	public async Task Add_WhenBookingLimitReachedForOtherUser_ShouldWorkCorrectly()
+	{
+		//Arrange
+		using var scope = ServiceProvider.CreateScope();
+		BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, Guid.NewGuid(), It.IsAny<CancellationToken>()))
+			.ReturnsAsync(10);
+		var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
+
+		//Act
+		var result = await handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
+
+		//Assert
+		EventRepositoryMock.Verify(
+			repo => repo.Find(It.Is<Guid>(x => x == EventId), CancellationToken.None),
+			Times.Once);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.CountBy(It.Is<Guid>(x => x == EventId), It.Is<Guid>(x => x == UserId), CancellationToken.None),
+			Times.Once);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.Add(It.IsAny<Booking>()),
+			Times.Once);
+
+		BookingRepositoryMock.Verify(
+			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+			Times.Once);
 	}
 
 	/// <summary>
@@ -199,7 +295,8 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 		using (var scope = ServiceProvider.CreateScope())
 		{
 			var handler = scope.ServiceProvider.GetRequiredService<GetEventByIdQueryHandler>();
-			(await handler.Handle(new GetEventByIdQuery(EventId), CancellationToken.None)).AvailableSeats.Should().Be(0);
+			(await handler.Handle(new GetEventByIdQuery(EventId), CancellationToken.None)).AvailableSeats.Should()
+				.Be(0);
 		}
 	}
 }
