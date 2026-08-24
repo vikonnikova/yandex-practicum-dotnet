@@ -38,6 +38,6 @@ public class DbFixture : IAsyncLifetime
 		var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(ConnectionString);
 		await using var context = new AppDbContext(optionsBuilder.Options);
 
-		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"users\", \"bookings\", \"events\" RESTART IDENTITY CASCADE;");
+		await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"bookings\", \"events\", \"users\" RESTART IDENTITY CASCADE;");
 	}
 }

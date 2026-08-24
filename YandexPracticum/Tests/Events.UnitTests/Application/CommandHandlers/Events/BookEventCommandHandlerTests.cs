@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using Events.Application.Contracts.Commands.Bookings;
+using Events.Application.Contracts.Commands.Events;
 using Events.Application.Contracts.Queries.Events;
 using Events.Application.Exceptions;
 using Events.Application.QueryHandlers.Events;
@@ -23,7 +23,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 		//Arrange
 		using var scope = ServiceProvider.CreateScope();
 		var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
-		var command = new BookEventCommand(EventId, UserId);
+		var command = new BookEventCommand(EventId);
 
 		//Act
 		var result = await handler.Handle(command, CancellationToken.None);
@@ -56,7 +56,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 		using var scope = ServiceProvider.CreateScope();
 		var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
 		var nonExistentEventId = Guid.NewGuid();
-		var command = new BookEventCommand(nonExistentEventId, UserId);
+		var command = new BookEventCommand(nonExistentEventId);
 
 		//Act
 		Func<Task> act = () => handler.Handle(command, CancellationToken.None);
@@ -89,11 +89,11 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 
 		for (var i = 0; i < EventTotalSeats; i++)
 		{
-			await handler.Handle(new BookEventCommand(EventId, UserId), CancellationToken.None);
+			await handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
 		}
 
 		//Act
-		Func<Task> act = () => handler.Handle(new BookEventCommand(EventId, UserId), CancellationToken.None);
+		Func<Task> act = () => handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
 		await act.Should().ThrowAsync<NoAvailableSeatsException>()
 			.WithMessage("Нет доступных мест для бронирования на запрашиваемое событие.");
 
@@ -134,7 +134,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 						bookingIdsList.Add(bookingId);
 
 						var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
-						await handler.Handle(new BookEventCommand(EventId, UserId), CancellationToken.None);
+						await handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}
@@ -180,7 +180,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
 					using (var scope = ServiceProvider.CreateScope())
 					{
 						var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
-						await handler.Handle(new BookEventCommand(EventId, UserId), CancellationToken.None);
+						await handler.Handle(new BookEventCommand(EventId), CancellationToken.None);
 
 						Interlocked.Increment(ref successCount);
 					}

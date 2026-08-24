@@ -2,7 +2,6 @@
 using Events.Api.Contracts.Bookings;
 using Events.Api.Contracts.Events;
 using Events.Application;
-using Events.Application.Contracts.Commands.Bookings;
 using Events.Application.Contracts.Commands.Events;
 using Events.Application.Contracts.Queries.Events;
 using Events.Domain;
@@ -23,7 +22,7 @@ internal static class EventMapping
 
 	internal static BookEventCommand ToBookCommand(this BookingRequest data, Guid eventId)
 	{
-		return new BookEventCommand(eventId, data.UserId);
+		return new BookEventCommand(eventId);
 	}
 
 	internal static EventResponse ToResponse(this Event @event)

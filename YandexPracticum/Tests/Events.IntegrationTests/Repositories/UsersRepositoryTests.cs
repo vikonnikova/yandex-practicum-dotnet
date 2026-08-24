@@ -15,8 +15,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	public async Task FindByLogin_WhenValidData_ShouldReturnBooking()
 	{
 		// Arrange
-		const string hash = "b512c1b48074900a6316ea570f7cf738";
-		var user = User.Create(UserId, TestData.Login, hash, UserRole.Admin);
+		var user = User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.Admin);
 
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -31,9 +30,9 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 
 			// Assert
 			result.Should().NotBeNull();
-			result.Id.Should().Be(UserId);
+			result.Id.Should().Be(TestData.UserId);
 			result.Login.Should().Be(TestData.Login);
-			result.PasswordHash.Should().Be(hash);
+			result.PasswordHash.Should().Be(TestData.PasswordHash);
 			result.Role.Should().Be(UserRole.Admin);
 		}
 	}
@@ -61,8 +60,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	public async Task Find_WhenValidData_ShouldReturnUser()
 	{
 		// Arrange
-		const string hash = "b512c1b48074900a6316ea570f7cf738";
-		var user = User.Create(UserId, TestData.Login, hash, UserRole.Admin);
+		var user = User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.Admin);
 
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -73,13 +71,13 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		await using (var context = DbFixture.CreateContext())
 		{
 			// Act
-			var result = await new UserRepository(context).Find(UserId, CancellationToken.None);
+			var result = await new UserRepository(context).Find(TestData.UserId, CancellationToken.None);
 
 			// Assert
 			result.Should().NotBeNull();
-			result.Id.Should().Be(UserId);
+			result.Id.Should().Be(TestData.UserId);
 			result.Login.Should().Be(TestData.Login);
-			result.PasswordHash.Should().Be(hash);
+			result.PasswordHash.Should().Be(TestData.PasswordHash);
 			result.Role.Should().Be(UserRole.Admin);
 		}
 	}
@@ -107,8 +105,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	public async Task ExistsByLogin_WhenUserExists_ShouldReturnTrue()
 	{
 		// Arrange
-		const string hash = "b512c1b48074900a6316ea570f7cf738";
-		var user = User.Create(UserId, TestData.Login, hash, UserRole.Admin);
+		var user = User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.Admin);
 
 		await using (var context = DbFixture.CreateContext())
 		{
@@ -150,26 +147,23 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	[Fact]
 	public async Task Add_WhenValidData_ShouldSaveCorrectly()
 	{
-		// Arrange
-		const string hash = "b512c1b48074900a6316ea570f7cf738";
-
 		// Act
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new UserRepository(context);
-			repository.Add(User.Create(UserId, TestData.Login, hash, UserRole.User));
+			repository.Add(User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.User));
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
 		// Assert
 		await using (var context = DbFixture.CreateContext())
 		{
-			var result = await context.Users.FindAsync(UserId);
+			var result = await context.Users.FindAsync(TestData.UserId);
 
 			result.Should().NotBeNull();
-			result.Id.Should().Be(UserId);
+			result.Id.Should().Be(TestData.UserId);
 			result.Login.Should().Be(TestData.Login);
-			result.PasswordHash.Should().Be(hash);
+			result.PasswordHash.Should().Be(TestData.PasswordHash);
 			result.Role.Should().Be(UserRole.User);
 		}
 	}
@@ -181,11 +175,10 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 	public async Task Add_WhenUserWithTheSameLoginAlreadyExists_ShouldTrowUniqueException()
 	{
 		// Arrange
-		const string hash = "b512c1b48074900a6316ea570f7cf738";
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new UserRepository(context);
-			repository.Add(User.Create(UserId, TestData.Login, hash, UserRole.User));
+			repository.Add(User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.User));
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
@@ -193,7 +186,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new UserRepository(context);
-			repository.Add(User.Create(UserId, TestData.Login, hash, UserRole.User));
+			repository.Add(User.Create(TestData.UserId, TestData.Login, TestData.PasswordHash, UserRole.User));
 
 			//Assert
 			Func<Task> act = async () => await repository.SaveChangesAsync(CancellationToken.None);

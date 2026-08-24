@@ -1,13 +1,13 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Events.Application;
+﻿using Events.Application;
 using Events.Application.Interfaces;
 using Events.Application.QueryHandlers.Bookings;
 using Events.Application.QueryHandlers.Events;
 using Events.Application.UseCases.Auth;
 using Events.Application.UseCases.Events;
 using Events.Domain;
+using Events.Infrastructure.Auth;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Events.UnitTests;
@@ -29,6 +29,7 @@ public abstract class BaseUnitTest : IDisposable
 	protected const int PageSize = 15;
 
 	protected readonly Mock<IJwtProvider> JwtProviderMock = new();
+	protected readonly Mock<ICurrentUserContext> UserContextMock = new();
 	protected readonly Mock<IPasswordHasher> PasswordHasherMock = new();
 	protected readonly Mock<IUserRepository> UserRepositoryMock = new();
 	protected readonly Mock<IEventRepository> EventRepositoryMock = new();
@@ -39,7 +40,11 @@ public abstract class BaseUnitTest : IDisposable
 	protected BaseUnitTest()
 	{
 		var services = new ServiceCollection();
-		ConfigureRepositories(services);
+
+		services.AddSingleton<TimeProvider>(new FakeTimeProvider());
+		services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+
+		ConfigureMockServices(services);
 
 		services.AddScoped<RegisterUserCommandHandler>();
 		services.AddScoped<LoginCommandHandler>();
@@ -56,13 +61,16 @@ public abstract class BaseUnitTest : IDisposable
 		ServiceProvider = services.BuildServiceProvider();
 	}
 
-	private void ConfigureRepositories(IServiceCollection services)
+	private void ConfigureMockServices(IServiceCollection services)
 	{
 		var user = User.Create(UserId, UserLogin, UserPasswordHash, UserRole.User);
 		var @event = Event.Create(EventId, EventTitle, EventDescription,
 			EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
 		var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
-		
+
+		UserContextMock.Setup(x => x.UserId).Returns(UserId);
+		UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
+
 		JwtProviderMock.Setup(provider => provider.GenerateToken(user))
 			.Returns("jwt_token");
 
@@ -98,6 +106,7 @@ public abstract class BaseUnitTest : IDisposable
 		BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
 			.Returns(Task.CompletedTask);
 
+		services.AddSingleton(UserContextMock.Object);
 		services.AddSingleton(JwtProviderMock.Object);
 		services.AddSingleton(PasswordHasherMock.Object);
 		services.AddSingleton(UserRepositoryMock.Object);

@@ -1,32 +1,46 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Events.Api.Contracts.Users;
+using Events.Domain;
 using Events.IntegrationTests.Api.Base;
+using UserRole = Events.Domain.UserRole;
 
 namespace Events.IntegrationTests.Api;
 
-public class UsersApiTests(ApiFixture fixture) : BaseApiTest(fixture)
+public class UsersApiTests : BaseApiTest
 {
-	#region Get methods
+	public UsersApiTests(ApiFixture fixture) : base(fixture)
+	{
+		Client.DefaultRequestHeaders.Authorization =
+			new AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
+	}
 
 	/// <summary>
 	/// Проверяет получение пользователя по идентификатору.
 	/// </summary>
 	[Fact]
-	public async Task GetById_ValidData_200Returned()
+    public async Task GetById_ValidData_200Returned()
 	{
 		//Arrange
-		var userId = await CreateUser();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Ivan_585", "Qwerty5678", UserRole.Admin));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Anton_1187", "567890ytrewq", UserRole.User));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Kate_433", "12345qwerty", UserRole.User));
+			await dbContext.SaveChangesAsync(CancellationToken.None);
+		});
 
 		//Act
-		var response = await Client.GetAsync($"/users/{userId}");
+		var response = await Client.GetAsync($"/users/{TestData.UserId}");
 
 		//Assert
 		var responseData = (await response.Content.ReadFromJsonAsync<UserResponse>())!;
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-		Assert.Equal(userId, responseData.Id);
+		Assert.Equal(TestData.UserId, responseData.Id);
 		Assert.Equal(TestData.Login, responseData.Login);
-		Assert.Equal(TestData.Role, responseData.Role);
+		Assert.Equal(Events.Api.Contracts.Users.UserRole.User, responseData.Role);
 	}
 
 	/// <summary>
@@ -36,7 +50,12 @@ public class UsersApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task GetById_NonExistentUser_404Returned()
 	{
 		//Arrange
-		await CreateUsers();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Ivan_585", "Qwerty5678", UserRole.Admin));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Anton_1187", "567890ytrewq", UserRole.User));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), "Kate_433", "12345qwerty", UserRole.User));
+		});
 
 		//Act
 		var response = await Client.GetAsync($"/users/{Guid.NewGuid()}");
@@ -44,43 +63,4 @@ public class UsersApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
 	}
-
-	#endregion
-
-	#region Create method
-
-	/// <summary>
-	/// Проверяет создание пользователя.
-	/// </summary>
-	[Fact]
-	public async Task Create_ValidData_201Returned()
-	{
-		//Act
-		var response = await Client.PostAsJsonAsync("/users", CreateTestUser());
-
-		//Assert
-		var userId = await response.Content.ReadFromJsonAsync<Guid>();
-		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-		Assert.Equal($"/Users/{userId}", response.Headers.Location!.AbsolutePath);
-
-		var createdUser = (await Client.GetFromJsonAsync<UserResponse>($"/users/{userId}"))!;
-		Assert.Equal(userId, createdUser.Id);
-		Assert.Equal(TestData.Login, createdUser.Login);
-		Assert.Equal(TestData.Role, createdUser.Role);
-	}
-
-	/// <summary>
-	/// Проверяет создание пользователя с невалидными даными.
-	/// </summary>
-	[Fact]
-	public async Task Create_InvalidData_400Returned()
-	{
-		//Act
-		var response = await Client.PostAsJsonAsync("/users", CreateInvalidTestUser());
-
-		//Assert
-		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-	}
-
-	#endregion
 }

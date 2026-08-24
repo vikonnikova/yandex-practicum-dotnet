@@ -1,4 +1,4 @@
-﻿using Events.Application.Contracts.Commands.Bookings;
+﻿using Events.Application.Contracts.Commands.Events;
 using Events.Application.Exceptions;
 using Events.Application.Interfaces;
 using Events.Domain;
@@ -7,13 +7,19 @@ using MediatR;
 
 namespace Events.Application.UseCases.Events;
 
-internal class BookEventCommandHandler(IBookingRepository bookingRepository, IEventRepository eventRepository)
+internal class BookEventCommandHandler(
+	TimeProvider timeProvider,
+	ICurrentUserContext userContext,
+	IBookingRepository bookingRepository,
+	IEventRepository eventRepository)
 	: IRequestHandler<BookEventCommand, Booking>
 {
 	private static readonly SemaphoreSlim AdditionSemaphore = new(1, 1);
 
 	public async Task<Booking> Handle(BookEventCommand command, CancellationToken cancellationToken)
 	{
+		//TODO обработчик команды взял на себя координацию инвариантов
+		
 		Booking booking;
 
 		await AdditionSemaphore.WaitAsync(cancellationToken);
@@ -26,6 +32,11 @@ internal class BookEventCommandHandler(IBookingRepository bookingRepository, IEv
 				throw new EntityNotFoundException("Событие", command.EventId);
 			}
 
+			if (@event.Period.StartAt < timeProvider.GetUtcNow().UtcDateTime)
+			{
+				throw new PastEventBookingException();
+			}
+
 			var seatsExist = @event.TryReserveSeats();
 
 			if (!seatsExist)
@@ -33,7 +44,8 @@ internal class BookEventCommandHandler(IBookingRepository bookingRepository, IEv
 				throw new NoAvailableSeatsException();
 			}
 
-			booking = Booking.Create(Guid.NewGuid(), command.EventId, command.UserId, DateTime.UtcNow);
+			booking = Booking.Create(Guid.NewGuid(), command.EventId, userContext.UserId,
+				timeProvider.GetUtcNow().UtcDateTime);
 			bookingRepository.Add(booking);
 
 			await bookingRepository.SaveChangesAsync(cancellationToken);

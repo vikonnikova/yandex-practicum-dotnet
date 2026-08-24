@@ -21,11 +21,12 @@ public class AuthController(ISender sender) : ControllerBase
 	[HttpPost("register")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status409Conflict)]
 	public async Task<ActionResult> Register([FromBody] RegistrationRequest data, CancellationToken cancellationToken)
 	{
 		await sender.Send(data.ToCommand(), cancellationToken);
 
-		return Ok();
+		return NoContent();
 	}
 
 	/// <summary>
@@ -36,6 +37,7 @@ public class AuthController(ISender sender) : ControllerBase
 	[HttpPost("login")]
 	[ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	public async Task<ActionResult<string>> Login([FromBody] LoginRequest data,
 		CancellationToken cancellationToken)
 	{

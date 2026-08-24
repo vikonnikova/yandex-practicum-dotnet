@@ -1,5 +1,6 @@
 ﻿using Events.Api.Contracts.Bookings;
 using Events.Api.Mappings;
+using Events.Application.Contracts.Commands.Bookings;
 using Events.Application.Contracts.Queries.Bookings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -26,5 +27,19 @@ public class BookingsController(ISender sender) : ControllerBase
 	public async Task<ActionResult<BookingResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
 		return Ok((await sender.Send(new GetBookingByIdQuery(id), cancellationToken)).ToResponse());
+	}
+	
+	/// <summary>
+	/// Удаляет бронь.
+	/// </summary>
+	/// <param name="id">Идентификатор брони.</param>
+	/// <param name="cancellationToken">Токен отмены.</param>
+	[HttpDelete("{id:guid}")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<BookingResponse>> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+	{
+		await sender.Send(new RemoveBookingCommand(id), cancellationToken);
+		return Ok();
 	}
 }

@@ -101,16 +101,14 @@ public class EventsController(ISender sender)
 	/// Создает заявку на бронирование.
 	/// </summary>
 	/// <param name="id">Идентификатор события.</param>
-	/// <param name="data">Данные для бронирования.</param>
 	/// <param name="cancellationToken">Токен отмены.</param>
 	[HttpPost("{id:guid}/book")]
 	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status409Conflict)]
-	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, [FromBody] BookingRequest data,
-		CancellationToken cancellationToken)
+	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
 	{
-		var result = (await sender.Send(data.ToBookCommand(id), cancellationToken)).ToResponse();
+		var result = (await sender.Send(new BookEventCommand(id), cancellationToken)).ToResponse();
 
 		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
 		Response.Headers.Location = statusUrl;

@@ -22,7 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Contracts\Commands\" />
       <Folder Include="Mappings\" />
     </ItemGroup>
 

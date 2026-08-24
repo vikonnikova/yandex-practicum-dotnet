@@ -18,24 +18,24 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
-			context.Events.Add(CreateEvent());
+			context.Events.Add(TestData.TestEvent);
 			await context.SaveChangesAsync();
 		}
 
 		await using (var context = DbFixture.CreateContext())
 		{
 			// Act
-			var result = await new EventRepository(context).Find(EventId, CancellationToken.None);
+			var result = await new EventRepository(context).Find(TestData.EventId, CancellationToken.None);
 
 			// Assert
 			result.Should().NotBeNull();
-			result.Id.Should().Be(EventId);
-			result.Title.Should().Be(TestData.Title);
-			result.Description.Should().Be(TestData.Description);
-			result.Period.StartAt.Should().Be(TestData.StartAt);
-			result.Period.EndAt.Should().Be(TestData.EndAt);
-			result.TotalSeats.Should().Be(TestData.TotalSeats);
-			result.AvailableSeats.Should().Be(TestData.TotalSeats);
+			result.Id.Should().Be(TestData.EventId);
+			result.Title.Should().Be(TestData.Event1Title);
+			result.Description.Should().Be(TestData.Event1Description);
+			result.Period.StartAt.Should().Be(TestData.Event1StartAt);
+			result.Period.EndAt.Should().Be(TestData.Event1EndAt);
+			result.TotalSeats.Should().Be(TestData.Event1TotalSeats);
+			result.AvailableSeats.Should().Be(TestData.Event1TotalSeats);
 		}
 	}
 
@@ -65,23 +65,23 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new EventRepository(context);
-			repository.Add(CreateEvent());
+			repository.Add(TestData.TestEvent);
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
 
 		// Assert
 		await using (var context = DbFixture.CreateContext())
 		{
-			var result = await context.Events.FindAsync(EventId);
+			var result = await context.Events.FindAsync(TestData.EventId);
 
 			result.Should().NotBeNull();
-			result.Id.Should().Be(EventId);
-			result.Title.Should().Be(TestData.Title);
-			result.Description.Should().Be(TestData.Description);
-			result.Period.StartAt.Should().Be(TestData.StartAt);
-			result.Period.EndAt.Should().Be(TestData.EndAt);
-			result.TotalSeats.Should().Be(TestData.TotalSeats);
-			result.AvailableSeats.Should().Be(TestData.TotalSeats);
+			result.Id.Should().Be(TestData.EventId);
+			result.Title.Should().Be(TestData.Event1Title);
+			result.Description.Should().Be(TestData.Event1Description);
+			result.Period.StartAt.Should().Be(TestData.Event1StartAt);
+			result.Period.EndAt.Should().Be(TestData.Event1EndAt);
+			result.TotalSeats.Should().Be(TestData.Event1TotalSeats);
+			result.AvailableSeats.Should().Be(TestData.Event1TotalSeats);
 		}
 	}
 
@@ -94,7 +94,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
-			context.Events.Add(CreateEvent());
+			context.Events.Add(TestData.TestEvent);
 			await context.SaveChangesAsync();
 		}
 
@@ -102,7 +102,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new EventRepository(context);
-			var @event = (await repository.Find(EventId, CancellationToken.None))!;
+			var @event = (await repository.Find(TestData.EventId, CancellationToken.None))!;
 			@event.Update(TestData.UpdatedTitle, TestData.UpdatedDescription,
 				EventPeriod.Create(TestData.UpdatedStartAt, TestData.UpdatedEndAt));
 			await repository.SaveChangesAsync(CancellationToken.None);
@@ -111,16 +111,16 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Assert
 		await using (var context = DbFixture.CreateContext())
 		{
-			var result = await context.Events.FindAsync(EventId);
+			var result = await context.Events.FindAsync(TestData.EventId);
 
 			result.Should().NotBeNull();
-			result.Id.Should().Be(EventId);
+			result.Id.Should().Be(TestData.EventId);
 			result.Title.Should().Be(TestData.UpdatedTitle);
 			result.Description.Should().Be(TestData.UpdatedDescription);
 			result.Period.StartAt.Should().Be(TestData.UpdatedStartAt);
 			result.Period.EndAt.Should().Be(TestData.UpdatedEndAt);
-			result.TotalSeats.Should().Be(TestData.TotalSeats);
-			result.AvailableSeats.Should().Be(TestData.TotalSeats);
+			result.TotalSeats.Should().Be(TestData.Event1TotalSeats);
+			result.AvailableSeats.Should().Be(TestData.Event1TotalSeats);
 		}
 	}
 
@@ -133,7 +133,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
-			context.Events.Add(CreateEvent());
+			context.Events.Add(TestData.TestEvent);
 			await context.SaveChangesAsync();
 		}
 
@@ -141,7 +141,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		await using (var context = DbFixture.CreateContext())
 		{
 			var repository = new EventRepository(context);
-			var eventToDelete = await repository.Find(EventId, CancellationToken.None);
+			var eventToDelete = await repository.Find(TestData.EventId, CancellationToken.None);
 			repository.Delete(eventToDelete!);
 			await repository.SaveChangesAsync(CancellationToken.None);
 		}
@@ -149,7 +149,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Assert
 		await using (var context = DbFixture.CreateContext())
 		{
-			var result = await context.Events.FindAsync(EventId);
+			var result = await context.Events.FindAsync(TestData.EventId);
 			result.Should().BeNull();
 		}
 	}
@@ -163,9 +163,9 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
-			context.Users.Add(CreateUser());
-			context.Events.Add(CreateEvent());
-			context.Bookings.Add(Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow));
+			context.Users.Add(TestData.TestUser);
+			context.Events.Add(TestData.TestEvent);
+			context.Bookings.Add(Booking.Create(Guid.NewGuid(), TestData.EventId, TestData.UserId, DateTime.UtcNow));
 			await context.SaveChangesAsync();
 		}
 
@@ -173,7 +173,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		{
 			// Act
 			var repository = new EventRepository(context);
-			var eventToDelete = await repository.Find(EventId, CancellationToken.None);
+			var eventToDelete = await repository.Find(TestData.EventId, CancellationToken.None);
 			repository.Delete(eventToDelete!);
 
 			//Assert
@@ -191,9 +191,9 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		// Arrange
 		await using (var context = DbFixture.CreateContext())
 		{
-			context.Users.Add(CreateUser());
-			context.Events.Add(CreateEvent());
-			context.Bookings.Add(Booking.Create(Guid.NewGuid(), EventId, UserId, DateTime.UtcNow));
+			context.Users.Add(TestData.TestUser);
+			context.Events.Add(TestData.TestEvent);
+			context.Bookings.Add(Booking.Create(Guid.NewGuid(), TestData.EventId, TestData.UserId, DateTime.UtcNow));
 			await context.SaveChangesAsync();
 		}
 
@@ -201,7 +201,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
 		{
 			// Act
 			var repository = new EventRepository(context);
-			var result = await repository.Exists(EventId, CancellationToken.None);
+			var result = await repository.Exists(TestData.EventId, CancellationToken.None);
 
 			//Assert
 			result.Should().BeTrue();

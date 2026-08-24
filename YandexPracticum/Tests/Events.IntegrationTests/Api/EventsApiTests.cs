@@ -1,16 +1,25 @@
 ﻿using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
 using Events.Api.Contracts.Bookings;
 using Events.Api.Contracts.Events;
+using Events.Domain;
 using Events.IntegrationTests.Api.Base;
 using FluentAssertions;
+using BookingStatus = Events.Api.Contracts.Bookings.BookingStatus;
 
 namespace Events.IntegrationTests.Api;
 
-public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
+public class EventsApiTests : BaseApiTest
 {
+	public EventsApiTests(ApiFixture fixture) : base(fixture)
+	{
+		Client.DefaultRequestHeaders.Authorization =
+			new AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
+	}
+
 	#region Get methods
 
 	/// <summary>
@@ -20,7 +29,14 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task GetAll_Success()
 	{
 		//Arrange
-		await CreateEvents();
+		var events = CreateTestEvents();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			foreach (var @event in events)
+			{
+				dbContext.Events.Add(@event);
+			}
+		});
 
 		//Act
 		var response = await Client.GetAsync("/events");
@@ -39,7 +55,16 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task GetById_ValidData_200Returned()
 	{
 		//Arrange
-		var eventId = await CreateEvent();
+		var events = CreateTestEvents();
+		var eventId = events[0].Id;
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+
+		{
+			foreach (var @event in events)
+			{
+				dbContext.Events.Add(@event);
+			}
+		});
 
 		//Act
 		var response = await Client.GetAsync($"/events/{eventId}");
@@ -48,10 +73,11 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		var responseData = (await response.Content.ReadFromJsonAsync<EventResponse>())!;
 		Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 		Assert.Equal(eventId, responseData.Id);
-		Assert.Equal(TestData.Title, responseData.Title);
-		Assert.Equal(TestData.Description, responseData.Description);
-		Assert.Equal(TestData.StartAt, responseData.StartAt);
-		Assert.Equal(TestData.EndAt, responseData.EndAt);
+		Assert.Equal(TestData.Event1Title, responseData.Title);
+		Assert.Equal(TestData.Event1Description, responseData.Description);
+		Assert.Equal(TestData.Event1StartAt, responseData.StartAt);
+		Assert.Equal(TestData.Event1EndAt, responseData.EndAt);
+		Assert.Equal(TestData.Event1TotalSeats, responseData.TotalSeats);
 	}
 
 	/// <summary>
@@ -61,7 +87,14 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task GetById_NonExistentEvent_404Returned()
 	{
 		//Arrange
-		await CreateEvents();
+		var events = CreateTestEvents();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			foreach (var @event in events)
+			{
+				dbContext.Events.Add(@event);
+			}
+		});
 
 		//Act
 		var response = await Client.GetAsync($"/events/{Guid.NewGuid()}");
@@ -81,19 +114,28 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Create_ValidData_201Returned()
 	{
 		//Act
-		var response = await Client.PostAsJsonAsync("/events", CreateTestEvent());
+		var response = await Client.PostAsJsonAsync("/events",
+			new
+			{
+				Title = TestData.Event1Title,
+				Description = TestData.Event1Description,
+				StartAt = TestData.Event1StartAt, 
+				EndAt = TestData.Event1EndAt, 
+				TotalSeats = TestData.Event1TotalSeats
+			});
 
 		//Assert
-		var eventId = await response.Content.ReadFromJsonAsync<Guid>();
 		Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+		var eventId = await response.Content.ReadFromJsonAsync<Guid>();
 		Assert.Equal($"/Events/{eventId}", response.Headers.Location!.AbsolutePath);
 
-		var createdEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
+		var createdEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!; //TODO dbContext
 		Assert.Equal(eventId, createdEvent.Id);
-		Assert.Equal(TestData.Title, createdEvent.Title);
-		Assert.Equal(TestData.Description, createdEvent.Description);
-		Assert.Equal(TestData.StartAt, createdEvent.StartAt);
-		Assert.Equal(TestData.EndAt, createdEvent.EndAt);
+		Assert.Equal(TestData.Event1Title, createdEvent.Title);
+		Assert.Equal(TestData.Event1Description, createdEvent.Description);
+		Assert.Equal(TestData.Event1StartAt, createdEvent.StartAt);
+		Assert.Equal(TestData.Event1EndAt, createdEvent.EndAt);
 	}
 
 	/// <summary>
@@ -103,7 +145,8 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Create_InvalidData_400Returned()
 	{
 		//Act
-		var response = await Client.PostAsJsonAsync("/events", CreateInvalidTestEvent());
+		var response = await Client.PostAsJsonAsync("/events",
+			new { TestData.Event1Title, TestData.Event1Description, TestData.Event1StartAt, TestData.Event1EndAt });
 
 		//Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -120,15 +163,29 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Update_ValidData_204Returned()
 	{
 		//Arrange
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{eventId}", CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}",
+			new
+			{
+				Title = TestData.UpdatedTitle,
+				Description = TestData.UpdatedDescription,
+				StartAt = TestData.UpdatedStartAt,
+				EndAt = TestData.UpdatedEndAt,
+				TotalSeats = TestData.UpdatedTotalSeats
+			});
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-		var updatedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
+		var updatedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!; //TODO dbContext
 		Assert.Equal(eventId, updatedEvent.Id);
 		Assert.Equal(TestData.UpdatedTitle, updatedEvent.Title);
 		Assert.Equal(TestData.UpdatedDescription, updatedEvent.Description);
@@ -143,10 +200,23 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Update_InvalidData_400Returned()
 	{
 		//Arrange
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{eventId}", CreateInvalidTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{eventId}",
+			new
+			{
+				Description = TestData.UpdatedDescription,
+				StartAt = TestData.UpdatedStartAt,
+				EndAt = TestData.UpdatedEndAt,
+				TotalSeats = TestData.UpdatedTotalSeats
+			});
 
 		//Assert
 		Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -159,10 +229,23 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Update_NonExistentEvent_404Returned()
 	{
 		//Arrange
-		await CreateEvent();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(Guid.NewGuid(), TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
-		var response = await Client.PutAsJsonAsync($"/events/{Guid.NewGuid()}", CreateTestEventToUpdate());
+		var response = await Client.PutAsJsonAsync($"/events/{Guid.NewGuid()}",
+			new
+			{
+				Title = TestData.UpdatedTitle,
+				Description = TestData.UpdatedDescription,
+				StartAt = TestData.UpdatedStartAt,
+				EndAt = TestData.UpdatedEndAt,
+				TotalSeats = TestData.UpdatedTotalSeats
+			});
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -179,14 +262,20 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Delete_ValidData_200Returned()
 	{
 		//Arrange
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
 		var responseFromDelete = await Client.DeleteAsync($"/events/{eventId}");
 
 		//Assert
 		Assert.Equal(HttpStatusCode.OK, responseFromDelete.StatusCode);
-		var responseFromGet = await Client.GetAsync($"/events/{eventId}");
+		var responseFromGet = await Client.GetAsync($"/events/{eventId}"); //TODO dbContext
 		Assert.Equal(HttpStatusCode.NotFound, responseFromGet.StatusCode);
 	}
 
@@ -197,7 +286,12 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Delete_NonExistentEvent_404Returned()
 	{
 		//Arrange
-		await CreateEvent();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(Guid.NewGuid(), TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
 		var responseFromDelete = await Client.DeleteAsync($"/events/{Guid.NewGuid()}");
@@ -217,26 +311,33 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Book_ValidData_202Returned()
 	{
 		//Arrange
-		var userId = await CreateUser();
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
-		var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
+		var response = await Client.PostAsync($"/events/{eventId}/book", null);
 
 		//Assert
-		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
 		Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+		var booking = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
 		Assert.Equal(new Uri($"/Bookings/{booking.BookingId}", UriKind.Relative), response.Headers.Location);
 		Assert.Equal(eventId, booking.EventId);
 		Assert.Equal(BookingStatus.Pending, booking.Status);
 
-		var createdBooking = (await Client.GetFromJsonAsync<BookingResponse>($"/bookings/{booking.BookingId}"))!;
+		var createdBooking =
+			(await Client.GetFromJsonAsync<BookingResponse>($"/bookings/{booking.BookingId}"))!; //TODO dbContext
 		Assert.Equal(booking.BookingId, createdBooking.BookingId);
 		Assert.Equal(eventId, createdBooking.EventId);
 		Assert.Equal(BookingStatus.Pending, createdBooking.Status);
-		var bookedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!;
-		Assert.Equal(TestData.TotalSeats, bookedEvent.TotalSeats);
-		Assert.Equal(TestData.TotalSeats - 1, bookedEvent.AvailableSeats);
+		var bookedEvent = (await Client.GetFromJsonAsync<EventResponse>($"/events/{eventId}"))!; //TODO dbContext
+		Assert.Equal(TestData.Event1TotalSeats, bookedEvent.TotalSeats);
+		Assert.Equal(TestData.Event1TotalSeats - 1, bookedEvent.AvailableSeats);
 	}
 
 	/// <summary>
@@ -246,12 +347,22 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Book_Overbooking_409Returned()
 	{
 		//Arrange
-		var userId = await CreateUser();
-		var eventId = await CreateEvent();
-		await CreateBookings(eventId, userId, TestData.TotalSeats);
+		var @event = TestData.TestEvent;
+		var bookings = Enumerable.Range(0, TestData.Event1TotalSeats)
+			.Select(_ =>
+			{
+				@event.TryReserveSeats();
+				return Booking.Create(Guid.NewGuid(), TestData.EventId, TestData.UserId, DateTime.UtcNow);
+			}).ToArray();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(TestData.TestUser);
+			dbContext.Events.Add(@event);
+			dbContext.Bookings.AddRange(bookings);
+		});
 
 		//Act
-		var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
+		var response = await Client.PostAsync($"/events/{TestData.EventId}/book", null);
 
 		//Assert
 		Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -263,10 +374,17 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	[Fact]
 	public async Task Book_NonExistentUser_404Returned()
 	{
-		await CreateEvents();
+		var events = CreateTestEvents();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			foreach (var @event in events)
+			{
+				dbContext.Events.Add(@event);
+			}
+		});
 
 		//Act
-		var response = await Client.PostAsJsonAsync($"/events/{Guid.NewGuid()}/book", new { UserId = Guid.NewGuid() });
+		var response = await Client.PostAsync($"/events/{Guid.NewGuid()}/book", null);
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -278,10 +396,17 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	[Fact]
 	public async Task Book_NonExistentEvent_404Returned()
 	{
-		await CreateEvents();
+		var events = CreateTestEvents();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			foreach (var @event in events)
+			{
+				dbContext.Events.Add(@event);
+			}
+		});
 
 		//Act
-		var response = await Client.PostAsJsonAsync($"/events/{Guid.NewGuid()}/book", new { UserId = Guid.NewGuid() });
+		var response = await Client.PostAsync($"/events/{Guid.NewGuid()}/book", null);
 
 		//Assert
 		Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -294,17 +419,21 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	public async Task Book_MultipleValidData_Success()
 	{
 		//Arrange
-		var totalRequests = TestData.TotalSeats;
+		var totalRequests = TestData.Event1TotalSeats;
 		var responses = new ConcurrentBag<HttpResponseMessage>();
-
-		var userId = await CreateUser();
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
 		var tasks = Enumerable.Range(0, totalRequests)
 			.Select(_ => Task.Run(async () =>
 			{
-				var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
+				var response = await Client.PostAsync($"/events/{eventId}/book", null);
 				responses.Add(response);
 			})).ToArray();
 
@@ -317,7 +446,7 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 
 		foreach (var response in responses)
 		{
-			var bookingByIdResponse = await Client.GetAsync(response.Headers.Location);
+			var bookingByIdResponse = await Client.GetAsync(response.Headers.Location); //TODO dbContext
 			bookingByIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
 			var responseData = await response.Content.ReadFromJsonAsync<BookingResponse>();
@@ -336,15 +465,19 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		//Arrange
 		const int totalRequests = 25;
 		var responses = new ConcurrentBag<HttpResponseMessage>();
-
-		var userId = await CreateUser();
-		var eventId = await CreateEvent();
+		var eventId = Guid.NewGuid();
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
+		{
+			dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+			dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+		});
 
 		//Act
 		var tasks = Enumerable.Range(0, totalRequests)
 			.Select(_ => Task.Run(async () =>
 			{
-				var response = await Client.PostAsJsonAsync($"/events/{eventId}/book", new { UserId = userId });
+				var response = await Client.PostAsync($"/events/{eventId}/book", null);
 				responses.Add(response);
 			})).ToArray();
 
@@ -353,16 +486,16 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 		//Assert
 		responses.Should().HaveCount(totalRequests);
 		responses.Where(x => x.Headers.Location is not null).Select(x => x.Headers.Location)
-			.Distinct().Should().HaveCount(TestData.TotalSeats);
+			.Distinct().Should().HaveCount(TestData.Event1TotalSeats);
 
 		var acceptedResponses = responses.Where(x => x.StatusCode == HttpStatusCode.Accepted).ToArray();
 		var conflictedResponses = responses.Where(x => x.StatusCode == HttpStatusCode.Conflict).ToArray();
-		acceptedResponses.Should().HaveCount(TestData.TotalSeats);
-		conflictedResponses.Should().HaveCount(totalRequests - TestData.TotalSeats);
+		acceptedResponses.Should().HaveCount(TestData.Event1TotalSeats);
+		conflictedResponses.Should().HaveCount(totalRequests - TestData.Event1TotalSeats);
 
 		foreach (var response in acceptedResponses)
 		{
-			var bookingByIdResponse = await Client.GetAsync(response.Headers.Location);
+			var bookingByIdResponse = await Client.GetAsync(response.Headers.Location); //TODO dbContext
 			bookingByIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
 			var responseData = await response.Content.ReadFromJsonAsync<BookingResponse>();
@@ -373,4 +506,17 @@ public class EventsApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 	}
 
 	#endregion
+
+	private static Event[] CreateTestEvents()
+	{
+		return
+		[
+			Event.Create(Guid.NewGuid(), TestData.Event1Title, TestData.Event1Description,
+				EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats),
+			Event.Create(Guid.NewGuid(), TestData.Event2Title, TestData.Event2Description,
+				EventPeriod.Create(TestData.Event2StartAt, TestData.Event2EndAt), TestData.Event2TotalSeats),
+			Event.Create(Guid.NewGuid(), TestData.Event3Title, TestData.Event3Description,
+				EventPeriod.Create(TestData.Event3StartAt, TestData.Event3EndAt), TestData.Event3TotalSeats)
+		];
+	}
 }

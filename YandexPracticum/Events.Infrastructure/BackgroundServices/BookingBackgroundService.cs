@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Events.Infrastructure.BackgroundServices;
 
-internal class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogger<BookingBackgroundService> logger)
+internal class BookingBackgroundService(TimeProvider timeProvider, IServiceScopeFactory scopeFactory, ILogger<BookingBackgroundService> logger)
 	: BackgroundService
 {
 	private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(2);
@@ -78,20 +78,20 @@ internal class BookingBackgroundService(IServiceScopeFactory scopeFactory, ILogg
 
 		if (@event is null)
 		{
-			booking.Reject(DateTime.UtcNow);
+			booking.Reject(timeProvider.GetUtcNow().UtcDateTime);
 			logger.LogWarning(
 				"Бронирование с идентификатором {BookingId} отклонено. Не найдено событие с идентификатором {EventId}.",
 				booking.Id, booking.EventId);
 		}
 		else
 		{
-			booking.Confirm(DateTime.UtcNow);
+			booking.Confirm(timeProvider.GetUtcNow().UtcDateTime);
 		}
 	}
 
 	private async Task Reject(Booking booking, IEventRepository eventStore, CancellationToken cancellationToken)
 	{
-		booking.Reject(DateTime.UtcNow);
+		booking.Reject(timeProvider.GetUtcNow().UtcDateTime);
 		var @event = await eventStore.Find(booking.EventId, cancellationToken);
 		@event?.ReleaseSeats();
 	}

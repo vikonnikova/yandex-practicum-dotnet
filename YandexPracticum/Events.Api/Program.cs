@@ -11,6 +11,7 @@ using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddProblemDetails();
@@ -36,6 +37,8 @@ builder.Services.AddSwaggerGen(options =>
 		[new OpenApiSecuritySchemeReference("Bearer", document)] = []
 	});
 });
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
