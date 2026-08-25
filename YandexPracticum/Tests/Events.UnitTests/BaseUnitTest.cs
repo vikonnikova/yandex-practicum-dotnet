@@ -19,7 +19,6 @@ public abstract class BaseUnitTest : IDisposable
 	protected readonly Guid UserId = Guid.NewGuid();
 	protected const string UserLogin = "Ivan_123";
 	protected const string UserPassword = "qwerty1234";
-	protected const string UserPasswordHash = "17F80754644D33AC685B0842A402229ADBB43FC9312F7BDF36BA24237A1F1FFB";
 	protected const string EventTitle = "Новый год";
 	protected const string EventDescription = "Дед Мороз и снегурочка";
 	protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -63,7 +62,7 @@ public abstract class BaseUnitTest : IDisposable
 
 	private void ConfigureMockServices(IServiceCollection services)
 	{
-		var user = User.Create(UserId, UserLogin, UserPasswordHash, UserRole.User);
+		var user = User.Create(UserId, UserLogin, "random_string", UserRole.User);
 		var @event = Event.Create(EventId, EventTitle, EventDescription,
 			EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
 		var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
@@ -75,8 +74,8 @@ public abstract class BaseUnitTest : IDisposable
 			.Returns("jwt_token");
 
 		PasswordHasherMock.Setup(hasher => hasher.Hash(UserPassword))
-			.Returns(UserPasswordHash);
-		PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, UserPasswordHash))
+			.Returns("random_password_hash");
+		PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, It.IsAny<string>()))
 			.Returns(true);
 
 		UserRepositoryMock.Setup(repo => repo.FindByLogin(UserLogin, It.IsAny<CancellationToken>()))

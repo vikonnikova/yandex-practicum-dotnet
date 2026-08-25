@@ -35,7 +35,7 @@ public class RegisterUserCommandHandlerTests : BaseUnitTest
 
 		UserRepositoryMock.Verify(
 			repo => repo.Add(It.Is<User>(x =>
-				x.Login == UserLogin && x.PasswordHash == UserPasswordHash && x.Role == UserRole.User)),
+				x.Login == UserLogin && x.Role == UserRole.User)),
 			Times.Once);
 
 		UserRepositoryMock.Verify(

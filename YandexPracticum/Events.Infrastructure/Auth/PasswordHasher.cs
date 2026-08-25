@@ -1,22 +1,22 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using Events.Application.Interfaces;
+﻿using Events.Application.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Events.Infrastructure.Auth;
 
 public class PasswordHasher : IPasswordHasher
 {
-	public string Hash(string password)
-	{
-		var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-		return Convert.ToHexString(bytes);
-	}
+    private readonly PasswordHasher<object> _hasher = new();
+    private static readonly object DummyUser = new();
 
-	public bool Verify(string inputPassword, string storedHashHex)
-	{
-		var inputHash = SHA256.HashData(Encoding.UTF8.GetBytes(inputPassword));
-		var storedHash = Convert.FromHexString(storedHashHex);
+    public string Hash(string password)
+    {
+        return _hasher.HashPassword(DummyUser, password);
+    }
 
-		return CryptographicOperations.FixedTimeEquals(inputHash, storedHash);
-	}
+    public bool Verify(string inputPassword, string storedHash)
+    {
+        var result = _hasher.VerifyHashedPassword(DummyUser, storedHash, inputPassword);
+
+        return result is PasswordVerificationResult.Success or PasswordVerificationResult.SuccessRehashNeeded;
+    }
 }

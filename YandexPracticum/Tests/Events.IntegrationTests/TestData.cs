@@ -7,8 +7,6 @@ internal static class TestData
 	public static readonly Guid UserId = Guid.NewGuid();
 	public const string Login = "vika_7486";
 	public const string Password = "qwerty1234";
-	public const string PasswordHash = "17F80754644D33AC685B0842A402229ADBB43FC9312F7BDF36BA24237A1F1FFB";
-
 
 	public static Guid EventId = Guid.NewGuid();
 	public const string Event1Title = "Ярмарка мёда";

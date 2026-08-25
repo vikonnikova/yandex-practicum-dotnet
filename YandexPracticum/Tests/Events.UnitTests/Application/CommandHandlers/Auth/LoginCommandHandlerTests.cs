@@ -28,7 +28,7 @@ public class LoginCommandHandlerTests : BaseUnitTest
 			Times.Once);
 
 		PasswordHasherMock.Verify(
-			hasher => hasher.Verify(It.Is<string>(x => x == UserPassword), It.Is<string>(x => x == UserPasswordHash)),
+			hasher => hasher.Verify(It.Is<string>(x => x == UserPassword), It.IsAny<string>()),
 			Times.Once);
 
 		result.Should().NotBeNull();
@@ -70,7 +70,7 @@ public class LoginCommandHandlerTests : BaseUnitTest
 		using var scope = ServiceProvider.CreateScope();
 		var handler = scope.ServiceProvider.GetRequiredService<LoginCommandHandler>();
 		var command = new LoginCommand(UserLogin, UserPassword);
-		PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, UserPasswordHash))
+		PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, It.IsAny<string>()))
 			.Returns(false);
 
 		//Act
@@ -83,7 +83,7 @@ public class LoginCommandHandlerTests : BaseUnitTest
 			Times.Once);
 		
 		PasswordHasherMock.Verify(
-			hasher => hasher.Verify(It.Is<string>(x => x == UserPassword), It.Is<string>(x => x == UserPasswordHash)),
+			hasher => hasher.Verify(It.Is<string>(x => x == UserPassword), It.IsAny<string>()),
 			Times.Once);
 	}
 }

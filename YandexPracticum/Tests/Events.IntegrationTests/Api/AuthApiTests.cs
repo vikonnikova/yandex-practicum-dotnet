@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using Events.Domain;
+using Events.Infrastructure.Auth;
 using Events.IntegrationTests.Api.Base;
 
 namespace Events.IntegrationTests.Api;
@@ -135,9 +136,10 @@ public class AuthApiTests(ApiFixture fixture) : BaseApiTest(fixture)
 
 	private async Task CreateUser()
 	{
-		await Fixture.ExecuteDbContextAsync(async dbContext => 
+		await Fixture.ExecuteDbContextAsync(async dbContext =>
 		{
-			dbContext.Users.Add(User.Create(Guid.NewGuid(), TestData.Login, TestData.PasswordHash, UserRole.User));
+			dbContext.Users.Add(User.Create(Guid.NewGuid(), TestData.Login,
+				new PasswordHasher().Hash(TestData.Password), UserRole.User));
 		});
 	}
 }

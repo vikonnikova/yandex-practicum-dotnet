@@ -6,19 +6,20 @@ namespace Events.UnitTests.Infrastructure;
 public class PasswordHasherTests : BaseUnitTest
 {
 	/// <summary>
-	/// Проверяет успешное вычисление хэша.
+	/// Проверяет вычисление хэша для одного и того же пароля.
 	/// </summary>
 	[Fact]
-	public void Hash_WhenValidData_ShouldWorkCorrectly()
+	public void Hash_WhenSamePassword_ShouldReturnDifferentHashes()
 	{
 		//Arrange
 		var hasher = new PasswordHasher();
+		
+		// Act
+		var passwordHash1 = hasher.Hash(UserPassword);
+		var passwordHash2 = hasher.Hash(UserPassword);
 
-		//Act
-		var passwordHash = hasher.Hash(UserPassword);
-
-		//Assert
-		passwordHash.Should().Be(UserPasswordHash);
+		// Assert
+		passwordHash1.Should().NotBe(passwordHash2);
 	}
 
 	/// <summary>
@@ -29,9 +30,10 @@ public class PasswordHasherTests : BaseUnitTest
 	{
 		//Arrange
 		var hasher = new PasswordHasher();
+		var hashedPassword = hasher.Hash(UserPassword);
 
 		//Act
-		var result = hasher.Verify(UserPassword, UserPasswordHash);
+		var result = hasher.Verify(UserPassword, hashedPassword);
 
 		//Assert
 		result.Should().BeTrue();
@@ -45,9 +47,10 @@ public class PasswordHasherTests : BaseUnitTest
 	{
 		//Arrange
 		var hasher = new PasswordHasher();
+		var hashedPassword = hasher.Hash(UserPassword);
 
 		//Act
-		var result = hasher.Verify("qwert1234", UserPasswordHash);
+		var result = hasher.Verify("qwert1234", hashedPassword);
 
 		//Assert
 		result.Should().BeFalse();
