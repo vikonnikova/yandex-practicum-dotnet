@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Events.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class UserAdded : Migration
+    public partial class AddUsers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,8 +15,7 @@ namespace Events.Infrastructure.Migrations
                 name: "UserId",
                 table: "bookings",
                 type: "uuid",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "users",
@@ -42,14 +41,34 @@ namespace Events.Infrastructure.Migrations
                 table: "users",
                 column: "Login",
                 unique: true);
+            
+            migrationBuilder.Sql(@"
+                -- Пользователь-заглушка для существующих броней
+                INSERT INTO ""users"" (""Id"", ""Login"", ""PasswordHash"", ""Role"")
+                VALUES ('00000000-0000-0000-0000-000000000001', 'system_legacy_user', 'no_password_hash', 'User')
+                ON CONFLICT (""Id"") DO NOTHING;
 
+                -- Обновляем существующие брони, где UserId NULL
+                UPDATE ""bookings""
+                SET ""UserId"" = '00000000-0000-0000-0000-000000000001'
+                WHERE ""UserId"" IS NULL;
+                ");
+            
+            migrationBuilder.AlterColumn<Guid>(
+                name: "UserId",
+                table: "bookings",
+                type: "uuid",
+                nullable: false,
+                oldClrType: typeof(Guid),
+                oldType: "uuid",
+                oldNullable: true);
+            
             migrationBuilder.AddForeignKey(
                 name: "FK_bookings_users_UserId",
                 table: "bookings",
                 column: "UserId",
                 principalTable: "users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
