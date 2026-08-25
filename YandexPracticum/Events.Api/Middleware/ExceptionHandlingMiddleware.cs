@@ -35,6 +35,7 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
 			case ArgumentException:
 			case BookingMustBeInPendingStatusException:
 			case PastEventBookingException:
+			case PastEventCancellationException:
 				statusCode = StatusCodes.Status400BadRequest;
 				break;
 			
