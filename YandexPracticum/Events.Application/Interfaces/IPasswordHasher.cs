@@ -2,7 +2,7 @@
 
 public interface IPasswordHasher
 {
-	string Hash(string password);
+    string Hash(string password);
 
-	bool Verify(string inputPassword, string storedHash);
+    bool Verify(string inputPassword, string storedHash);
 }

@@ -11,22 +11,22 @@ namespace Events.Infrastructure;
 
 public static class DependencyInjection
 {
-	public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
-	{
-		var connectionString = configuration.GetConnectionString("Default")
-		                       ?? throw new InvalidOperationException("Connection string 'Default' not found.");
+    public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("Default")
+                               ?? throw new InvalidOperationException("Connection string 'Default' not found.");
 
-		services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
-		services.AddScoped<ICurrentUserContext, CurrentUserContext>();
-		services.AddScoped<IUserRepository, UserRepository>();
-		services.AddScoped<IEventRepository, EventRepository>();
-		services.AddScoped<IBookingRepository, BookingRepository>();
-		services.AddScoped<IDatabaseHealthChecker, DatabaseHealthChecker>();
-		
-		services.AddScoped<IPasswordHasher, PasswordHasher>();
-		services.AddScoped<IJwtProvider, JwtProvider>();
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IDatabaseHealthChecker, DatabaseHealthChecker>();
 
-		services.AddHostedService<BookingBackgroundService>();
-	}
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IJwtProvider, JwtProvider>();
+
+        services.AddHostedService<BookingBackgroundService>();
+    }
 }

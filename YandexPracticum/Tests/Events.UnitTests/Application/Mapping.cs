@@ -2,7 +2,7 @@
 
 public class Mapping
 {
-	/*#region Event
+    /*#region Event
 
 	/// <summary>
 	/// Проверяет маппинг доменной сущности События в dto слоя Application.

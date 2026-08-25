@@ -4,4 +4,4 @@ using MediatR;
 namespace Events.Application.Contracts.Queries.Events;
 
 public record GetEventsByQuery(int Page = 1, int PageSize = 10, Filters? Filters = null)
-	: IRequest<PaginatedResult<Event>>;
+    : IRequest<PaginatedResult<Event>>;

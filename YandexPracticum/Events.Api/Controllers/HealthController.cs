@@ -12,17 +12,17 @@ namespace Events.Api.Controllers;
 [Route("[controller]")]
 public class HealthController(IDatabaseHealthChecker dbHealthChecker) : ControllerBase
 {
-	/// <summary>
-	/// Проверяет доступ до базы данных.
-	/// </summary>
-	[HttpGet]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
-	public IActionResult CheckDbConnection()
-	{
-		var canConnect = dbHealthChecker.Check();
-		return canConnect
-			? Ok("Connection is Ok")
-			: StatusCode(500, "Cannot connect to database");
-	}
+    /// <summary>
+    /// Проверяет доступ до базы данных.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public IActionResult CheckDbConnection()
+    {
+        var canConnect = dbHealthChecker.Check();
+        return canConnect
+            ? Ok("Connection is Ok")
+            : StatusCode(500, "Cannot connect to database");
+    }
 }

@@ -21,7 +21,7 @@ public class CancelBookingCommandHandler(
         {
             throw new EntityNotFoundException("Бронь", command.BookingId);
         }
-        
+
         var @event = await eventRepository.Find(booking.EventId, cancellationToken);
 
         if (@event is null)
@@ -33,7 +33,7 @@ public class CancelBookingCommandHandler(
         {
             throw new AccessDeniedException("Недостаточно прав.");
         }
-        
+
         if (@event.Period.StartAt < timeProvider.GetUtcNow().UtcDateTime)
         {
             throw new PastEventCancellationException();

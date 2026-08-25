@@ -3,5 +3,5 @@
 [CollectionDefinition("Api Collection")]
 public class ApiCollection : ICollectionFixture<ApiFixture>
 {
-	
+
 }

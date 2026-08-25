@@ -9,54 +9,54 @@ namespace Events.UnitTests.Application.CommandHandlers.Events;
 
 public class AddEventCommandHandlerTests : BaseUnitTest
 {
-	/// <summary>
-	/// Проверяет создание события.
-	/// </summary>
-	[Fact]
-	public async Task Add_WhenValidData_ShouldWorkCorrectly()
-	{
-		//Arrange
-		using var scope = ServiceProvider.CreateScope();
-		var handler = scope.ServiceProvider.GetRequiredService<AddEventCommandHandler>();
-		var command = new AddEventCommand(EventTitle, EventDescription, EventStartAt, EventEndAt, EventTotalSeats);
+    /// <summary>
+    /// Проверяет создание события.
+    /// </summary>
+    [Fact]
+    public async Task Add_WhenValidData_ShouldWorkCorrectly()
+    {
+        //Arrange
+        using var scope = ServiceProvider.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<AddEventCommandHandler>();
+        var command = new AddEventCommand(EventTitle, EventDescription, EventStartAt, EventEndAt, EventTotalSeats);
 
-		//Act
-		var result = await handler.Handle(command, CancellationToken.None);
+        //Act
+        var result = await handler.Handle(command, CancellationToken.None);
 
-		//Assert
-		EventRepositoryMock.Verify(
-			repo => repo.Add(It.Is<Event>(x => x.Title == EventTitle && x.Description == EventDescription)),
-			Times.Once);
+        //Assert
+        EventRepositoryMock.Verify(
+            repo => repo.Add(It.Is<Event>(x => x.Title == EventTitle && x.Description == EventDescription)),
+            Times.Once);
 
-		EventRepositoryMock.Verify(
-			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
-			Times.Once);
+        EventRepositoryMock.Verify(
+            repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Once);
 
-		result.Should().NotBe(Guid.Empty);
-	}
-	
-	/// <summary>
-	/// Проверяет создание события с невалидными даными.
-	/// </summary>
-	[Fact]
-	public async Task Add_WhenInvalidData_ShouldThrowArgumentNullException()
-	{
-		//Arrange
-		using var scope = ServiceProvider.CreateScope();
-		var handler = scope.ServiceProvider.GetRequiredService<AddEventCommandHandler>();
-		var command = new AddEventCommand("8 марта", "Международный женский день", default, default, 100);
+        result.Should().NotBe(Guid.Empty);
+    }
 
-		//Act
-		Func<Task> act = () => handler.Handle(command, CancellationToken.None);
-		await act.Should().ThrowAsync<ArgumentNullException>();
+    /// <summary>
+    /// Проверяет создание события с невалидными даными.
+    /// </summary>
+    [Fact]
+    public async Task Add_WhenInvalidData_ShouldThrowArgumentNullException()
+    {
+        //Arrange
+        using var scope = ServiceProvider.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<AddEventCommandHandler>();
+        var command = new AddEventCommand("8 марта", "Международный женский день", default, default, 100);
 
-		//Assert
-		EventRepositoryMock.Verify(
-			repo => repo.Add(It.IsAny<Event>()),
-			Times.Never);
+        //Act
+        Func<Task> act = () => handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<ArgumentNullException>();
 
-		EventRepositoryMock.Verify(
-			repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
-			Times.Never);
-	}
+        //Assert
+        EventRepositoryMock.Verify(
+            repo => repo.Add(It.IsAny<Event>()),
+            Times.Never);
+
+        EventRepositoryMock.Verify(
+            repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }

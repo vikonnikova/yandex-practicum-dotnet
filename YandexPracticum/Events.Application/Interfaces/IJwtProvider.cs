@@ -4,5 +4,5 @@ namespace Events.Application.Interfaces;
 
 public interface IJwtProvider
 {
-	string GenerateToken(User user);
+    string GenerateToken(User user);
 }

@@ -8,13 +8,13 @@ namespace Events.Api.Contracts.Users;
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum UserRole
 {
-	/// <summary>
-	/// Обычный пользователь.
-	/// </summary>
-	User,
+    /// <summary>
+    /// Обычный пользователь.
+    /// </summary>
+    User,
 
-	/// <summary>
-	/// Администратор.
-	/// </summary>
-	Admin,
+    /// <summary>
+    /// Администратор.
+    /// </summary>
+    Admin,
 }

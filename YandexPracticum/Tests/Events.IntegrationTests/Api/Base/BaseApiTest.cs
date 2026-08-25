@@ -3,16 +3,16 @@
 [Collection("Api Collection")]
 public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime
 {
-	protected readonly ApiFixture Fixture = fixture;
-	protected readonly HttpClient Client = fixture.Client;
+    protected readonly ApiFixture Fixture = fixture;
+    protected readonly HttpClient Client = fixture.Client;
 
-	public async Task InitializeAsync()
-	{
-		await Fixture.ClearTablesAsync();
-	}
+    public async Task InitializeAsync()
+    {
+        await Fixture.ClearTablesAsync();
+    }
 
-	public Task DisposeAsync()
-	{
-		return Task.CompletedTask;
-	}
+    public Task DisposeAsync()
+    {
+        return Task.CompletedTask;
+    }
 }

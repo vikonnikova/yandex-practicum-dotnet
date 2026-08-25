@@ -15,16 +15,16 @@ namespace Events.Api.Controllers;
 [Route("[controller]")]
 public class UsersController(ISender sender) : ControllerBase
 {
-	/// <summary>
-	/// Возвращает пользователя по идентификатору.
-	/// </summary>
-	/// <param name="id">Идентификатор пользователя.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpGet("{id:guid}")]
-	[ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<UserResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		return Ok((await sender.Send(new GetUserByIdQuery(id), cancellationToken)).ToResponse());
-	}
+    /// <summary>
+    /// Возвращает пользователя по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор пользователя.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        return Ok((await sender.Send(new GetUserByIdQuery(id), cancellationToken)).ToResponse());
+    }
 }

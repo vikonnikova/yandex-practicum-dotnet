@@ -7,19 +7,19 @@ namespace Events.Api.Mappings;
 
 internal static class BookingMapping
 {
-	internal static BookingResponse ToResponse(this Booking dto)
-	{
-		return new BookingResponse(dto.Id, dto.EventId, MapStatus(dto.Status));
-	}
+    internal static BookingResponse ToResponse(this Booking dto)
+    {
+        return new BookingResponse(dto.Id, dto.EventId, MapStatus(dto.Status));
+    }
 
-	private static BookingStatus MapStatus(Events.Domain.BookingStatus value)
-	{
-		return value switch
-		{
-			Domain.BookingStatus.Pending => BookingStatus.Pending,
-			Domain.BookingStatus.Confirmed => BookingStatus.Confirmed,
-			Domain.BookingStatus.Rejected => BookingStatus.Rejected,
-			_ => throw new ArgumentException($"Не найден маппинг для {value}")
-		};
-	}
+    private static BookingStatus MapStatus(Events.Domain.BookingStatus value)
+    {
+        return value switch
+        {
+            Domain.BookingStatus.Pending => BookingStatus.Pending,
+            Domain.BookingStatus.Confirmed => BookingStatus.Confirmed,
+            Domain.BookingStatus.Rejected => BookingStatus.Rejected,
+            _ => throw new ArgumentException($"Не найден маппинг для {value}")
+        };
+    }
 }

@@ -11,32 +11,32 @@ namespace Events.IntegrationTests.Api.Base;
 
 public class ApiWebApplicationFactory(string connectionString) : WebApplicationFactory<Program>
 {
-	public FakeTimeProvider FakeTime { get; } = new(new DateTimeOffset(2025, 12, 31, 12, 0, 0, TimeSpan.Zero));
+    public FakeTimeProvider FakeTime { get; } = new(new DateTimeOffset(2025, 12, 31, 12, 0, 0, TimeSpan.Zero));
 
-	protected override void ConfigureWebHost(IWebHostBuilder builder)
-	{
-		builder.UseEnvironment("Development");
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Development");
 
-		builder.ConfigureTestServices(services =>
-		{
-			// TimeProvider
-			services.AddSingleton<TimeProvider>(FakeTime);
+        builder.ConfigureTestServices(services =>
+        {
+            // TimeProvider
+            services.AddSingleton<TimeProvider>(FakeTime);
 
-			//DbContext
-			var descriptor = services.SingleOrDefault(d =>
-				d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-			if (descriptor != null) services.Remove(descriptor);
-			services.AddDbContext<AppDbContext>(options => { options.UseNpgsql(connectionString); });
+            //DbContext
+            var descriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(DbContextOptions<AppDbContext>));
+            if (descriptor != null) services.Remove(descriptor);
+            services.AddDbContext<AppDbContext>(options => { options.UseNpgsql(connectionString); });
 
-			//Auth
-			services.AddAuthentication(options =>
-				{
-					options.DefaultAuthenticateScheme = TestAuthHandler.AuthenticationScheme;
-					options.DefaultScheme = TestAuthHandler.AuthenticationScheme;
-					options.DefaultChallengeScheme = TestAuthHandler.AuthenticationScheme;
-				})
-				.AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
-					TestAuthHandler.AuthenticationScheme, options => { });
-		});
-	}
+            //Auth
+            services.AddAuthentication(options =>
+                {
+                    options.DefaultAuthenticateScheme = TestAuthHandler.AuthenticationScheme;
+                    options.DefaultScheme = TestAuthHandler.AuthenticationScheme;
+                    options.DefaultChallengeScheme = TestAuthHandler.AuthenticationScheme;
+                })
+                .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                    TestAuthHandler.AuthenticationScheme, options => { });
+        });
+    }
 }

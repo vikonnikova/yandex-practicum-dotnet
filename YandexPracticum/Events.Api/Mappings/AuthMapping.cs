@@ -6,18 +6,18 @@ namespace Events.Api.Mappings;
 
 internal static class AuthMapping
 {
-	internal static RegisterUserCommand ToCommand(this RegistrationRequest dto)
-	{
-		return new RegisterUserCommand(dto.Login, dto.Password, MapRole(dto.Role));
-	}
+    internal static RegisterUserCommand ToCommand(this RegistrationRequest dto)
+    {
+        return new RegisterUserCommand(dto.Login, dto.Password, MapRole(dto.Role));
+    }
 
-	private static Events.Domain.UserRole MapRole(UserRole value)
-	{
-		return value switch
-		{
-			UserRole.User => Domain.UserRole.User,
-			UserRole.Admin => Domain.UserRole.Admin,
-			_ => throw new ArgumentException($"Не найден маппинг для {value}")
-		};
-	}
+    private static Events.Domain.UserRole MapRole(UserRole value)
+    {
+        return value switch
+        {
+            UserRole.User => Domain.UserRole.User,
+            UserRole.Admin => Domain.UserRole.Admin,
+            _ => throw new ArgumentException($"Не найден маппинг для {value}")
+        };
+    }
 }

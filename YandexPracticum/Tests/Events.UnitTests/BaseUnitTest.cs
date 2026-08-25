@@ -14,112 +14,112 @@ namespace Events.UnitTests;
 
 public abstract class BaseUnitTest : IDisposable
 {
-	protected readonly Guid EventId = Guid.NewGuid();
-	protected readonly Guid BookingId = Guid.NewGuid();
-	protected readonly Guid UserId = Guid.NewGuid();
-	protected const string UserLogin = "Ivan_123";
-	protected const string UserPassword = "qwerty1234";
-	protected const string EventTitle = "Новый год";
-	protected const string EventDescription = "Дед Мороз и снегурочка";
-	protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
-	protected readonly DateTime EventEndAt = new(2022, 01, 10, 23, 59, 59, DateTimeKind.Utc);
-	protected const int EventTotalSeats = 7;
-	protected const int Page = 3;
-	protected const int PageSize = 15;
+    protected readonly Guid EventId = Guid.NewGuid();
+    protected readonly Guid BookingId = Guid.NewGuid();
+    protected readonly Guid UserId = Guid.NewGuid();
+    protected const string UserLogin = "Ivan_123";
+    protected const string UserPassword = "qwerty1234";
+    protected const string EventTitle = "Новый год";
+    protected const string EventDescription = "Дед Мороз и снегурочка";
+    protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
+    protected readonly DateTime EventEndAt = new(2022, 01, 10, 23, 59, 59, DateTimeKind.Utc);
+    protected const int EventTotalSeats = 7;
+    protected const int Page = 3;
+    protected const int PageSize = 15;
 
-	protected readonly Mock<IJwtProvider> JwtProviderMock = new();
-	protected readonly Mock<ICurrentUserContext> UserContextMock = new();
-	protected readonly Mock<IPasswordHasher> PasswordHasherMock = new();
-	protected readonly Mock<IUserRepository> UserRepositoryMock = new();
-	protected readonly Mock<IEventRepository> EventRepositoryMock = new();
-	protected readonly Mock<IBookingRepository> BookingRepositoryMock = new();
+    protected readonly Mock<IJwtProvider> JwtProviderMock = new();
+    protected readonly Mock<ICurrentUserContext> UserContextMock = new();
+    protected readonly Mock<IPasswordHasher> PasswordHasherMock = new();
+    protected readonly Mock<IUserRepository> UserRepositoryMock = new();
+    protected readonly Mock<IEventRepository> EventRepositoryMock = new();
+    protected readonly Mock<IBookingRepository> BookingRepositoryMock = new();
 
-	protected readonly IServiceProvider ServiceProvider;
+    protected readonly IServiceProvider ServiceProvider;
 
-	protected BaseUnitTest()
-	{
-		var services = new ServiceCollection();
+    protected BaseUnitTest()
+    {
+        var services = new ServiceCollection();
 
-		services.AddSingleton<TimeProvider>(new FakeTimeProvider());
-		services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        services.AddSingleton<TimeProvider>(new FakeTimeProvider());
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
-		ConfigureMockServices(services);
+        ConfigureMockServices(services);
 
-		services.AddScoped<RegisterUserCommandHandler>();
-		services.AddScoped<LoginCommandHandler>();
+        services.AddScoped<RegisterUserCommandHandler>();
+        services.AddScoped<LoginCommandHandler>();
 
-		services.AddScoped<GetEventsByQueryHandler>();
-		services.AddScoped<GetEventByIdQueryHandler>();
-		services.AddScoped<GetBookingByIdQueryHandler>();
+        services.AddScoped<GetEventsByQueryHandler>();
+        services.AddScoped<GetEventByIdQueryHandler>();
+        services.AddScoped<GetBookingByIdQueryHandler>();
 
-		services.AddScoped<AddEventCommandHandler>();
-		services.AddScoped<UpdateEventCommandHandler>();
-		services.AddScoped<RemoveEventCommandHandler>();
-		services.AddScoped<BookEventCommandHandler>();
+        services.AddScoped<AddEventCommandHandler>();
+        services.AddScoped<UpdateEventCommandHandler>();
+        services.AddScoped<RemoveEventCommandHandler>();
+        services.AddScoped<BookEventCommandHandler>();
 
-		ServiceProvider = services.BuildServiceProvider();
-	}
+        ServiceProvider = services.BuildServiceProvider();
+    }
 
-	private void ConfigureMockServices(IServiceCollection services)
-	{
-		var user = User.Create(UserId, UserLogin, "random_string", UserRole.User);
-		var @event = Event.Create(EventId, EventTitle, EventDescription,
-			EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
-		var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
+    private void ConfigureMockServices(IServiceCollection services)
+    {
+        var user = User.Create(UserId, UserLogin, "random_string", UserRole.User);
+        var @event = Event.Create(EventId, EventTitle, EventDescription,
+            EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
+        var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
 
-		UserContextMock.Setup(x => x.UserId).Returns(UserId);
-		UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
+        UserContextMock.Setup(x => x.UserId).Returns(UserId);
+        UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
 
-		JwtProviderMock.Setup(provider => provider.GenerateToken(user))
-			.Returns("jwt_token");
+        JwtProviderMock.Setup(provider => provider.GenerateToken(user))
+            .Returns("jwt_token");
 
-		PasswordHasherMock.Setup(hasher => hasher.Hash(UserPassword))
-			.Returns("random_password_hash");
-		PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, It.IsAny<string>()))
-			.Returns(true);
+        PasswordHasherMock.Setup(hasher => hasher.Hash(UserPassword))
+            .Returns("random_password_hash");
+        PasswordHasherMock.Setup(hasher => hasher.Verify(UserPassword, It.IsAny<string>()))
+            .Returns(true);
 
-		UserRepositoryMock.Setup(repo => repo.FindByLogin(UserLogin, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(user);
-		UserRepositoryMock.Setup(repo => repo.ExistsByLogin(UserLogin, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(false);
-		UserRepositoryMock.Setup(repo => repo.Add(user));
-		UserRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
-			.Returns(Task.CompletedTask);
+        UserRepositoryMock.Setup(repo => repo.FindByLogin(UserLogin, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(user);
+        UserRepositoryMock.Setup(repo => repo.ExistsByLogin(UserLogin, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        UserRepositoryMock.Setup(repo => repo.Add(user));
+        UserRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
-		EventRepositoryMock
-			.Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),
-				It.IsAny<CancellationToken>()))
-			.ReturnsAsync(new FilteredResult<Event>(TotalItems: 100, Data: [@event]));
-		EventRepositoryMock.Setup(repo => repo.Find(EventId, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(@event);
-		EventRepositoryMock.Setup(repo => repo.Add(@event));
-		EventRepositoryMock.Setup(repo => repo.Delete(@event));
-		EventRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
-			.Returns(Task.CompletedTask);
+        EventRepositoryMock
+            .Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FilteredResult<Event>(TotalItems: 100, Data: [@event]));
+        EventRepositoryMock.Setup(repo => repo.Find(EventId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(@event);
+        EventRepositoryMock.Setup(repo => repo.Add(@event));
+        EventRepositoryMock.Setup(repo => repo.Delete(@event));
+        EventRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
-		BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(booking);
-		BookingRepositoryMock.Setup(repo => repo.GetPending(It.IsAny<CancellationToken>()))
-			.ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
-		BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
-			.ReturnsAsync(1);
-		BookingRepositoryMock.Setup(repo => repo.Add(booking));
-		BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
-			.Returns(Task.CompletedTask);
+        BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(booking);
+        BookingRepositoryMock.Setup(repo => repo.GetPending(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
+        BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+        BookingRepositoryMock.Setup(repo => repo.Add(booking));
+        BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
 
-		services.AddSingleton(UserContextMock.Object);
-		services.AddSingleton(JwtProviderMock.Object);
-		services.AddSingleton(PasswordHasherMock.Object);
-		services.AddSingleton(UserRepositoryMock.Object);
-		services.AddSingleton(EventRepositoryMock.Object);
-		services.AddSingleton(BookingRepositoryMock.Object);
-	}
+        services.AddSingleton(UserContextMock.Object);
+        services.AddSingleton(JwtProviderMock.Object);
+        services.AddSingleton(PasswordHasherMock.Object);
+        services.AddSingleton(UserRepositoryMock.Object);
+        services.AddSingleton(EventRepositoryMock.Object);
+        services.AddSingleton(BookingRepositoryMock.Object);
+    }
 
-	public void Dispose()
-	{
-		if (ServiceProvider is IDisposable disposable)
-		{
-			disposable.Dispose();
-		}
-	}
+    public void Dispose()
+    {
+        if (ServiceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
 }

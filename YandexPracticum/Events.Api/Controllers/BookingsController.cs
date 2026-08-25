@@ -16,30 +16,30 @@ namespace Events.Api.Controllers;
 [Route("[controller]")]
 public class BookingsController(ISender sender) : ControllerBase
 {
-	/// <summary>
-	/// Возвращает бронь по идентификатору.
-	/// </summary>
-	/// <param name="id">Идентификатор брони.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpGet("{id:guid}")]
-	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<BookingResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		return Ok((await sender.Send(new GetBookingByIdQuery(id), cancellationToken)).ToResponse());
-	}
-	
-	/// <summary>
-	/// Удаляет бронь.
-	/// </summary>
-	/// <param name="id">Идентификатор брони.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpDelete("{id:guid}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<BookingResponse>> Cancel([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		await sender.Send(new CancelBookingCommand(id), cancellationToken);
-		return Ok();
-	}
+    /// <summary>
+    /// Возвращает бронь по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор брони.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(BookingResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BookingResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        return Ok((await sender.Send(new GetBookingByIdQuery(id), cancellationToken)).ToResponse());
+    }
+
+    /// <summary>
+    /// Удаляет бронь.
+    /// </summary>
+    /// <param name="id">Идентификатор брони.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<BookingResponse>> Cancel([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await sender.Send(new CancelBookingCommand(id), cancellationToken);
+        return Ok();
+    }
 }

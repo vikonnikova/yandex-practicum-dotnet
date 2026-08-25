@@ -8,10 +8,10 @@ namespace Events.Application.QueryHandlers.Users;
 
 public class GetUserByIdQueryHandler(IUserRepository userRepository) : IRequestHandler<GetUserByIdQuery, User>
 {
-	public async Task<User> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
-	{
-		var user = await userRepository.Find(query.UserId, cancellationToken);
+    public async Task<User> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
+    {
+        var user = await userRepository.Find(query.UserId, cancellationToken);
 
-		return user ?? throw new EntityNotFoundException("Пользователь", query.UserId);
-	}
+        return user ?? throw new EntityNotFoundException("Пользователь", query.UserId);
+    }
 }
