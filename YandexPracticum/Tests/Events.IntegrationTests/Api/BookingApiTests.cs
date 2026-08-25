@@ -23,25 +23,23 @@ public class BookingApiTests : BaseApiTest
     public async Task GetById_WhenValidData_ShouldReturn200()
     {
         //Arrange
-        var eventId = Guid.NewGuid();
-        var bookingId = Guid.NewGuid();
         await Fixture.ExecuteDbContextAsync(async dbContext =>
         {
             dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
-            dbContext.Events.Add(Event.Create(eventId, TestData.Event1Title, TestData.Event1Description,
+            dbContext.Events.Add(Event.Create(TestData.EventId, TestData.Event1Title, TestData.Event1Description,
                 EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
-            dbContext.Bookings.Add(Booking.Create(bookingId, eventId, TestData.UserId, DateTime.UtcNow));
+            dbContext.Bookings.Add(Booking.Create(TestData.BookingId, TestData.EventId, TestData.UserId, DateTime.UtcNow));
             await dbContext.SaveChangesAsync(CancellationToken.None);
         });
 
         //Act
-        var response = await Client.GetAsync($"/bookings/{bookingId}");
+        var response = await Client.GetAsync($"/bookings/{TestData.BookingId}");
 
         //Assert
         var responseData = (await response.Content.ReadFromJsonAsync<BookingResponse>())!;
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(bookingId, responseData.BookingId);
-        Assert.Equal(eventId, responseData.EventId);
+        Assert.Equal(TestData.BookingId, responseData.BookingId);
+        Assert.Equal(TestData.EventId, responseData.EventId);
         Assert.Equal(BookingStatus.Pending, responseData.Status);
     }
 
@@ -65,5 +63,28 @@ public class BookingApiTests : BaseApiTest
 
         //Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+    
+    /// <summary>
+    /// Проверяет получение несуществующего бронирования.
+    /// </summary>
+    [Fact]
+    public async Task Cancel_WhenValidData_ShouldReturn200()
+    {
+        //Arrange
+        await Fixture.ExecuteDbContextAsync(async dbContext =>
+        {
+            dbContext.Users.Add(User.Create(TestData.UserId, TestData.Login, TestData.Password, UserRole.User));
+            dbContext.Events.Add(Event.Create(TestData.EventId, TestData.Event1Title, TestData.Event1Description,
+                EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), TestData.Event1TotalSeats));
+            dbContext.Bookings.Add(Booking.Create(TestData.BookingId, TestData.EventId, TestData.UserId, DateTime.UtcNow));
+            await dbContext.SaveChangesAsync(CancellationToken.None);
+        });
+
+        //Act
+        var response = await Client.DeleteAsync($"/bookings/{TestData.BookingId}");
+
+        //Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

@@ -8,7 +8,7 @@ public interface IBookingRepository
 
     Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken);
 
-    Task<int> CountBy(Guid eventId, Guid userId, CancellationToken cancellationToken);
+    Task<int> CountPendingByUser(Guid userId, CancellationToken cancellationToken);
 
     void Add(Booking booking);
 

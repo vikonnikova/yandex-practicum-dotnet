@@ -3,6 +3,7 @@ using Events.Application.Interfaces;
 using Events.Application.QueryHandlers.Bookings;
 using Events.Application.QueryHandlers.Events;
 using Events.Application.UseCases.Auth;
+using Events.Application.UseCases.Bookings;
 using Events.Application.UseCases.Events;
 using Events.Domain;
 using Events.Infrastructure.Auth;
@@ -56,6 +57,7 @@ public abstract class BaseUnitTest : IDisposable
         services.AddScoped<UpdateEventCommandHandler>();
         services.AddScoped<RemoveEventCommandHandler>();
         services.AddScoped<BookEventCommandHandler>();
+        services.AddScoped<CancelBookingCommandHandler>();
 
         ServiceProvider = services.BuildServiceProvider();
     }
@@ -101,7 +103,7 @@ public abstract class BaseUnitTest : IDisposable
             .ReturnsAsync(booking);
         BookingRepositoryMock.Setup(repo => repo.GetPending(It.IsAny<CancellationToken>()))
             .ReturnsAsync([Guid.NewGuid(), Guid.NewGuid()]);
-        BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
+        BookingRepositoryMock.Setup(repo => repo.CountPendingByUser(UserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
         BookingRepositoryMock.Setup(repo => repo.Add(booking));
         BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))

@@ -117,7 +117,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
-        BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, UserId, It.IsAny<CancellationToken>()))
+        BookingRepositoryMock.Setup(repo => repo.CountPendingByUser(UserId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(10);
         var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
 
@@ -148,7 +148,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
-        BookingRepositoryMock.Setup(repo => repo.CountBy(EventId, Guid.NewGuid(), It.IsAny<CancellationToken>()))
+        BookingRepositoryMock.Setup(repo => repo.CountPendingByUser(Guid.NewGuid(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(10);
         var handler = scope.ServiceProvider.GetRequiredService<BookEventCommandHandler>();
 
@@ -161,7 +161,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
             Times.Once);
 
         BookingRepositoryMock.Verify(
-            repo => repo.CountBy(It.Is<Guid>(x => x == EventId), It.Is<Guid>(x => x == UserId), CancellationToken.None),
+            repo => repo.CountPendingByUser(It.Is<Guid>(x => x == UserId), CancellationToken.None),
             Times.Once);
 
         BookingRepositoryMock.Verify(

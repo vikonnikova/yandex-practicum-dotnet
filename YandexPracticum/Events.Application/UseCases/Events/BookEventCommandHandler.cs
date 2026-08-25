@@ -38,7 +38,7 @@ internal class BookEventCommandHandler(
                 throw new PastEventBookingException();
             }
 
-            var bookingsCount = await bookingRepository.CountBy(command.EventId, userContext.UserId, cancellationToken);
+            var bookingsCount = await bookingRepository.CountPendingByUser(userContext.UserId, cancellationToken);
 
             if (bookingsCount >= BookingLimitPerUser)
             {
