@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Events.Infrastructure.Auth;
 
-public class JwtProvider(IConfiguration configuration) : IJwtProvider
+public class JwtProvider(IConfiguration configuration, TimeProvider timeProvider) : IJwtProvider
 {
     public string GenerateToken(User user)
     {
@@ -29,7 +29,7 @@ public class JwtProvider(IConfiguration configuration) : IJwtProvider
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(120),
+            Expires = timeProvider.GetUtcNow().AddMinutes(120).UtcDateTime,
             SigningCredentials = credentials,
             Issuer = configuration["Jwt:Issuer"],
             Audience = configuration["Jwt:Audience"]
