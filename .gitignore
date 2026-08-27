@@ -64,3 +64,4 @@ nunit-*.xml
 
 # Jetbrains Rider cache/options directory
 .idea/
+YandexPracticum/qodana.yaml
