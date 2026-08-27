@@ -7,24 +7,30 @@ namespace Events.Infrastructure;
 
 internal class BookingRepository(AppDbContext context) : IBookingRepository
 {
-	public async Task<Booking?> Find(Guid bookingId, CancellationToken cancellationToken)
-	{
-		return await context.Bookings.FindAsync([bookingId], cancellationToken: cancellationToken);
-	}
+    public async Task<Booking?> Find(Guid bookingId, CancellationToken cancellationToken)
+    {
+        return await context.Bookings.FindAsync([bookingId], cancellationToken: cancellationToken);
+    }
 
-	public async Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken)
-	{
-		return await context.Bookings.Where(b => b.Status == BookingStatus.Pending).Select(x => x.Id)
-			.ToArrayAsync(cancellationToken);
-	}
+    public async Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken)
+    {
+        return await context.Bookings.Where(b => b.Status == BookingStatus.Pending).Select(x => x.Id)
+            .ToArrayAsync(cancellationToken);
+    }
 
-	public void Add(Booking booking)
-	{
-		context.Bookings.Add(booking);
-	}
+    public async Task<int> CountPendingByUser(Guid userId, CancellationToken cancellationToken)
+    {
+        return await context.Bookings.CountAsync(x => x.Status == BookingStatus.Pending && x.UserId == userId,
+            cancellationToken);
+    }
 
-	public async Task SaveChangesAsync(CancellationToken cancellationToken)
-	{
-		await context.SaveChangesAsync(cancellationToken);
-	}
+    public void Add(Booking booking)
+    {
+        context.Bookings.Add(booking);
+    }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        await context.SaveChangesAsync(cancellationToken);
+    }
 }

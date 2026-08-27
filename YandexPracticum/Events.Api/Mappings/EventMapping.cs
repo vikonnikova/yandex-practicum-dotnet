@@ -1,38 +1,58 @@
 ﻿using Events.Api.Contracts;
-using Events.Application.Services.Dto;
+using Events.Api.Contracts.Bookings;
+using Events.Api.Contracts.Events;
+using Events.Application;
+using Events.Application.Contracts.Commands.Events;
+using Events.Application.Contracts.Queries.Events;
+using Events.Domain;
 
 namespace Events.Api.Mappings;
 
 internal static class EventMapping
 {
-	internal static EventDto ToDto(this EventRequest eventData)
-	{
-		return new EventDto(eventData.Title, eventData.Description, eventData.StartAt, eventData.EndAt,
-			eventData.TotalSeats);
-	}
-	
-	internal static EventToUpdateDto ToDto(this EventRequest eventData, Guid eventId)
-	{
-		return new EventToUpdateDto(eventId, eventData.Title, eventData.Description,
-			eventData.StartAt, eventData.EndAt, eventData.TotalSeats);
-	}
+    internal static AddEventCommand ToAddCommand(this EventRequest data)
+    {
+        return new AddEventCommand(data.Title, data.Description, data.StartAt, data.EndAt, data.TotalSeats);
+    }
 
-	internal static Contracts.PaginatedResult<EventResponse> ToPaginatedResponse(
-		this Application.Services.Dto.PaginatedResult<EventInfoDto> paginatedEvents)
-	{
-		return new Contracts.PaginatedResult<EventResponse>(paginatedEvents.ToResponse(), paginatedEvents.ToMetadata());
-	}
+    internal static UpdateEventCommand ToUpdateCommand(this EventRequest data, Guid eventId)
+    {
+        return new UpdateEventCommand(eventId, data.Title, data.Description, data.StartAt, data.EndAt, data.TotalSeats);
+    }
 
-	private static IReadOnlyCollection<EventResponse> ToResponse(
-		this Application.Services.Dto.PaginatedResult<EventInfoDto> paginatedEvents)
-	{
-		return paginatedEvents.Items.Select(x =>
-				new EventResponse(x.Id, x.Title, x.Description, x.StartAt, x.EndAt, x.TotalSeats, x.AvailableSeats))
-			.ToArray();
-	}
+    internal static BookEventCommand ToBookCommand(this BookingRequest data, Guid eventId)
+    {
+        return new BookEventCommand(eventId);
+    }
 
-	private static Metadata ToMetadata(this Application.Services.Dto.PaginatedResult<EventInfoDto> paginatedEvents)
-	{
-		return new Metadata(paginatedEvents.TotalItems, paginatedEvents.CurrentPage, paginatedEvents.ItemsPerPage);
-	}
+    internal static EventResponse ToResponse(this Event @event)
+    {
+        return new EventResponse(@event.Id, @event.Title, @event.Description, @event.Period.StartAt,
+            @event.Period.EndAt, @event.TotalSeats, @event.AvailableSeats);
+    }
+
+    internal static GetEventsByQuery ToQuery(this GetEventsQuery data)
+    {
+        return new GetEventsByQuery(data.Page, data.PageSize, new Filters(data.Title, data.From, data.To));
+    }
+
+    internal static PaginatedResult<EventResponse> ToPaginatedResponse(
+        this Application.Contracts.PaginatedResult<Event> paginatedEvents)
+    {
+        return new PaginatedResult<EventResponse>(paginatedEvents.ToResponse(), paginatedEvents.ToMetadata());
+    }
+
+    private static IReadOnlyCollection<EventResponse> ToResponse(
+        this Application.Contracts.PaginatedResult<Event> paginatedEvents)
+    {
+        return paginatedEvents.Items.Select(x =>
+                new EventResponse(x.Id, x.Title, x.Description, x.Period.StartAt, x.Period.EndAt, x.TotalSeats,
+                    x.AvailableSeats))
+            .ToArray();
+    }
+
+    private static Metadata ToMetadata(this Application.Contracts.PaginatedResult<Event> paginatedEvents)
+    {
+        return new Metadata(paginatedEvents.TotalItems, paginatedEvents.CurrentPage, paginatedEvents.ItemsPerPage);
+    }
 }

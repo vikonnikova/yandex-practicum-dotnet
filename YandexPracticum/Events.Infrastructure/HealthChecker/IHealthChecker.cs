@@ -2,5 +2,5 @@
 
 public interface IDatabaseHealthChecker
 {
-	bool Check();
+    bool Check();
 }

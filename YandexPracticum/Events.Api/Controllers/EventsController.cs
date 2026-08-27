@@ -1,7 +1,11 @@
 using Events.Api.Contracts;
+using Events.Api.Contracts.Bookings;
+using Events.Api.Contracts.Events;
 using Events.Api.Mappings;
-using Events.Application;
-using Events.Application.Services;
+using Events.Application.Contracts.Commands.Events;
+using Events.Application.Contracts.Queries.Events;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Events.Api.Controllers;
@@ -9,103 +13,106 @@ namespace Events.Api.Controllers;
 /// <summary>
 /// Представляет контроллер для событий.
 /// </summary>
+[Authorize]
 [ApiController]
 [Route("[controller]")]
-public class EventsController(IEventService eventService, IBookingService bookingService)
-	: ControllerBase
+public class EventsController(ISender sender)
+    : ControllerBase
 {
-	/// <summary>
-	/// Возвращает все события.
-	/// </summary>
-	/// <param name="query">Фильтры и пагинация.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpGet]
-	[ProducesResponseType(typeof(PaginatedResult<EventResponse>), StatusCodes.Status200OK)]
-	public async Task<ActionResult<PaginatedResult<EventResponse>>> GetAll([FromQuery] GetEventsQuery query,
-		CancellationToken cancellationToken)
-	{
-		var result = await eventService.GetBy(query.Page, query.PageSize,
-			new Filters(query.Title, query.From, query.To), cancellationToken);
-		
-		return Ok(result.ToPaginatedResponse());
-	}
+    /// <summary>
+    /// Возвращает все события.
+    /// </summary>
+    /// <param name="data">Фильтры и пагинация.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(PaginatedResult<EventResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PaginatedResult<EventResponse>>> GetAll([FromQuery] GetEventsQuery data,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(data.ToQuery(), cancellationToken);
 
-	/// <summary>
-	/// Возвращает событие по идентификатору.
-	/// </summary>
-	/// <param name="id">Идентификатор события.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpGet("{id:guid}")]
-	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<EventResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		return Ok(await eventService.GetById(id, cancellationToken));
-	}
+        return Ok(result.ToPaginatedResponse());
+    }
 
-	/// <summary>
-	/// Создает событие.
-	/// </summary>
-	/// <param name="eventRequest">Данные для создания.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpPost]
-	[ProducesResponseType(typeof(EventResponse), StatusCodes.Status201Created)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<EventResponse>> Create([FromBody] EventRequest eventRequest,
-		CancellationToken cancellationToken)
-	{
-		var result = await eventService.Add(eventRequest.ToDto(), cancellationToken);
+    /// <summary>
+    /// Возвращает событие по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор события.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<EventResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        return Ok((await sender.Send(new GetEventByIdQuery(id), cancellationToken)).ToResponse());
+    }
 
-		return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-	}
+    /// <summary>
+    /// Создает событие.
+    /// </summary>
+    /// <param name="data">Данные для создания.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    [ProducesResponseType(typeof(EventResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<EventResponse>> Create([FromBody] EventRequest data,
+        CancellationToken cancellationToken)
+    {
+        var eventId = await sender.Send(data.ToAddCommand(), cancellationToken);
 
-	/// <summary>
-	/// Обновляет событие.
-	/// </summary>
-	/// <param name="id">Идентификатор события.</param>
-	/// <param name="eventRequest">Данные для обновления.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpPut("{id:guid}")]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] EventRequest eventRequest,
-		CancellationToken cancellationToken)
-	{
-		await eventService.Update(eventRequest.ToDto(id), cancellationToken);
-		return NoContent();
-	}
+        return CreatedAtAction(nameof(GetById), new { id = eventId }, eventId);
+    }
 
-	/// <summary>
-	/// Удаляет событие.
-	/// </summary>
-	/// <param name="id">Идентификатор события.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpDelete("{id:guid}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		await eventService.Remove(id, cancellationToken);
-		return Ok();
-	}
+    /// <summary>
+    /// Обновляет событие.
+    /// </summary>
+    /// <param name="id">Идентификатор события.</param>
+    /// <param name="data">Данные для обновления.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] EventRequest data,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(data.ToUpdateCommand(id), cancellationToken);
+        return NoContent();
+    }
 
-	/// <summary>
-	/// Создает заявку на бронирование.
-	/// </summary>
-	/// <param name="id">Идентификатор события.</param>
-	/// <param name="cancellationToken">Токен отмены.</param>
-	[HttpPost("{id:guid}/book")]
-	[ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	[ProducesResponseType(StatusCodes.Status409Conflict)]
-	public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
-	{
-		var result = await bookingService.Add(BookingMapping.ToDto(id), cancellationToken);
+    /// <summary>
+    /// Удаляет событие.
+    /// </summary>
+    /// <param name="id">Идентификатор события.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        await sender.Send(new RemoveEventCommand(id), cancellationToken);
+        return Ok();
+    }
 
-		var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
-		Response.Headers.Location = statusUrl;
+    /// <summary>
+    /// Создает заявку на бронирование.
+    /// </summary>
+    /// <param name="id">Идентификатор события.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpPost("{id:guid}/book")]
+    [ProducesResponseType(typeof(BookingResponse), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<BookingResponse>> Book([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var result = (await sender.Send(new BookEventCommand(id), cancellationToken)).ToResponse();
 
-		return Accepted(result);
-	}
+        var statusUrl = Url.Action(nameof(BookingsController.GetById), "Bookings", new { id = result.BookingId });
+        Response.Headers.Location = statusUrl;
+
+        return Accepted(result);
+    }
 }

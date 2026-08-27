@@ -6,10 +6,10 @@ namespace Events.Infrastructure;
 
 public static class Initializer
 {
-	public static void InitDatabase(this IServiceProvider serviceProvider)
-	{
-		using var scope = serviceProvider.CreateScope();
-		var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-		db.Database.Migrate();
-	}
+    public static void InitDatabase(this IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
 }

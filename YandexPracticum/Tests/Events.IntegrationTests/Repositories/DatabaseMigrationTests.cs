@@ -10,11 +10,11 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
     /// Проверяет, что миграция корректно создала таблицы bookings и events.
     /// </summary>
     [Fact]
-    public async Task Migrations_ShouldCreateRequiredTables()
+    public async Task Migrate_WhenApplied_ShouldCreateRequiredTables()
     {
         // Arrange
         await using var context = dbFixture.CreateContext();
-        
+
         var sqlQuery = """
                        SELECT table_name 
                        FROM information_schema.tables 
@@ -23,7 +23,7 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
 
         await using var command = context.Database.GetDbConnection().CreateCommand();
         command.CommandText = sqlQuery;
-    
+
         if (context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
             await context.Database.GetDbConnection().OpenAsync();
 
@@ -40,16 +40,16 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
         // Assert
         tablesInDb.Should().Contain(["events", "bookings"]);
     }
-    
-	/// <summary>
+
+    /// <summary>
     /// Проверяет, что миграция корректно создала связь Foreign Key между таблицами bookings и events.
     /// </summary>
     [Fact]
-    public async Task Migrations_ShouldCreateForeignKeyConstraint()
+    public async Task Migrate_WhenApplied_ShouldCreateForeignKeyConstraint()
     {
         // Arrange
         await using var context = dbFixture.CreateContext();
-        
+
         var sqlQuery = """
             SELECT 
                 tc.constraint_name AS ConstraintName
@@ -71,7 +71,7 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
         // Act
         await using var command = context.Database.GetDbConnection().CreateCommand();
         command.CommandText = sqlQuery;
-        
+
         if (context.Database.GetDbConnection().State != System.Data.ConnectionState.Open)
         {
             await context.Database.GetDbConnection().OpenAsync();

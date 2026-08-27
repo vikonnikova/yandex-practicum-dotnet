@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Events.Application.Exceptions;
 using Events.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,59 +7,69 @@ namespace Events.Api.Middleware;
 
 internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-	public async Task InvokeAsync(HttpContext context)
-	{
-		try
-		{
-			await next(context);
-		}
-		catch (Exception ex)
-		{
-			await HandleExceptionAsync(context, ex);
-		}
-	}
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
+        {
+            await next(context);
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(context, ex);
+        }
+    }
 
-	private Task HandleExceptionAsync(HttpContext context, Exception exception)
-	{
-		var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
-		context.Response.ContentType = "application/json";
-		int statusCode;
-		string message;
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
+        context.Response.ContentType = "application/json";
+        var message = exception.Message;
+        int statusCode;
 
-		switch (exception)
-		{
-			case EntityNotFoundException:
-				statusCode = StatusCodes.Status404NotFound;
-				message = exception.Message;
-				break;
+        switch (exception)
+        {
+            case EntityNotFoundException:
+                statusCode = StatusCodes.Status404NotFound;
+                break;
 
-			case ArgumentException:
-				statusCode = StatusCodes.Status400BadRequest;
-				message = exception.Message;
-				break;
-			
-			case NoAvailableSeatsException:
-				statusCode = StatusCodes.Status409Conflict;
-				message = exception.Message;
-				break;
+            case ArgumentException:
+            case BookingMustBeInPendingStatusException:
+            case PastEventBookingException:
+            case PastEventCancellationException:
+                statusCode = StatusCodes.Status400BadRequest;
+                break;
 
-			default:
-				statusCode = StatusCodes.Status500InternalServerError;
-				message = "Internal server error";
-				logger.LogError(exception, "Ошибка при обработке запроса {Method} {Path}. TraceId: {TraceId}",
-					context.Request.Method, context.Request.Path, traceId);
-				break;
-		}
+            case UserAlreadyExistsException:
+            case NoAvailableSeatsException:
+            case BookingLimitReachingException:
+                statusCode = StatusCodes.Status409Conflict;
+                break;
 
-		context.Response.StatusCode = statusCode;
+            case AuthenticationException:
+                statusCode = StatusCodes.Status401Unauthorized;
+                break;
 
-		var responseMessage = new ProblemDetails
-		{
-			Status = statusCode,
-			Title = message,
-			Detail = message
-		};
+            case AccessDeniedException:
+                statusCode = StatusCodes.Status403Forbidden;
+                break;
 
-		return context.Response.WriteAsJsonAsync(responseMessage);
-	}
+            default:
+                statusCode = StatusCodes.Status500InternalServerError;
+                message = "Internal server error";
+                logger.LogError(exception, "Ошибка при обработке запроса {Method} {Path}. TraceId: {TraceId}",
+                    context.Request.Method, context.Request.Path, traceId);
+                break;
+        }
+
+        context.Response.StatusCode = statusCode;
+
+        var responseMessage = new ProblemDetails
+        {
+            Status = statusCode,
+            Title = message,
+            Detail = message
+        };
+
+        return context.Response.WriteAsJsonAsync(responseMessage);
+    }
 }
