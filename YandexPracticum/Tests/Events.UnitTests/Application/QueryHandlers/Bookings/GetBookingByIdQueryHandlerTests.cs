@@ -14,7 +14,7 @@ public class GetBookingByIdQueryHandlerTests : BaseUnitTest
     /// Проверяет получение брони по идентификатору.
     /// </summary>
     [Fact]
-    public async Task GetById_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -38,7 +38,7 @@ public class GetBookingByIdQueryHandlerTests : BaseUnitTest
     /// Проверяет получение несуществующей брони.
     /// </summary>
     [Fact]
-    public async Task GetById_WhenBookingDoesNotExist_ShouldThrowEntityNotFoundException()
+    public async Task Handle_WhenBookingDoesNotExist_ShouldThrowEntityNotFoundException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();

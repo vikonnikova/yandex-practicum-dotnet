@@ -128,7 +128,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
     /// Проверяет удаление события.
     /// </summary>
     [Fact]
-    public async Task Delete_And_SaveChangesAsync_WhenValidData_ShouldDeleteCorrectly()
+    public async Task Delete_WhenValidData_ShouldDeleteCorrectly()
     {
         // Arrange
         await using (var context = DbFixture.CreateContext())
@@ -158,7 +158,7 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
     /// Проверяет удаление события, на которое есть бронирование.
     /// </summary>
     [Fact]
-    public async Task Delete_And_SaveChangesAsync_WhenEventBookingExists_ShouldThrowForeignKeyException()
+    public async Task Delete_WhenEventBookingExists_ShouldThrowForeignKeyException()
     {
         // Arrange
         await using (var context = DbFixture.CreateContext())

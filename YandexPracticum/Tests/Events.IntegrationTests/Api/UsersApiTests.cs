@@ -20,7 +20,7 @@ public class UsersApiTests : BaseApiTest
     /// Проверяет получение пользователя по идентификатору.
     /// </summary>
     [Fact]
-    public async Task GetById_ValidData_200Returned()
+    public async Task GetById_WhenValidData_ShouldReturn200()
     {
         //Arrange
         await Fixture.ExecuteDbContextAsync(async dbContext =>
@@ -47,7 +47,7 @@ public class UsersApiTests : BaseApiTest
     /// Проверяет получение несуществующего пользователя.
     /// </summary>
     [Fact]
-    public async Task GetById_NonExistentUser_404Returned()
+    public async Task GetById_WhenNonExistentUser_ShouldReturn404()
     {
         //Arrange
         await Fixture.ExecuteDbContextAsync(async dbContext =>

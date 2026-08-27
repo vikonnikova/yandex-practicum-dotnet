@@ -13,7 +13,7 @@ public class AddEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание события.
     /// </summary>
     [Fact]
-    public async Task Add_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -39,7 +39,7 @@ public class AddEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание события с невалидными даными.
     /// </summary>
     [Fact]
-    public async Task Add_WhenInvalidData_ShouldThrowArgumentNullException()
+    public async Task Handle_WhenInvalidData_ShouldThrowArgumentNullException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();

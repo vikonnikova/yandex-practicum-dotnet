@@ -8,7 +8,7 @@ public class Mapping
 	/// Проверяет маппинг доменной сущности События в dto слоя Application.
 	/// </summary>
 	[Fact]
-	public void Event_ToDto_Success()
+	public void ToDto_WhenEventIsValid_ShouldWorkCorrectly()
 	{
 		var startAt = DateTime.UtcNow;
 		var endAt = startAt.AddDays(2);
@@ -38,7 +38,7 @@ public class Mapping
 	/// Проверяет маппинг доменной сущности Бронирования в dto слоя Application.
 	/// </summary>
 	[Fact]
-	public void Booking_ToDto_Success()
+	public void ToDto_WhenBookingIsValid_ShouldWorkCorrectly()
 	{
 		var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
 

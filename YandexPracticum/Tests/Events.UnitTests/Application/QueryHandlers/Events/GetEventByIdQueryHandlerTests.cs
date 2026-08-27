@@ -13,7 +13,7 @@ public class GetEventByIdQueryHandlerTests : BaseUnitTest
     /// Проверяет получение события по идентификатору.
     /// </summary>
     [Fact]
-    public async Task GetById_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -40,7 +40,7 @@ public class GetEventByIdQueryHandlerTests : BaseUnitTest
     /// Проверяет получение несуществующего события.
     /// </summary>
     [Fact]
-    public async Task GetById_WhenNonExistentEvent_ShouldThrowEntityNotFoundException()
+    public async Task Handle_WhenNonExistentEvent_ShouldThrowEntityNotFoundException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();

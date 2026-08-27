@@ -19,7 +19,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание брони.
     /// </summary>
     [Fact]
-    public async Task Add_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -51,7 +51,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание брони на несуществующее событие.
     /// </summary>
     [Fact]
-    public async Task Add_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
+    public async Task Handle_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -82,7 +82,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание брони на прошедшее событие.
     /// </summary>
     [Fact]
-    public async Task Add_WhenPastEvent_ShouldThrowPastEventBookingException()
+    public async Task Handle_WhenPastEvent_ShouldThrowPastEventBookingException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -113,7 +113,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание брони при достижении лимита пользователем.
     /// </summary>
     [Fact]
-    public async Task Add_WhenBookingLimitReached_ShouldThrowBookingLimitReachingException()
+    public async Task Handle_WhenBookingLimitReached_ShouldThrowBookingLimitReachingException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -144,7 +144,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет, что лимиты разных пользователей не влияют друг на друга.
     /// </summary>
     [Fact]
-    public async Task Add_WhenBookingLimitReachedForOtherUser_ShouldWorkCorrectly()
+    public async Task Handle_WhenBookingLimitReachedForOtherUser_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -177,7 +177,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание брони на недоступное количество мест.
     /// </summary>
     [Fact]
-    public async Task Add_WhenNoAvailableSeats_ShouldThrowNoAvailableSeatsException()
+    public async Task Handle_WhenNoAvailableSeats_ShouldThrowNoAvailableSeatsException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -211,7 +211,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание нескольких броней с уникальными идентификаторами для одного события.
     /// </summary>
     [Fact]
-    public async Task Add_WhenMultipleBookingsForOneEvent_ShouldWorkCorrectly()
+    public async Task Handle_WhenMultipleBookingsForOneEvent_ShouldWorkCorrectly()
     {
         // Arrange
         var successCount = 0;
@@ -260,7 +260,7 @@ public class BookEventCommandHandlerTests : BaseUnitTest
     /// Проверяет создание нескольких броней с уникальными идентификаторами для одного события при овербукинге.
     /// </summary>
     [Fact]
-    public async Task Add_WhenMultipleBookingsForOneEvent_Overbooking_ShouldWorkCorrectly()
+    public async Task Handle_WhenMultipleBookingsCauseOverbooking_ShouldWorkCorrectly()
     {
         // Arrange
         var totalRequests = 25;

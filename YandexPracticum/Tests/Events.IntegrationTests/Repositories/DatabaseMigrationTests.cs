@@ -10,7 +10,7 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
     /// Проверяет, что миграция корректно создала таблицы bookings и events.
     /// </summary>
     [Fact]
-    public async Task Migrations_ShouldCreateRequiredTables()
+    public async Task Migrate_WhenApplied_ShouldCreateRequiredTables()
     {
         // Arrange
         await using var context = dbFixture.CreateContext();
@@ -45,7 +45,7 @@ public class DatabaseMigrationTests(DbFixture dbFixture)
     /// Проверяет, что миграция корректно создала связь Foreign Key между таблицами bookings и events.
     /// </summary>
     [Fact]
-    public async Task Migrations_ShouldCreateForeignKeyConstraint()
+    public async Task Migrate_WhenApplied_ShouldCreateForeignKeyConstraint()
     {
         // Arrange
         await using var context = dbFixture.CreateContext();

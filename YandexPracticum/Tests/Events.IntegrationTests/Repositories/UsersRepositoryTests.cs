@@ -13,7 +13,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
     /// Проверяет поиск пользователя по логину.
     /// </summary>
     [Fact]
-    public async Task FindByLogin_WhenValidData_ShouldReturnBooking()
+    public async Task FindByLogin_WhenValidData_ShouldReturnUser()
     {
         // Arrange
         var user = User.Create(TestData.UserId, TestData.Login, new PasswordHasher().Hash(TestData.Password), UserRole.Admin);
@@ -173,7 +173,7 @@ public class UsersRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
     /// Проверяет сохранение пользователя с уже существующим логином (через цепочку Add + SaveChangesAsync).
     /// </summary>
     [Fact]
-    public async Task Add_WhenUserWithTheSameLoginAlreadyExists_ShouldTrowUniqueException()
+    public async Task Add_WhenUserWithTheSameLoginAlreadyExists_ShouldThrowUniqueException()
     {
         // Arrange
         await using (var context = DbFixture.CreateContext())

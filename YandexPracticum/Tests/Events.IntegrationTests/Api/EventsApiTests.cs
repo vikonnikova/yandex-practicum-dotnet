@@ -26,7 +26,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет получение всех событий.
     /// </summary>
     [Fact]
-    public async Task GetAll_Success()
+    public async Task GetAll_WhenValidData_ShouldReturn200()
     {
         //Arrange
         var events = CreateTestEvents();
@@ -52,7 +52,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет получение события по идентификатору.
     /// </summary>
     [Fact]
-    public async Task GetById_ValidData_200Returned()
+    public async Task GetById_WhenValidData_ShouldReturn200()
     {
         //Arrange
         var events = CreateTestEvents();
@@ -84,7 +84,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет получение несуществующего события.
     /// </summary>
     [Fact]
-    public async Task GetById_NonExistentEvent_404Returned()
+    public async Task GetById_WhenNonExistentEvent_ShouldReturn404()
     {
         //Arrange
         var events = CreateTestEvents();
@@ -111,7 +111,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание события.
     /// </summary>
     [Fact]
-    public async Task Create_ValidData_201Returned()
+    public async Task Create_WhenValidData_ShouldReturn201()
     {
         //Act
         var response = await Client.PostAsJsonAsync("/events",
@@ -142,7 +142,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание события с невалидными даными.
     /// </summary>
     [Fact]
-    public async Task Create_InvalidData_400Returned()
+    public async Task Create_WhenInvalidData_ShouldReturn400()
     {
         //Act
         var response = await Client.PostAsJsonAsync("/events",
@@ -160,7 +160,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет обновление события.
     /// </summary>
     [Fact]
-    public async Task Update_ValidData_204Returned()
+    public async Task Update_WhenValidData_ShouldReturn204()
     {
         //Arrange
         var eventId = Guid.NewGuid();
@@ -197,7 +197,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет обновление события с невалидными данными.
     /// </summary>
     [Fact]
-    public async Task Update_InvalidData_400Returned()
+    public async Task Update_WhenInvalidData_ShouldReturn400()
     {
         //Arrange
         var eventId = Guid.NewGuid();
@@ -226,7 +226,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет обновление несуществующего события.
     /// </summary>
     [Fact]
-    public async Task Update_NonExistentEvent_404Returned()
+    public async Task Update_WhenNonExistentEvent_ShouldReturn404()
     {
         //Arrange
         await Fixture.ExecuteDbContextAsync(async dbContext =>
@@ -259,7 +259,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет успешное удаление события.
     /// </summary>
     [Fact]
-    public async Task Delete_ValidData_200Returned()
+    public async Task Delete_WhenValidData_ShouldReturn200()
     {
         //Arrange
         var eventId = Guid.NewGuid();
@@ -283,7 +283,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет удаление несуществующего события.
     /// </summary>
     [Fact]
-    public async Task Delete_NonExistentEvent_404Returned()
+    public async Task Delete_WhenNonExistentEvent_ShouldReturn404()
     {
         //Arrange
         await Fixture.ExecuteDbContextAsync(async dbContext =>
@@ -308,7 +308,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание заявки на бронирование.
     /// </summary>
     [Fact]
-    public async Task Book_ValidData_202Returned()
+    public async Task Book_WhenValidData_ShouldReturn202()
     {
         //Arrange
         var eventId = Guid.NewGuid();
@@ -344,7 +344,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание заявки на бронирование при овербукинге.
     /// </summary>
     [Fact]
-    public async Task Book_Overbooking_409Returned()
+    public async Task Book_WhenOverbooking_ShouldReturn409()
     {
         //Arrange
         var @event = TestData.TestEvent;
@@ -372,7 +372,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание заявки на бронирование на несуществующего пользователя.
     /// </summary>
     [Fact]
-    public async Task Book_NonExistentUser_404Returned()
+    public async Task Book_WhenNonExistentUser_ShouldReturn404()
     {
         var events = CreateTestEvents();
         await Fixture.ExecuteDbContextAsync(async dbContext =>
@@ -394,7 +394,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет создание заявки на бронирование на несуществующее событие.
     /// </summary>
     [Fact]
-    public async Task Book_NonExistentEvent_404Returned()
+    public async Task Book_WhenNonExistentEvent_ShouldReturn404()
     {
         var events = CreateTestEvents();
         await Fixture.ExecuteDbContextAsync(async dbContext =>
@@ -416,7 +416,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет параллельное создание заявок на бронирование.
     /// </summary>
     [Fact]
-    public async Task Book_MultipleValidData_Success()
+    public async Task Book_WhenMultipleValidRequests_ShouldWorkCorrectly()
     {
         //Arrange
         var totalRequests = TestData.Event1TotalSeats;
@@ -460,7 +460,7 @@ public class EventsApiTests : BaseApiTest
     /// Проверяет параллельное создание заявок на бронирование при овербукинге.
     /// </summary>
     [Fact]
-    public async Task Book_MultipleOverbooking_Success()
+    public async Task Book_WhenMultipleRequestsCauseOverbooking_ShouldWorkCorrectly()
     {
         //Arrange
         const int totalRequests = 25;

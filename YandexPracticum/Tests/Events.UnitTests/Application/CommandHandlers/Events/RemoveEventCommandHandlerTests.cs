@@ -14,7 +14,7 @@ public class RemoveEventCommandHandlerTests : BaseUnitTest
     /// Проверяет удаление события.
     /// </summary>
     [Fact]
-    public async Task Remove_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -42,7 +42,7 @@ public class RemoveEventCommandHandlerTests : BaseUnitTest
     /// Проверяет удаление несуществующего события.
     /// </summary>
     [Fact]
-    public async Task Remove_WhenNonExistentEvent_ShouldThrowEntityNotFoundException()
+    public async Task Handle_WhenNonExistentEvent_ShouldThrowEntityNotFoundException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();

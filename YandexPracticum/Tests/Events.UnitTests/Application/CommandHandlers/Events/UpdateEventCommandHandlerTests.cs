@@ -13,7 +13,7 @@ public class UpdateEventCommandHandlerTests : BaseUnitTest
     /// Проверяет обновление события.
     /// </summary>
     [Fact]
-    public async Task Update_WhenValidData_ShouldWorkCorrectly()
+    public async Task Handle_WhenValidData_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
@@ -38,7 +38,7 @@ public class UpdateEventCommandHandlerTests : BaseUnitTest
     /// Проверяет обновление несуществующего события.
     /// </summary>
     [Fact]
-    public async Task Update_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
+    public async Task Handle_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();

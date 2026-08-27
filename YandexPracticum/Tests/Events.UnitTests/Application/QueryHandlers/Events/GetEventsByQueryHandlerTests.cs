@@ -13,7 +13,7 @@ public class GetEventsByQueryHandlerTests : BaseUnitTest
     /// Проверяет получение событий с пагинацией и фильтрацией.
     /// </summary>
     [Fact]
-    public async Task GetBy_WhenFiltersAndPaginationProvided_ShouldWorkCorrectly()
+    public async Task Handle_WhenFiltersAndPaginationProvided_ShouldWorkCorrectly()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
