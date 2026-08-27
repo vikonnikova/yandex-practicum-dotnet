@@ -1,0 +1,16 @@
+﻿using Bookings.Domain;
+
+namespace Bookings.Application.Interfaces;
+
+public interface IBookingRepository
+{
+    Task<Booking?> Find(Guid bookingId, CancellationToken cancellationToken);
+
+    Task<IReadOnlyCollection<Guid>> GetPending(CancellationToken cancellationToken);
+
+    Task<int> CountPendingByUser(Guid userId, CancellationToken cancellationToken);
+
+    void Add(Booking booking);
+
+    Task SaveChangesAsync(CancellationToken cancellationToken);
+}
