@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtProvider, JwtProvider>();
-        
+
         services.AddScoped<IUserRepository, UserRepository>();
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Events.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,39 +27,11 @@ namespace Events.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_events", x => x.Id);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "bookings",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ProcessedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_bookings", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_bookings_events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "events",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_bookings_EventId",
-                table: "bookings",
-                column: "EventId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "bookings");
-
             migrationBuilder.DropTable(
                 name: "events");
         }
