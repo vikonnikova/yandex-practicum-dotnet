@@ -7,7 +7,7 @@ namespace Bookings.IntegrationTests.Repositories;
 public class DatabaseMigrationTests(DbFixture dbFixture)
 {
     /// <summary>
-    /// Проверяет, что миграция корректно создала таблицы bookings и events.
+    /// Проверяет, что миграция корректно создала таблицы.
     /// </summary>
     [Fact]
     public async Task Migrate_WhenApplied_ShouldCreateRequiredTables()

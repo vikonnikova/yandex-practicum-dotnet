@@ -1,4 +1,4 @@
-﻿namespace Events.Api.Contracts.Auth;
+﻿namespace Auth.Api.Contracts.Auth;
 
 /// <summary>
 /// Представляет данные для входа в систему.

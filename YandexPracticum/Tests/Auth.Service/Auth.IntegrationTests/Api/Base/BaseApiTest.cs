@@ -1,6 +1,4 @@
-﻿using Auth.IntegrationTests.Api.Base;
-
-namespace Events.IntegrationTests.Api.Base;
+﻿namespace Auth.IntegrationTests.Api.Base;
 
 [Collection("Api Collection")]
 public abstract class BaseApiTest(ApiFixture fixture) : IAsyncLifetime

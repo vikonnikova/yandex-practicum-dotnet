@@ -1,6 +1,6 @@
-﻿using Auth.Api.Contracts.Users;
+﻿using Auth.Api.Contracts.Auth;
+using Auth.Api.Contracts.Users;
 using Auth.Application.Contracts.Auth;
-using Events.Api.Contracts.Auth;
 
 namespace Auth.Api.Mapping;
 

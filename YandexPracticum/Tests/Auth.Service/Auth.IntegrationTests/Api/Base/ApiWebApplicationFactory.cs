@@ -1,5 +1,4 @@
 ﻿using Auth.Infrastructure.DataAccess;
-using Events.IntegrationTests.Api.Base;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

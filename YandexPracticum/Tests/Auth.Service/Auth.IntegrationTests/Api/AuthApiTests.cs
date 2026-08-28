@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using Auth.Domain;
 using Auth.Infrastructure;
 using Auth.IntegrationTests.Api.Base;
-using Events.IntegrationTests.Api.Base;
 
 namespace Auth.IntegrationTests.Api;
 

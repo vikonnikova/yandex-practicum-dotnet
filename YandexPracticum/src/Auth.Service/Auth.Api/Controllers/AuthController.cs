@@ -1,6 +1,6 @@
-﻿using Auth.Api.Mapping;
+﻿using Auth.Api.Contracts.Auth;
+using Auth.Api.Mapping;
 using Auth.Application.Contracts.Auth;
-using Events.Api.Contracts.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

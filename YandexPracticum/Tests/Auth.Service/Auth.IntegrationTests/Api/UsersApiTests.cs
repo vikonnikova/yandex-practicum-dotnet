@@ -4,7 +4,6 @@ using System.Net.Http.Json;
 using Auth.Api.Contracts.Users;
 using Auth.Domain;
 using Auth.IntegrationTests.Api.Base;
-using Events.IntegrationTests.Api.Base;
 using UserRole = Auth.Api.Contracts.Users.UserRole;
 
 namespace Auth.IntegrationTests.Api;

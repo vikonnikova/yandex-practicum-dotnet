@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Bookings.Infrastructure.BackgroundServices;
 
 internal class BookingBackgroundService(
-    TimeProvider timeProvider,
+    //TimeProvider timeProvider,
     IServiceScopeFactory scopeFactory,
     ILogger<BookingBackgroundService> logger)
     : BackgroundService

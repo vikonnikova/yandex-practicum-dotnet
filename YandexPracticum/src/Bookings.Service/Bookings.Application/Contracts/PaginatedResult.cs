@@ -1,3 +1,3 @@
-﻿namespace Events.Application.Contracts;
+﻿namespace Bookings.Application.Contracts;
 
 public record PaginatedResult<T>(int TotalItems, int CurrentPage, int ItemsPerPage, IReadOnlyList<T> Items);

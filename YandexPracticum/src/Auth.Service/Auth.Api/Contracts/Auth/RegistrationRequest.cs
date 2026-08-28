@@ -1,6 +1,6 @@
 ﻿using Auth.Api.Contracts.Users;
 
-namespace Events.Api.Contracts.Auth;
+namespace Auth.Api.Contracts.Auth;
 
 /// <summary>
 /// Представляет данные для регистрации пользователя в системе.
