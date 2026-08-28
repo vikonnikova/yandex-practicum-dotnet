@@ -21,9 +21,21 @@
     <Project Path="src/Events.Service/Events.Domain/Events.Domain.csproj" />
     <Project Path="src/Events.Service/Events.Infrastructure/Events.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/src/Shared/" />
-  <Folder Name="/Tests/">
-    <Project Path="Tests/Events.IntegrationTests/Events.IntegrationTests.csproj" />
-    <Project Path="Tests/Events.UnitTests/Events.UnitTests.csproj" />
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Messaging/Messaging.csproj" />
+  </Folder>
+  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/Auth.Service/">
+    <File Path="Infrastructure/PasswordHasherTests.cs" />
+    <Project Path="Tests/Auth.Service/Auth.IntegrationTests/Auth.IntegrationTests.csproj" />
+    <Project Path="Tests/Auth.Service/Auth.UnitTests/Auth.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Bookings.Service/">
+    <Project Path="Tests/Bookings.Service/Bookings.IntegrationTests/Bookings.IntegrationTests.csproj" />
+    <Project Path="Tests/Bookings.Service/Bookings.UnitTests/Bookings.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Events.Service/">
+    <Project Path="Tests/Events.Service/Events.IntegrationTests/Events.IntegrationTests.csproj" />
+    <Project Path="Tests/Events.Service/Events.UnitTests/Events.UnitTests.csproj" />
   </Folder>
 </Solution>
