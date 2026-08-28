@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Auth.Application.Exceptions;
-using Bookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.Api.Middleware;
@@ -33,7 +32,6 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
                 break;
 
             case ArgumentException:
-            case BookingMustBeInPendingStatusException:
                 statusCode = StatusCodes.Status400BadRequest;
                 break;
 

@@ -13,12 +13,6 @@ public abstract class BaseUnitTest : IDisposable
     protected readonly Guid EventId = Guid.NewGuid();
     protected readonly Guid BookingId = Guid.NewGuid();
     protected readonly Guid UserId = Guid.NewGuid();
-    protected const string UserLogin = "Ivan_123";
-    protected const string UserPassword = "qwerty1234";
-    protected const string EventTitle = "Новый год";
-    protected const string EventDescription = "Дед Мороз и снегурочка";
-    protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
-    protected readonly DateTime EventEndAt = new(2022, 01, 10, 23, 59, 59, DateTimeKind.Utc);
     protected const int EventTotalSeats = 7;
     protected const int Page = 3;
     protected const int PageSize = 15;

@@ -12,10 +12,6 @@ namespace Events.UnitTests;
 public abstract class BaseUnitTest : IDisposable
 {
     protected readonly Guid EventId = Guid.NewGuid();
-    protected readonly Guid BookingId = Guid.NewGuid();
-    protected readonly Guid UserId = Guid.NewGuid();
-    protected const string UserLogin = "Ivan_123";
-    protected const string UserPassword = "qwerty1234";
     protected const string EventTitle = "Новый год";
     protected const string EventDescription = "Дед Мороз и снегурочка";
     protected readonly DateTime EventStartAt = new(2022, 01, 01, 00, 00, 00, DateTimeKind.Utc);
@@ -51,10 +47,8 @@ public abstract class BaseUnitTest : IDisposable
 
     private void ConfigureMockServices(IServiceCollection services)
     {
-        //var user = User.Create(UserId, UserLogin, "random_string", UserRole.User);
         var @event = Event.Create(EventId, EventTitle, EventDescription,
             EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
-        //var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
 
         //UserContextMock.Setup(x => x.UserId).Returns(UserId);
         //UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);

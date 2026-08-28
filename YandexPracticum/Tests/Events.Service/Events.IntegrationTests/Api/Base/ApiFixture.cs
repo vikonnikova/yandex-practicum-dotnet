@@ -41,7 +41,7 @@ public class ApiFixture : IAsyncLifetime
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(ConnectionString);
         await using var context = new AppDbContext(optionsBuilder.Options);
 
-        await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"bookings\", \"events\", \"users\" RESTART IDENTITY CASCADE;");
+        await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE \"events\" RESTART IDENTITY CASCADE;");
     }
 
     public async Task ExecuteDbContextAsync(Func<AppDbContext, Task> action)

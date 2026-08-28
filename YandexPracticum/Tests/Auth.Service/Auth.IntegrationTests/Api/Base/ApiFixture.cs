@@ -42,7 +42,7 @@ public class ApiFixture : IAsyncLifetime
         await using var context = new AuthDbContext(optionsBuilder.Options);
 
         await context.Database.ExecuteSqlRawAsync(
-            "TRUNCATE TABLE \"bookings\", \"events\", \"users\" RESTART IDENTITY CASCADE;");
+            "TRUNCATE TABLE \"users\" RESTART IDENTITY CASCADE;");
     }
 
     public async Task ExecuteDbContextAsync(Func<AuthDbContext, Task> action)

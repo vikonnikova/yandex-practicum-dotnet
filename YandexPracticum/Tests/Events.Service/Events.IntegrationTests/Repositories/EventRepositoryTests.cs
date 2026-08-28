@@ -155,32 +155,6 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
     }
 
     /// <summary>
-    /// Проверяет удаление события, на которое есть бронирование.
-    /// </summary>
-    [Fact]
-    public async Task Delete_WhenEventBookingExists_ShouldThrowForeignKeyException()
-    {
-        // Arrange
-        await using (var context = DbFixture.CreateContext())
-        {
-            context.Events.Add(TestData.TestEvent);
-            await context.SaveChangesAsync();
-        }
-
-        await using (var context = DbFixture.CreateContext())
-        {
-            // Act
-            var repository = new EventRepository(context);
-            var eventToDelete = await repository.Find(TestData.EventId, CancellationToken.None);
-            repository.Delete(eventToDelete!);
-
-            //Assert
-            Func<Task> act = async () => await repository.SaveChangesAsync(CancellationToken.None);
-            await act.Should().ThrowAsync<Microsoft.EntityFrameworkCore.DbUpdateException>();
-        }
-    }
-
-    /// <summary>
     /// Проверяет существование события по идентификатору.
     /// </summary>
     [Fact]
