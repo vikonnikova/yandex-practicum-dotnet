@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.12" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.11" />
       <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
@@ -24,6 +25,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Bookings.IntegrationTests" />
+        <InternalsVisibleTo Include="Bookings.UnitTests" />
     </ItemGroup>
 
 </Project>

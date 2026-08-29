@@ -15,11 +15,10 @@ public static class DependencyInjection
                                ?? throw new InvalidOperationException("Connection string 'Default' not found.");
 
         services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IUserRepository, UserRepository>();
 
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IJwtProvider, JwtProvider>();
-
-        services.AddScoped<IUserRepository, UserRepository>();
     }
 }

@@ -24,6 +24,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="Auth.IntegrationTests" />
+        <InternalsVisibleTo Include="Auth.UnitTests" />
     </ItemGroup>
 
 </Project>

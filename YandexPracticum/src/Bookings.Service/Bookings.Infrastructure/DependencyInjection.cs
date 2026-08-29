@@ -2,6 +2,7 @@
 using Bookings.Infrastructure.BackgroundServices;
 using Bookings.Infrastructure.DataAccess;
 using Bookings.Infrastructure.Repositories;
+using Bookings.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ public static class DependencyInjection
 
         services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IBookingRepository, BookingRepository>();
+        
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         services.AddHostedService<BookingBackgroundService>();
     }

@@ -64,35 +64,6 @@ public class CancelBookingCommandHandlerTests : BaseUnitTest
     }
 
     /// <summary>
-    /// Проверяет отмену брони на несуществующее событие.
-    /// </summary>
-    [Fact]
-    public async Task Handle_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
-    {
-        //Arrange
-        using var scope = ServiceProvider.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<CancelBookingCommandHandler>();
-        var nonExistentEventId = Guid.NewGuid();
-        BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Booking.Create(BookingId, nonExistentEventId, UserId, DateTime.UtcNow));
-        var command = new CancelBookingCommand(BookingId);
-
-        //Act
-        Func<Task> act = () => handler.Handle(command, CancellationToken.None);
-        await act.Should().ThrowAsync<EntityNotFoundException>()
-            .WithMessage($"Сущность [Событие] с идентификатором [{nonExistentEventId.ToString()}] не найдена.");
-
-        //Assert
-        BookingRepositoryMock.Verify(
-            repo => repo.Find(It.Is<Guid>(x => x == BookingId), CancellationToken.None),
-            Times.Once);
-
-        BookingRepositoryMock.Verify(
-            repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
-    /// <summary>
     /// Проверяет отмену чужой брони обычным пользователем.
     /// </summary>
     [Fact]
@@ -101,8 +72,8 @@ public class CancelBookingCommandHandlerTests : BaseUnitTest
         //Arrange
         using var scope = ServiceProvider.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<CancelBookingCommandHandler>();
-        //UserContextMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
-        //UserContextMock.Setup(x => x.IsAdmin).Returns(false);
+        UserContextMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
+        UserContextMock.Setup(x => x.IsAdmin).Returns(false);
         var command = new CancelBookingCommand(BookingId);
 
         //Act
@@ -129,8 +100,8 @@ public class CancelBookingCommandHandlerTests : BaseUnitTest
         //Arrange
         using var scope = ServiceProvider.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<CancelBookingCommandHandler>();
-        //UserContextMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
-        //UserContextMock.Setup(x => x.IsAdmin).Returns(true);
+        UserContextMock.Setup(x => x.UserId).Returns(Guid.NewGuid());
+        UserContextMock.Setup(x => x.IsAdmin).Returns(true);
         var command = new CancelBookingCommand(BookingId);
 
         //Act

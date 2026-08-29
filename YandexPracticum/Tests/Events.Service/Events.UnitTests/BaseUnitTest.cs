@@ -11,6 +11,7 @@ namespace Events.UnitTests;
 
 public abstract class BaseUnitTest : IDisposable
 {
+    protected readonly Guid UserId = Guid.NewGuid();
     protected readonly Guid EventId = Guid.NewGuid();
     protected const string EventTitle = "Новый год";
     protected const string EventDescription = "Дед Мороз и снегурочка";
@@ -20,8 +21,7 @@ public abstract class BaseUnitTest : IDisposable
     protected const int Page = 3;
     protected const int PageSize = 15;
 
-    //protected readonly Mock<IJwtProvider> JwtProviderMock = new();
-    //protected readonly Mock<ICurrentUserContext> UserContextMock = new();
+    protected readonly Mock<ICurrentUserContext> UserContextMock = new();
     protected readonly Mock<IEventRepository> EventRepositoryMock = new();
 
     protected readonly IServiceProvider ServiceProvider;
@@ -31,7 +31,6 @@ public abstract class BaseUnitTest : IDisposable
         var services = new ServiceCollection();
 
         services.AddSingleton<TimeProvider>(new FakeTimeProvider());
-        //services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         ConfigureMockServices(services);
 
@@ -50,11 +49,8 @@ public abstract class BaseUnitTest : IDisposable
         var @event = Event.Create(EventId, EventTitle, EventDescription,
             EventPeriod.Create(EventStartAt, EventEndAt), EventTotalSeats);
 
-        //UserContextMock.Setup(x => x.UserId).Returns(UserId);
-        //UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
-
-        //JwtProviderMock.Setup(provider => provider.GenerateToken(user))
-        //.Returns("jwt_token");
+        UserContextMock.Setup(x => x.UserId).Returns(UserId);
+        UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
 
         EventRepositoryMock
             .Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),
@@ -67,8 +63,7 @@ public abstract class BaseUnitTest : IDisposable
         EventRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        //services.AddSingleton(UserContextMock.Object);
-        //services.AddSingleton(JwtProviderMock.Object);
+        services.AddSingleton(UserContextMock.Object);
         services.AddSingleton(EventRepositoryMock.Object);
     }
 

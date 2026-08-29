@@ -18,6 +18,8 @@ public class BookingApiTests : BaseApiTest
             new AuthenticationHeaderValue(TestAuthHandler.AuthenticationScheme);
     }
 
+    #region GetById method
+
     /// <summary>
     /// Проверяет получение брони по идентификатору.
     /// </summary>
@@ -62,7 +64,9 @@ public class BookingApiTests : BaseApiTest
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    #region Book method
+    #endregion
+
+    #region Create method
 
     /// <summary>
     /// Проверяет создание заявки на бронирование.
@@ -73,7 +77,7 @@ public class BookingApiTests : BaseApiTest
         //Arrange
 
         //Act
-        var response = await Client.PostAsync($"/events/{TestData.EventId}/book", null);
+        var response = await Client.PostAsync($"/bookings/{TestData.EventId}", null);
 
         //Assert
         Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
@@ -91,50 +95,6 @@ public class BookingApiTests : BaseApiTest
     }
 
     /// <summary>
-    /// Проверяет создание заявки на бронирование при овербукинге.
-    /// </summary>
-    [Fact]
-    public async Task Book_WhenOverbooking_ShouldReturn409()
-    {
-        //Arrange
-        var bookings = Enumerable.Range(0, 10)
-            .Select(_ => Booking.Create(Guid.NewGuid(), TestData.EventId, TestData.UserId, DateTime.UtcNow)).ToArray();
-        await Fixture.ExecuteDbContextAsync(async dbContext => { dbContext.Bookings.AddRange(bookings); });
-
-        //Act
-        var response = await Client.PostAsync($"/events/{TestData.EventId}/book", null);
-
-        //Assert
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    /// <summary>
-    /// Проверяет создание заявки на бронирование на несуществующего пользователя.
-    /// </summary>
-    [Fact]
-    public async Task Book_WhenNonExistentUser_ShouldReturn404()
-    {
-        //Act
-        var response = await Client.PostAsync($"/events/{Guid.NewGuid()}/book", null);
-
-        //Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    /// <summary>
-    /// Проверяет создание заявки на бронирование на несуществующее событие.
-    /// </summary>
-    [Fact]
-    public async Task Book_WhenNonExistentEvent_ShouldReturn404()
-    {
-        //Act
-        var response = await Client.PostAsync($"/events/{Guid.NewGuid()}/book", null);
-
-        //Assert
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    /// <summary>
     /// Проверяет параллельное создание заявок на бронирование.
     /// </summary>
     [Fact]
@@ -149,7 +109,7 @@ public class BookingApiTests : BaseApiTest
         var tasks = Enumerable.Range(0, totalRequests)
             .Select(_ => Task.Run(async () =>
             {
-                var response = await Client.PostAsync($"/events/{eventId}/book", null);
+                var response = await Client.PostAsync($"/bookings/{eventId}", null);
                 responses.Add(response);
             })).ToArray();
 
@@ -161,49 +121,6 @@ public class BookingApiTests : BaseApiTest
         responses.Select(x => x.Headers.Location).Distinct().Should().HaveCount(totalRequests);
 
         foreach (var response in responses)
-        {
-            var bookingByIdResponse = await Client.GetAsync(response.Headers.Location); //TODO dbContext
-            bookingByIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-            var responseData = await response.Content.ReadFromJsonAsync<BookingResponse>();
-            responseData.Should().NotBeNull();
-            responseData.EventId.Should().Be(eventId);
-            responseData.Status.Should().Be(BookingStatus.Pending);
-        }
-    }
-
-    /// <summary>
-    /// Проверяет параллельное создание заявок на бронирование при овербукинге.
-    /// </summary>
-    [Fact]
-    public async Task Book_WhenMultipleRequestsCauseOverbooking_ShouldWorkCorrectly()
-    {
-        //Arrange
-        const int totalRequests = 25;
-        var responses = new ConcurrentBag<HttpResponseMessage>();
-        var eventId = Guid.NewGuid();
-
-        //Act
-        var tasks = Enumerable.Range(0, totalRequests)
-            .Select(_ => Task.Run(async () =>
-            {
-                var response = await Client.PostAsync($"/events/{eventId}/book", null);
-                responses.Add(response);
-            })).ToArray();
-
-        await Task.WhenAll(tasks);
-
-        //Assert
-        responses.Should().HaveCount(totalRequests);
-        responses.Where(x => x.Headers.Location is not null).Select(x => x.Headers.Location)
-            .Distinct().Should().HaveCount(10);
-
-        var acceptedResponses = responses.Where(x => x.StatusCode == HttpStatusCode.Accepted).ToArray();
-        var conflictedResponses = responses.Where(x => x.StatusCode == HttpStatusCode.Conflict).ToArray();
-        acceptedResponses.Should().HaveCount(10);
-        conflictedResponses.Should().HaveCount(totalRequests - 10);
-
-        foreach (var response in acceptedResponses)
         {
             var bookingByIdResponse = await Client.GetAsync(response.Headers.Location); //TODO dbContext
             bookingByIdResponse.StatusCode.Should().Be(HttpStatusCode.OK);

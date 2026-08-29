@@ -2,6 +2,7 @@
 using Bookings.Application.QueryHandlers;
 using Bookings.Application.UseCases;
 using Bookings.Domain;
+using Bookings.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
@@ -17,8 +18,7 @@ public abstract class BaseUnitTest : IDisposable
     protected const int Page = 3;
     protected const int PageSize = 15;
 
-    //protected readonly Mock<IJwtProvider> JwtProviderMock = new();
-    //protected readonly Mock<ICurrentUserContext> UserContextMock = new();
+    protected readonly Mock<ICurrentUserContext> UserContextMock = new();
     protected readonly Mock<IBookingRepository> BookingRepositoryMock = new();
 
     protected readonly IServiceProvider ServiceProvider;
@@ -28,7 +28,6 @@ public abstract class BaseUnitTest : IDisposable
         var services = new ServiceCollection();
 
         services.AddSingleton<TimeProvider>(new FakeTimeProvider());
-        //services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         ConfigureMockServices(services);
 
@@ -42,14 +41,10 @@ public abstract class BaseUnitTest : IDisposable
 
     private void ConfigureMockServices(IServiceCollection services)
     {
-        //var user = User.Create(UserId, UserLogin, "random_string", UserRole.User);
         var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
 
-        //UserContextMock.Setup(x => x.UserId).Returns(UserId);
-        //UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
-
-        //JwtProviderMock.Setup(provider => provider.GenerateToken(user))
-        //.Returns("jwt_token");
+        UserContextMock.Setup(x => x.UserId).Returns(UserId);
+        UserContextMock.Setup(x => x.IsAuthenticated).Returns(true);
 
         BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(booking);
@@ -61,8 +56,7 @@ public abstract class BaseUnitTest : IDisposable
         BookingRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
-        //services.AddSingleton(UserContextMock.Object);
-        //services.AddSingleton(JwtProviderMock.Object);
+        services.AddSingleton(UserContextMock.Object);
         services.AddSingleton(BookingRepositoryMock.Object);
     }
 

@@ -1,10 +1,9 @@
-﻿using Auth.Application.Exceptions;
-using Auth.Application.Interfaces;
-using Auth.Domain;
+﻿using Events.Application.Exceptions;
+using Events.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Auth.Infrastructure;
+namespace Events.Infrastructure.Services;
 
 internal class CurrentUserContext(IHttpContextAccessor httpContextAccessor) : ICurrentUserContext
 {
@@ -23,5 +22,5 @@ internal class CurrentUserContext(IHttpContextAccessor httpContextAccessor) : IC
 
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
 
-    public bool IsAdmin => httpContextAccessor.HttpContext?.User.IsInRole(nameof(UserRole.Admin)) ?? false;
+    public bool IsAdmin => httpContextAccessor.HttpContext?.User.IsInRole("Admin") ?? false; //TODO
 }

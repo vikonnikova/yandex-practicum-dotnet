@@ -21,8 +21,7 @@ public class JwtProvider(IConfiguration configuration, TimeProvider timeProvider
         };
 
         // 2. Ключ подписи из конфига + настройка
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         // 3. Описание параметров токена через SecurityTokenDescriptor

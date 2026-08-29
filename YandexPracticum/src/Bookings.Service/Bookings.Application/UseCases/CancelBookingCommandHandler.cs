@@ -7,6 +7,7 @@ namespace Bookings.Application.UseCases;
 
 public class CancelBookingCommandHandler(
     TimeProvider timeProvider,
+    ICurrentUserContext userContext,
     IBookingRepository bookingRepository)
     : IRequestHandler<CancelBookingCommand>
 {
@@ -19,10 +20,10 @@ public class CancelBookingCommandHandler(
             throw new EntityNotFoundException("Бронь", command.BookingId);
         }
 
-        /*if (!userContext.IsAdmin && booking.UserId != userContext.UserId)
+        if (!userContext.IsAdmin && booking.UserId != userContext.UserId)
         {
             throw new AccessDeniedException("Недостаточно прав.");
-        }*/
+        }
 
         booking.Cancel(timeProvider.GetUtcNow().UtcDateTime);
 

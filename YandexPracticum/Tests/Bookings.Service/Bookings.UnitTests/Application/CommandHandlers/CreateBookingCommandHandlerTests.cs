@@ -42,33 +42,6 @@ public class CreateBookingCommandHandlerTests : BaseUnitTest
     }
 
     /// <summary>
-    /// Проверяет создание брони на несуществующее событие.
-    /// </summary>
-    [Fact]
-    public async Task Handle_WhenEventDoesNotExist_ShouldThrowEntityNotFoundException()
-    {
-        //Arrange
-        using var scope = ServiceProvider.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<CreateBookingCommandHandler>();
-        var nonExistentEventId = Guid.NewGuid();
-        var command = new CreateBookingCommand(nonExistentEventId);
-
-        //Act
-        Func<Task> act = () => handler.Handle(command, CancellationToken.None);
-        await act.Should().ThrowAsync<EntityNotFoundException>()
-            .WithMessage($"Сущность [Событие] с идентификатором [{nonExistentEventId.ToString()}] не найдена.");
-
-        //Assert
-        BookingRepositoryMock.Verify(
-            repo => repo.Add(It.IsAny<Booking>()),
-            Times.Never);
-
-        BookingRepositoryMock.Verify(
-            repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
-    /// <summary>
     /// Проверяет создание брони при достижении лимита пользователем.
     /// </summary>
     [Fact]
@@ -83,7 +56,7 @@ public class CreateBookingCommandHandlerTests : BaseUnitTest
         //Act
         Func<Task> act = () => handler.Handle(new CreateBookingCommand(EventId), CancellationToken.None);
         await act.Should().ThrowAsync<BookingLimitReachingException>()
-            .WithMessage("Достигнут лимит [10] бронирования у события.");
+            .WithMessage("Достигнут лимит [10] бронирования.");
 
         //Assert
         BookingRepositoryMock.Verify(

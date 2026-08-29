@@ -26,7 +26,6 @@
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/Auth.Service/">
-    <File Path="Infrastructure/PasswordHasherTests.cs" />
     <Project Path="Tests/Auth.Service/Auth.IntegrationTests/Auth.IntegrationTests.csproj" />
     <Project Path="Tests/Auth.Service/Auth.UnitTests/Auth.UnitTests.csproj" />
   </Folder>
