@@ -2,7 +2,9 @@
   <Folder Name="/Solution Items/">
     <File Path="../README.md" />
   </Folder>
-  <Folder Name="/src/" />
+  <Folder Name="/src/">
+    <Project Path="src/Shared/Shared.csproj" />
+  </Folder>
   <Folder Name="/src/Auth.Service/">
     <Project Path="src/Auth.Service/Auth.Api/Auth.Api.csproj" />
     <Project Path="src/Auth.Service/Auth.Application/Auth.Application.csproj" />
@@ -20,9 +22,6 @@
     <Project Path="src/Events.Service/Events.Application/Events.Application.csproj" />
     <Project Path="src/Events.Service/Events.Domain/Events.Domain.csproj" />
     <Project Path="src/Events.Service/Events.Infrastructure/Events.Infrastructure.csproj" />
-  </Folder>
-  <Folder Name="/src/Shared/">
-    <Project Path="src/Shared/Messaging/Messaging.csproj" />
   </Folder>
   <Folder Name="/Tests/" />
   <Folder Name="/Tests/Auth.Service/">

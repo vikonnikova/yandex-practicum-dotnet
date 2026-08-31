@@ -18,7 +18,8 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 
-builder.Services.AddOpenApi();
+// Встроенный OpenAPI дублирует Swagger (оба отдают спецификацию API).
+// builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -78,7 +79,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    // app.MapOpenApi();
 
     app.UseSwagger();
     app.UseSwaggerUI();
