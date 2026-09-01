@@ -17,7 +17,7 @@ public class JwtProvider(IConfiguration configuration, TimeProvider timeProvider
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Login),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new("role", user.Role.ToString())
         };
 
         // 2. Ключ подписи из конфига + настройка

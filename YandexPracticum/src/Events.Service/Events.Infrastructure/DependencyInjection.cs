@@ -2,6 +2,7 @@
 using Events.Infrastructure.BackgroundServices;
 using Events.Infrastructure.DataAccess;
 using Events.Infrastructure.HealthChecker;
+using Events.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,8 @@ public static class DependencyInjection
 
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IDatabaseHealthChecker, DatabaseHealthChecker>();
+        
+        services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         services.AddSingleton(BindKafkaSettings(configuration));
         services.AddHostedService<KafkaTopicInitializer>();

@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Security.Claims;
 using System.Text;
 using Bookings.Api.Middleware;
 using Bookings.Application;
@@ -45,6 +44,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Иначе "sub" из JWT мапится в ClaimTypes.NameIdentifier и FindFirst("sub") не находит claim.
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -55,7 +56,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = "role"
         };
     });
 
@@ -85,7 +86,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
