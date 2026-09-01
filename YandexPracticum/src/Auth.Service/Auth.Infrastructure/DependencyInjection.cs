@@ -12,7 +12,7 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Default")
-                               ?? throw new InvalidOperationException("Connection string 'Default' not found.");
+                               ?? throw new InvalidOperationException("Не найдена строка подключения к БД.");
 
         services.AddDbContext<AuthDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IUserRepository, UserRepository>();

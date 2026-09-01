@@ -15,7 +15,7 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Default")
-                               ?? throw new InvalidOperationException("Connection string 'Default' not found.");
+                               ?? throw new InvalidOperationException("Не найдена строка подключения к БД.");
 
         services.AddDbContext<BookingsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IBookingRepository, BookingRepository>();
@@ -34,7 +34,7 @@ public static class DependencyInjection
 
         if (string.IsNullOrWhiteSpace(settings.BootstrapServers))
         {
-            throw new InvalidOperationException("Configuration value 'Kafka:BootstrapServers' not found.");
+            throw new InvalidOperationException("Не найден адрес брокера Kafka в конфигурации [секция 'Kafka:BootstrapServers'].");
         }
 
         return settings;

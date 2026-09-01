@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Bookings.IntegrationTests.Repositories.Base;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bookings.IntegrationTests.Repositories;

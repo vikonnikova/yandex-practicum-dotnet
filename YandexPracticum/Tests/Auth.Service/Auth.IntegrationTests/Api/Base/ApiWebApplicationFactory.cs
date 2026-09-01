@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Auth.IntegrationTests.Api.Base;
@@ -15,20 +17,21 @@ public class ApiWebApplicationFactory(string connectionString) : WebApplicationF
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
-
+        builder.UseContentRoot(AppContext.BaseDirectory);
+        builder.UseEnvironment("Testing");
         builder.ConfigureTestServices(services =>
         {
-            // TimeProvider
             services.AddSingleton<TimeProvider>(FakeTime);
 
-            //DbContext
             var descriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<AuthDbContext>));
-            if (descriptor != null) services.Remove(descriptor);
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+            }
+
             services.AddDbContext<AuthDbContext>(options => { options.UseNpgsql(connectionString); });
 
-            //Auth
             services.AddAuthentication(options =>
                 {
                     options.DefaultAuthenticateScheme = TestAuthHandler.AuthenticationScheme;
@@ -38,5 +41,19 @@ public class ApiWebApplicationFactory(string connectionString) : WebApplicationF
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                     TestAuthHandler.AuthenticationScheme, options => { });
         });
+    }
+
+    protected override IHost CreateHost(IHostBuilder builder)
+    {
+        builder.UseEnvironment("Testing");
+        builder.ConfigureHostConfiguration(config =>
+        {
+            //TODO порефакторить в сторону UseSetting или вообще убрать файл и прописывать настройки где-то тут
+            config.AddJsonFile(
+                Path.Combine(AppContext.BaseDirectory, "appsettings.Testing.json"),
+                optional: false);
+        });
+
+        return base.CreateHost(builder);
     }
 }

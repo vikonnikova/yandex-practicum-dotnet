@@ -29,6 +29,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="appsettings.Testing.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\..\src\Auth.Service\Auth.Api\Auth.Api.csproj" />
       <ProjectReference Include="..\..\..\src\Auth.Service\Auth.Domain\Auth.Domain.csproj" />
       <ProjectReference Include="..\..\..\src\Auth.Service\Auth.Infrastructure\Auth.Infrastructure.csproj" />
