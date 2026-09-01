@@ -2,19 +2,20 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Shared.Contracts;
 
 namespace Bookings.Infrastructure.BackgroundServices;
 
 internal class BookingBackgroundService(
-    //TimeProvider timeProvider,
+    TimeProvider timeProvider,
     IServiceScopeFactory scopeFactory,
+    IKafkaPublisher kafkaPublisher,
     ILogger<BookingBackgroundService> logger)
     : BackgroundService
 {
     private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan ProcessingDelay = TimeSpan.FromSeconds(10);
 
-    // TODO подумать над архитектурой, чтобы покрыть тестами механизм отклонения заявок.
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Фоновая обработка бронирований запущена.");
@@ -54,36 +55,24 @@ internal class BookingBackgroundService(
         try
         {
             await Task.Delay(ProcessingDelay, cancellationToken);
-
-            //await TryConfirm(booking, eventStore, cancellationToken);
+            var confirmedAt = timeProvider.GetUtcNow().UtcDateTime;
+            booking.Confirm(confirmedAt);
             await bookingStore.SaveChangesAsync(cancellationToken);
+
+            await kafkaPublisher.PublishBookingConfirmedAsync(
+                new BookingConfirmedEvent(
+                    booking.Id,
+                    booking.EventId,
+                    booking.UserId,
+                    SeatsCount: 1,
+                    ConfirmedAt: confirmedAt),
+                cancellationToken);
 
             logger.LogInformation("Бронирование с идентификатором {BookingId} обработано успешно.", bookingId);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Ошибка при обработке бронирования.");
-            //await Reject(booking, eventStore, cancellationToken);
-            await bookingStore.SaveChangesAsync(cancellationToken);
         }
     }
-
-    /*private async Task TryConfirm(Booking booking, CancellationToken cancellationToken)
-    {
-        if (@event is null)
-        {
-            booking.Reject(timeProvider.GetUtcNow().UtcDateTime);
-        }
-        else
-        {
-            booking.Confirm(timeProvider.GetUtcNow().UtcDateTime);
-        }
-    }
-
-    private async Task Reject(Booking booking, CancellationToken cancellationToken)
-    {
-        booking.Reject(timeProvider.GetUtcNow().UtcDateTime);
-        var @event = await eventStore.Find(booking.EventId, cancellationToken);
-        @event?.ReleaseSeats();
-    }*/
 }
