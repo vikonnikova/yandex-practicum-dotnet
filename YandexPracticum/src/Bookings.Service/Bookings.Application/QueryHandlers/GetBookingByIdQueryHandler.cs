@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Bookings.Application.QueryHandlers;
 
-internal class GetBookingByIdQueryHandler(/*ICurrentUserContext userContext,*/ IBookingRepository bookingRepository)
+internal class GetBookingByIdQueryHandler(ICurrentUserContext userContext, IBookingRepository bookingRepository)
     : IRequestHandler<GetBookingByIdQuery, Booking>
 {
     public async Task<Booking> Handle(GetBookingByIdQuery query, CancellationToken cancellationToken)
@@ -18,10 +18,10 @@ internal class GetBookingByIdQueryHandler(/*ICurrentUserContext userContext,*/ I
             throw new EntityNotFoundException("Бронь", query.BookingId);
         }
 
-        /*if (booking.UserId != userContext.UserId)
+        if (booking.UserId != userContext.UserId)
         {
             throw new AccessDeniedException("Недостаточно прав.");
-        }*/
+        }
 
         return booking;
     }

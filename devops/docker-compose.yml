@@ -82,7 +82,7 @@ services:
       - "5125:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=auth_db;Username=postgres;Password=postgres
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=users;Username=users_service_user;Password=users_service_user
     depends_on:
       postgres:
         condition: service_healthy
@@ -99,7 +99,7 @@ services:
       - "5130:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=events_db;Username=postgres;Password=postgres
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=events;Username=events_service_user;Password=events_service_user
       Kafka__BootstrapServers: kafka:29092
       Kafka__ConsumerGroup: events-service-group
     depends_on:
@@ -120,7 +120,7 @@ services:
       - "5063:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=bookings_db;Username=postgres;Password=postgres
+      ConnectionStrings__Default: Host=postgres;Port=5432;Database=bookings;Username=bookings_service_user;Password=bookings_service_user
       Kafka__BootstrapServers: kafka:29092
     depends_on:
       postgres:
