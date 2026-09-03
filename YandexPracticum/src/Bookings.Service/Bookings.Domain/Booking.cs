@@ -33,7 +33,7 @@ public class Booking
     {
         if (Status != BookingStatus.Pending)
         {
-            throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование подтверждено.");
+            throw new BookingMustBeInPendingStatusException("Нельзя подтвердить обработанное системой бронирование.");
         }
 
         Status = BookingStatus.Confirmed;
@@ -44,7 +44,7 @@ public class Booking
     {
         if (Status != BookingStatus.Pending)
         {
-            throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование отклонено.");
+            throw new BookingMustBeInPendingStatusException("Нельзя отклонить обработанное системой бронирование.");
         }
 
         Status = BookingStatus.Rejected;
@@ -53,9 +53,9 @@ public class Booking
 
     public void Cancel(DateTime processedAt)
     {
-        if (Status != BookingStatus.Pending)
+        if (Status is not (BookingStatus.Pending or BookingStatus.Confirmed))
         {
-            throw new BookingMustBeInPendingStatusException("Нельзя изменить бронирование. Бронирование отменено.");
+            throw new BookingMustBeInPendingStatusException("Нельзя отменить бронирование.");
         }
 
         Status = BookingStatus.Cancelled;

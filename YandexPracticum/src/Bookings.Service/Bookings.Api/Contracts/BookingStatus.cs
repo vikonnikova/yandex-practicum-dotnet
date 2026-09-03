@@ -21,5 +21,10 @@ public enum BookingStatus
     /// <summary>
     /// Отклонена.
     /// </summary>
-    Rejected
+    Rejected,
+    
+    /// <summary>
+    /// Отменена.
+    /// </summary>
+    Cancelled
 }

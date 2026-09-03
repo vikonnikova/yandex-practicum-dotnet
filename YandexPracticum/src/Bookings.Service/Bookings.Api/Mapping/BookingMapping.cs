@@ -19,6 +19,7 @@ internal static class BookingMapping
             Domain.BookingStatus.Pending => BookingStatus.Pending,
             Domain.BookingStatus.Confirmed => BookingStatus.Confirmed,
             Domain.BookingStatus.Rejected => BookingStatus.Rejected,
+            Domain.BookingStatus.Cancelled => BookingStatus.Cancelled,
             _ => throw new ArgumentException($"Не найден маппинг для {value}")
         };
     }
