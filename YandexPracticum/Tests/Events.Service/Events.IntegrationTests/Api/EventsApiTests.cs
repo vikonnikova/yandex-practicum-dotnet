@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Events.Api.Contracts;
 using Events.Api.Contracts.Events;
 using Events.Domain;
 using Events.IntegrationTests.Api.Base;
 using FluentAssertions;
+using Shared.Contracts;
 
 namespace Events.IntegrationTests.Api;
 
@@ -42,7 +42,7 @@ public class EventsApiTests : BaseApiTest
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var responseData = (await response.Content.ReadFromJsonAsync<PaginatedResult<EventResponse>>())!;
-        Assert.Equal(3, responseData.Meta.TotalItems);
+        Assert.Equal(3, responseData.TotalItems);
     }
 
     /// <summary>

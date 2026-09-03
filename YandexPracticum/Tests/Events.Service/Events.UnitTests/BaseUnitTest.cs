@@ -6,6 +6,7 @@ using Events.Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using Shared.Contracts;
 
 namespace Events.UnitTests;
 
@@ -55,7 +56,7 @@ public abstract class BaseUnitTest : IDisposable
         EventRepositoryMock
             .Setup(repo => repo.GetFiltered(3, 15, new Filters(Title: "День", EventStartAt, EventEndAt),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new FilteredResult<Event>(TotalItems: 100, Data: [@event]));
+            .ReturnsAsync(new PaginatedResult<Event>(Data: [@event], TotalItems: 100));
         EventRepositoryMock.Setup(repo => repo.Find(EventId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(@event);
         EventRepositoryMock.Setup(repo => repo.Add(@event));

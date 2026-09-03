@@ -1,10 +1,12 @@
-﻿using Bookings.Api.Contracts.Bookings;
+﻿using Bookings.Api.Contracts;
+using Bookings.Api.Contracts.Bookings;
 using Bookings.Api.Mapping;
 using Bookings.Application.Contracts.Commands;
 using Bookings.Application.Contracts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Contracts;
 
 namespace Bookings.Api.Controllers;
 
@@ -16,6 +18,20 @@ namespace Bookings.Api.Controllers;
 [Route("[controller]")]
 public class BookingsController(ISender sender) : ControllerBase
 {
+    /// <summary>
+    /// Возвращает список бронирований текущего пользователя.
+    /// </summary>
+    /// <param name="data">Параметры пагинации.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet]
+    [ProducesResponseType(typeof(PaginatedResult<BookingResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PaginatedResult<BookingResponse>>> GetAll([FromQuery] GetBookingsQuery data,
+        CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(data.ToQuery(), cancellationToken);
+        return Ok(result.ToResponse());
+    }
+
     /// <summary>
     /// Возвращает информацию о бронировании по идентификатору.
     /// </summary>

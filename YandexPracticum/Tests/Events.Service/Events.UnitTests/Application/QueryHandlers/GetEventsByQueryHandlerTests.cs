@@ -31,9 +31,8 @@ public class GetEventsByQueryHandlerTests : BaseUnitTest
 
         result.Should().NotBeNull();
         result.TotalItems.Should().Be(100);
-        result.CurrentPage.Should().Be(3);
 
-        var item = result.Items.Should().ContainSingle().Subject;
+        var item = result.Data.Should().ContainSingle().Subject;
         item.Title.Should().Be(EventTitle);
         item.Description.Should().Be(EventDescription);
         item.Period.StartAt.Should().Be(EventStartAt);

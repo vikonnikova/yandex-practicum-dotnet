@@ -1,5 +1,7 @@
-﻿using Auth.Api.Contracts.Users;
+﻿using Auth.Api.Contracts.Auth;
+using Auth.Api.Contracts.Users;
 using Auth.Api.Mapping;
+using Auth.Application.Contracts.Auth;
 using Auth.Application.Contracts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -26,5 +28,21 @@ public class UsersController(ISender sender) : ControllerBase
     public async Task<ActionResult<UserResponse>> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
     {
         return Ok((await sender.Send(new GetUserByIdQuery(id), cancellationToken)).ToResponse());
+    }
+
+    /// <summary>
+    /// Меняет пароль текущего пользователя.
+    /// </summary>
+    /// <param name="data">Данные для смены пароля.</param>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpPut("password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest data,
+        CancellationToken cancellationToken)
+    {
+        await sender.Send(new ChangePasswordCommand(data.CurrentPassword, data.NewPassword), cancellationToken);
+        return NoContent();
     }
 }

@@ -3,12 +3,13 @@ using Events.Application.Interfaces;
 using Events.Domain;
 using Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts;
 
 namespace Events.Infrastructure;
 
 internal class EventRepository(AppDbContext context) : IEventRepository
 {
-    public async Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
+    public async Task<PaginatedResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
         CancellationToken cancellationToken)
     {
         var query = context.Events.AsQueryable();
@@ -35,7 +36,7 @@ internal class EventRepository(AppDbContext context) : IEventRepository
         var result = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x)
             .ToArrayAsync(cancellationToken);
 
-        return new FilteredResult<Event>(totalItems, result);
+        return new PaginatedResult<Event>(result, totalItems);
     }
 
     public async Task<Event?> Find(Guid eventId, CancellationToken cancellationToken)

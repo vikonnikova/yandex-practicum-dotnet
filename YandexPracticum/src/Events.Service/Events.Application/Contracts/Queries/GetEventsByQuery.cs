@@ -1,5 +1,6 @@
 ﻿using Events.Domain;
 using MediatR;
+using Shared.Contracts;
 
 namespace Events.Application.Contracts.Queries;
 

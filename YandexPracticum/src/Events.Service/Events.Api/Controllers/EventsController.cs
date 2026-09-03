@@ -1,4 +1,3 @@
-using Events.Api.Contracts;
 using Events.Api.Contracts.Events;
 using Events.Api.Mappings;
 using Events.Application.Contracts.Commands;
@@ -6,6 +5,7 @@ using Events.Application.Contracts.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Contracts;
 
 namespace Events.Api.Controllers;
 
@@ -30,7 +30,7 @@ public class EventsController(ISender sender)
     {
         var result = await sender.Send(data.ToQuery(), cancellationToken);
 
-        return Ok(result.ToPaginatedResponse());
+        return Ok(result.ToResponse());
     }
 
     /// <summary>
