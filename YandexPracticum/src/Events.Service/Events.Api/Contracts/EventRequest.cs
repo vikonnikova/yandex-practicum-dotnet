@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Events.Api.Validation;
 
-namespace Events.Api.Contracts.Events;
+namespace Events.Api.Contracts;
 
 /// <summary>
 /// Представляет данные для создания/изменения события.

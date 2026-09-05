@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Bookings.Api.Contracts.Bookings;
+namespace Bookings.Api.Contracts;
 
 /// <summary>
 /// Представляет статусы бронирования.

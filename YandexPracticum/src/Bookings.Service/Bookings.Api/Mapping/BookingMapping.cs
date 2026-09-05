@@ -1,8 +1,8 @@
-﻿using Bookings.Api.Contracts.Bookings;
+﻿using Bookings.Api.Contracts;
 using Bookings.Application.Contracts.Queries;
 using Bookings.Domain;
 using Shared.Contracts;
-using BookingStatus = Bookings.Api.Contracts.Bookings.BookingStatus;
+using BookingStatus = Bookings.Api.Contracts.BookingStatus;
 
 namespace Bookings.Api.Mapping;
 

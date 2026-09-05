@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Bookings.Api.Contracts.Bookings;
+namespace Bookings.Api.Contracts;
 
 /// <summary>
 /// Представляет данные для пагинации списка бронирований.

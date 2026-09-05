@@ -1,5 +1,4 @@
 ﻿using Bookings.Api.Contracts;
-using Bookings.Api.Contracts.Bookings;
 using Bookings.Api.Mapping;
 using Bookings.Application.Contracts.Commands;
 using Bookings.Application.Contracts.Queries;

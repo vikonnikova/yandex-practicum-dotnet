@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Events.Api.Contracts.Events;
+using Events.Api.Contracts;
 using Events.Domain;
 using Events.IntegrationTests.Api.Base;
 using FluentAssertions;

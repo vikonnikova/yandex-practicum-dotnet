@@ -32,6 +32,7 @@ internal class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Excepti
                 break;
 
             case ArgumentException:
+            case WrongCurrentPasswordException:
                 statusCode = StatusCodes.Status400BadRequest;
                 break;
 

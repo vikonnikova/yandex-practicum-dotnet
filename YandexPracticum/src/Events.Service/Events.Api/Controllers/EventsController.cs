@@ -1,4 +1,4 @@
-using Events.Api.Contracts.Events;
+using Events.Api.Contracts;
 using Events.Api.Mappings;
 using Events.Application.Contracts.Commands;
 using Events.Application.Contracts.Queries;
