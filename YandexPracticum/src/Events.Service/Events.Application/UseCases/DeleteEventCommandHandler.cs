@@ -1,11 +1,14 @@
 ﻿using Events.Application.Contracts.Commands;
 using Events.Application.Exceptions;
 using Events.Application.Interfaces;
+using Events.Application.Settings;
 using MediatR;
 
 namespace Events.Application.UseCases;
 
-internal class DeleteEventCommandHandler(IEventRepository repository) : IRequestHandler<DeleteEventCommand>
+internal class DeleteEventCommandHandler(
+    IEventRepository repository,
+    ICacheService cache) : IRequestHandler<DeleteEventCommand>
 {
     public async Task Handle(DeleteEventCommand command, CancellationToken cancellationToken)
     {
@@ -19,5 +22,6 @@ internal class DeleteEventCommandHandler(IEventRepository repository) : IRequest
         repository.Delete(eventToDelete);
 
         await repository.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Event(command.EventId), cancellationToken);
     }
 }

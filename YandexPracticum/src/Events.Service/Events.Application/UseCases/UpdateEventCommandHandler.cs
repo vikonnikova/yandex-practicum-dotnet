@@ -1,12 +1,15 @@
 ﻿using Events.Application.Contracts.Commands;
 using Events.Application.Exceptions;
 using Events.Application.Interfaces;
+using Events.Application.Settings;
 using Events.Domain;
 using MediatR;
 
 namespace Events.Application.UseCases;
 
-internal class UpdateEventCommandHandler(IEventRepository repository) : IRequestHandler<UpdateEventCommand>
+internal class UpdateEventCommandHandler(
+    IEventRepository repository,
+    ICacheService cache) : IRequestHandler<UpdateEventCommand>
 {
     public async Task Handle(UpdateEventCommand command, CancellationToken cancellationToken)
     {
@@ -21,5 +24,6 @@ internal class UpdateEventCommandHandler(IEventRepository repository) : IRequest
             EventPeriod.Create(command.StartAt, command.EndAt));
 
         await repository.SaveChangesAsync(cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Event(command.Id), cancellationToken);
     }
 }
