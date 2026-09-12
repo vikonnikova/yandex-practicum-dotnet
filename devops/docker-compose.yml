@@ -69,6 +69,17 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: eventapi-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # ─────────────────────────── Микросервисы ───────────────────────────
   auth-api:
     container_name: eventapi-auth
@@ -102,10 +113,13 @@ services:
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=events;Username=events_service_user;Password=events_service_user
       Kafka__BootstrapServers: kafka:29092
       Kafka__ConsumerGroup: events-service-group
+      Redis__ConnectionString: redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   bookings-api:

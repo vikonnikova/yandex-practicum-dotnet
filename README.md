@@ -6,7 +6,7 @@
 
 * **Платформа**: .NET 10 / C# 12
 * **Архитектура**: Clean Architecture, CQRS (MediatR), Microservices
-* **Инфраструктура**: Apache Kafka (Confluent.Kafka), PostgreSQL (EF Core)
+* **Инфраструктура**: Apache Kafka (Confluent.Kafka), PostgreSQL (EF Core), Redis (StackExchange.Redis)
 * **Контейнеризация**: Docker, Docker-Compose
 * **Тестирование**: xUnit, FluentAssertions, Testcontainers
 
@@ -87,13 +87,14 @@
 | **PostgreSQL**     | `5432`          | Единый инстанс для всех БД            |
 | **Kafka**          | `9092`          | Брокер сообщений                      |
 | **Kafka UI**       | `8082`          | Веб-интерфейс для мониторинга топиков |
+| **Redis**          | `6379`          | NoSQL для кэширования данных          |
 
 #### 1. Шаг: Запуск инфраструктуры (Docker)
 ```bash
 cd devops
 docker compose up -d
 ```
-*Убедитесь, что контейнеры базы и Кафки перешли в статус healthy.*
+*Убедитесь, что контейнеры базы, Кафки и Redis перешли в статус healthy.*
 
 #### 2. Шаг: Запуск микросервисов (локально)
 Запустите три терминала из корня репозитория:

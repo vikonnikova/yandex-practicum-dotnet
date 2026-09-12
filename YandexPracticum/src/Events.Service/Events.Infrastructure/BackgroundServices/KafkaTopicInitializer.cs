@@ -3,6 +3,7 @@ using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Shared.Contracts;
+using Shared.Settings;
 
 namespace Events.Infrastructure.BackgroundServices;
 
