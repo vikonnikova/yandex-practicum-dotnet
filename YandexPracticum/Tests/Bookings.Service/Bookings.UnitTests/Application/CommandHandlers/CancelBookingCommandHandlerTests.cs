@@ -118,24 +118,24 @@ public class CancelBookingCommandHandlerTests : BaseUnitTest
     }
 
     /// <summary>
-    /// Проверяет отмену брони, которая уже не в статусе Pending.
+    /// Проверяет отмену брони, которая уже не в статусе Pending и не подтверждена.
     /// </summary>
     [Fact]
-    public async Task Handle_WhenBookingIsConfirmed_ShouldThrowBookingMustBeInPendingStatusException()
+    public async Task Handle_WhenBookingIsRejected_ShouldThrowBookingHasWrongStatusException()
     {
         //Arrange
         using var scope = ServiceProvider.CreateScope();
         var handler = scope.ServiceProvider.GetRequiredService<CancelBookingCommandHandler>();
         var booking = Booking.Create(BookingId, EventId, UserId, DateTime.UtcNow);
-        booking.Confirm(DateTime.UtcNow);
+        booking.Reject(DateTime.UtcNow);
         BookingRepositoryMock.Setup(repo => repo.Find(BookingId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(booking);
         var command = new CancelBookingCommand(BookingId);
 
         //Act
         Func<Task> act = () => handler.Handle(command, CancellationToken.None);
-        await act.Should().ThrowAsync<BookingMustBeInPendingStatusException>()
-            .WithMessage("Нельзя изменить бронирование. Бронирование отменено.");
+        await act.Should().ThrowAsync<BookingHasWrongStatusException>()
+            .WithMessage("Нельзя отменить бронирование.");
 
         //Assert
         BookingRepositoryMock.Verify(
