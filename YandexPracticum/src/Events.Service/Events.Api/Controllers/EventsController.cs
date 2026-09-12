@@ -19,6 +19,18 @@ public class EventsController(ISender sender)
     : ControllerBase
 {
     /// <summary>
+    /// Возвращает топ-10 самых популярных событий по доле проданных мест.
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены.</param>
+    [HttpGet("top")]
+    [ProducesResponseType(typeof(EventResponse[]), StatusCodes.Status200OK)]
+    public async Task<ActionResult<EventResponse[]>> GetTop(CancellationToken cancellationToken)
+    {
+        var events = await sender.Send(new GetTopEventsQuery(), cancellationToken);
+        return Ok(events.ToResponse());
+    }
+
+    /// <summary>
     /// Возвращает все события.
     /// </summary>
     /// <param name="data">Фильтры и пагинация.</param>

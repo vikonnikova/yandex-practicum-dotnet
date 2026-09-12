@@ -5,6 +5,8 @@ namespace Events.Application.Interfaces;
 
 public interface IEventRepository
 {
+    Task<IReadOnlyList<Event>> GetTopBySoldPercentage(int count, CancellationToken cancellationToken);
+
     Task<PaginatedResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
         CancellationToken cancellationToken);
 

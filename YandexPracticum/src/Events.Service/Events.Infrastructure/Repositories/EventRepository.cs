@@ -9,10 +9,20 @@ namespace Events.Infrastructure;
 
 internal class EventRepository(AppDbContext context) : IEventRepository
 {
+    public async Task<IReadOnlyList<Event>> GetTopBySoldPercentage(int count, CancellationToken cancellationToken)
+    {
+        return await context.Events
+            .AsNoTracking()
+            .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+            .ThenBy(e => e.Id)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<PaginatedResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
         CancellationToken cancellationToken)
     {
-        var query = context.Events.AsQueryable();
+        var query = context.Events.AsNoTracking().AsQueryable();
 
         if (filters is not null)
         {
