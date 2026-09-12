@@ -25,7 +25,7 @@ internal static class EventMapping
             @event.Period.EndAt, @event.TotalSeats, @event.AvailableSeats);
     }
 
-    internal static EventResponse[] ToResponse(this IReadOnlyList<Event> events)
+    internal static EventResponse[] ToResponse(this IReadOnlyCollection<Event> events)
     {
         return events.Select(x => x.ToResponse()).ToArray();
     }
@@ -41,7 +41,7 @@ internal static class EventMapping
         var data = paginatedEvents.Data.Select(x =>
             new EventResponse(x.Id, x.Title, x.Description, x.Period.StartAt, x.Period.EndAt, x.TotalSeats,
                 x.AvailableSeats)).ToArray();
-        
+
         return new PaginatedResult<EventResponse>(data, paginatedEvents.TotalItems);
     }
 }
