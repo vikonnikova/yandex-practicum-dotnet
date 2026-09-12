@@ -33,6 +33,20 @@ public class Event
         return new Event(id, title, description, period, totalSeats);
     }
 
+    public static Event Restore(
+        Guid id,
+        string title,
+        string? description,
+        EventPeriod period,
+        int totalSeats,
+        int availableSeats)
+    {
+        var @event = Create(id, title, description, period, totalSeats);
+        @event.AvailableSeats = availableSeats;
+        
+        return @event;
+    }
+
     public void Update(string title, string? description, EventPeriod period)
     {
         Title = title;

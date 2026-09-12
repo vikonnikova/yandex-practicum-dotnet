@@ -22,6 +22,7 @@ public class EventsController(ISender sender)
     /// Возвращает топ-10 самых популярных событий по доле проданных мест.
     /// </summary>
     /// <param name="cancellationToken">Токен отмены.</param>
+    [AllowAnonymous]
     [HttpGet("top")]
     [ProducesResponseType(typeof(EventResponse[]), StatusCodes.Status200OK)]
     public async Task<ActionResult<EventResponse[]>> GetTop(CancellationToken cancellationToken)
