@@ -1,5 +1,6 @@
 ﻿using Events.Application.Contracts.Commands;
 using Events.Application.Exceptions;
+using Events.Application.Settings;
 using Events.Application.UseCases;
 using Events.Domain;
 using FluentAssertions;
@@ -36,6 +37,10 @@ public class DeleteEventCommandHandlerTests : BaseUnitTest
         EventRepositoryMock.Verify(
             repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
             Times.Once);
+
+        CacheMock.Verify(
+            cache => cache.RemoveAsync(CacheKeys.Event(EventId), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     /// <summary>
@@ -65,6 +70,10 @@ public class DeleteEventCommandHandlerTests : BaseUnitTest
 
         EventRepositoryMock.Verify(
             repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never);
+
+        CacheMock.Verify(
+            cache => cache.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 }

@@ -46,6 +46,27 @@ public class EventTests
     }
 
     /// <summary>
+    /// Проверяет восстановление события с фактическим числом свободных мест.
+    /// </summary>
+    [Fact]
+    public void Restore_WhenValidData_ShouldKeepAvailableSeats()
+    {
+        var eventId = Guid.NewGuid();
+        var startAt = DateTime.UtcNow;
+        var endAt = startAt.AddDays(2);
+
+        var @event = Event.Restore(eventId, "Новый год", "Дед мороз и снегурочка",
+            EventPeriod.Create(startAt, endAt), 90, 12);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(eventId, @event.Id);
+            Assert.Equal(90, @event.TotalSeats);
+            Assert.Equal(12, @event.AvailableSeats);
+        });
+    }
+
+    /// <summary>
     /// Проверяет обновление события.
     /// </summary>
     [Fact]

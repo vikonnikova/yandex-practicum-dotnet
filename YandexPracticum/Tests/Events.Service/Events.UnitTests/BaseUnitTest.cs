@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Shared.Contracts;
+using Shared.Settings;
 
 namespace Events.UnitTests;
 
@@ -22,8 +23,16 @@ public abstract class BaseUnitTest : IDisposable
     protected const int Page = 3;
     protected const int PageSize = 15;
 
-    protected readonly Mock<ICurrentUserContext> UserContextMock = new();
     protected readonly Mock<IEventRepository> EventRepositoryMock = new();
+    protected readonly Mock<ICurrentUserContext> UserContextMock = new();
+    protected readonly Mock<ICacheService> CacheMock = new();
+
+    protected readonly CacheSettings CacheSettings = new()
+    {
+        ConnectionString = "localhost:6379",
+        EventTtlSeconds = 300,
+        TopEventsTtlSeconds = 60
+    };
 
     protected readonly IServiceProvider ServiceProvider;
 
@@ -37,7 +46,7 @@ public abstract class BaseUnitTest : IDisposable
 
         services.AddScoped<GetEventsByQueryHandler>();
         services.AddScoped<GetEventByIdQueryHandler>();
-
+        services.AddScoped<GetTopEventsQueryHandler>();
         services.AddScoped<CreateEventCommandHandler>();
         services.AddScoped<UpdateEventCommandHandler>();
         services.AddScoped<DeleteEventCommandHandler>();
@@ -64,8 +73,17 @@ public abstract class BaseUnitTest : IDisposable
         EventRepositoryMock.Setup(repo => repo.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        CacheMock
+            .Setup(cache => cache.GetAsync<CachedEvent>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CachedEvent?)null);
+        CacheMock
+            .Setup(cache => cache.GetAsync<CachedEvent[]>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((CachedEvent[]?)null);
+
         services.AddSingleton(UserContextMock.Object);
         services.AddSingleton(EventRepositoryMock.Object);
+        services.AddSingleton(CacheSettings);
+        services.AddSingleton(CacheMock.Object);
     }
 
     public void Dispose()
