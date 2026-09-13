@@ -2,6 +2,7 @@ using System.Text.Json;
 using Bookings.Application.Interfaces;
 using Confluent.Kafka;
 using Shared.Contracts;
+using Shared.Settings;
 
 namespace Bookings.Infrastructure.Services;
 

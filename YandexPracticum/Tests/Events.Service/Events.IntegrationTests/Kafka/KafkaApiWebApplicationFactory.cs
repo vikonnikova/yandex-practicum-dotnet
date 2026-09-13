@@ -2,6 +2,7 @@ using Events.IntegrationTests.Api.Base;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Contracts;
+using Shared.Settings;
 
 namespace Events.IntegrationTests.Kafka;
 

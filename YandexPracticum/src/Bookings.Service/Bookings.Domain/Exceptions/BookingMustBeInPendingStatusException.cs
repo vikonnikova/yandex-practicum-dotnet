@@ -1,3 +1,3 @@
 ﻿namespace Bookings.Domain.Exceptions;
 
-public class BookingMustBeInPendingStatusException(string message) : Exception(message);
+public class BookingHasWrongStatusException(string message) : Exception(message);

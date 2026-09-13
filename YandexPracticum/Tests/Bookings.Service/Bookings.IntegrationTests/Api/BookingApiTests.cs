@@ -2,11 +2,11 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Bookings.Api.Contracts.Bookings;
+using Bookings.Api.Contracts;
 using Bookings.Domain;
 using Bookings.IntegrationTests.Api.Base;
 using FluentAssertions;
-using BookingStatus = Bookings.Api.Contracts.Bookings.BookingStatus;
+using BookingStatus = Bookings.Api.Contracts.BookingStatus;
 
 namespace Bookings.IntegrationTests.Api;
 
