@@ -328,4 +328,40 @@ public class EventRepositoryTests(DbFixture dbFixture) : BaseRepositoryTest(dbFi
         result.TotalItems.Should().Be(0);
         result.Data.Should().BeEmpty();
     }
+
+    /// <summary>
+    /// Проверяет выбор топ событий по доле проданных мест.
+    /// </summary>
+    [Fact]
+    public async Task GetTopBySoldPercentage_WhenEventsExist_ShouldOrderBySoldShare()
+    {
+        // Arrange
+        var popular = Event.Create(Guid.NewGuid(), "Хит", "популярное",
+            EventPeriod.Create(Date, Date.AddDays(1)), 10);
+        popular.TryReserveSeats(9);
+
+        var medium = Event.Create(Guid.NewGuid(), "Среднее", "среднее",
+            EventPeriod.Create(Date, Date.AddDays(1)), 10);
+        medium.TryReserveSeats(5);
+
+        var empty = Event.Create(Guid.NewGuid(), "Пустое", "пустое",
+            EventPeriod.Create(Date, Date.AddDays(1)), 10);
+
+        await using (var context = DbFixture.CreateContext())
+        {
+            context.Events.AddRange(empty, medium, popular);
+            await context.SaveChangesAsync();
+        }
+
+        await using (var context = DbFixture.CreateContext())
+        {
+            // Act
+            var result = await new EventRepository(context).GetTopBySoldPercentage(2, CancellationToken.None);
+
+            // Assert
+            result.Should().HaveCount(2);
+            result[0].Title.Should().Be("Хит");
+            result[1].Title.Should().Be("Среднее");
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿namespace Bookings.Api.Contracts.Bookings;
+﻿namespace Bookings.Api.Contracts;
 
 /// <summary>
 /// Представляет данные для создания брони.

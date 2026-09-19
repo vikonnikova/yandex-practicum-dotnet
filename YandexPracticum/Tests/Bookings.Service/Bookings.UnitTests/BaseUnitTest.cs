@@ -32,7 +32,6 @@ public abstract class BaseUnitTest : IDisposable
         ConfigureMockServices(services);
 
         services.AddScoped<GetBookingByIdQueryHandler>();
-
         services.AddScoped<CreateBookingCommandHandler>();
         services.AddScoped<CancelBookingCommandHandler>();
 

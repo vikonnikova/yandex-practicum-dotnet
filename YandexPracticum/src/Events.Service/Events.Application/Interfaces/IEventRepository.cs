@@ -1,10 +1,13 @@
 ﻿using Events.Domain;
+using Shared.Contracts;
 
 namespace Events.Application.Interfaces;
 
 public interface IEventRepository
 {
-    Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
+    Task<IReadOnlyList<Event>> GetTopBySoldPercentage(int count, CancellationToken cancellationToken);
+
+    Task<PaginatedResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
         CancellationToken cancellationToken);
 
     Task<Event?> Find(Guid eventId, CancellationToken cancellationToken);

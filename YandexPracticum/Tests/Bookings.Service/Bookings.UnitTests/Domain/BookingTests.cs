@@ -74,10 +74,10 @@ public class BookingTests
     }
 
     /// <summary>
-    /// Проверяет отмену бронирования.
+    /// Проверяет отмену бронирования в статусе Ожидание.
     /// </summary>
     [Fact]
-    public void Cancel_WhenValidData_ShouldWorkCorrectly()
+    public void Cancel_WhenPending_ShouldWorkCorrectly()
     {
         var bookingId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
@@ -97,38 +97,64 @@ public class BookingTests
     }
 
     /// <summary>
-    /// Проверяет подтверждение отклоненного бронирования.
+    /// Проверяет отмену подтвержденного бронирования.
     /// </summary>
     [Fact]
-    public void Confirm_WhenBookingIsReject_ShouldThrowBookingMustBeInPendingStatusException()
+    public void Cancel_WhenConfirmed_ShouldWorkCorrectly()
     {
-        var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
-        booking.Reject(DateTime.UtcNow);
+        var bookingId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var now = DateTime.UtcNow;
+        var cancelledAt = DateTime.UtcNow.AddDays(1).AddHours(6).AddMinutes(20);
+        var booking = Booking.Create(bookingId, eventId, userId, now);
+        booking.Confirm(DateTime.UtcNow);
 
-        Assert.Throws<BookingMustBeInPendingStatusException>(() => booking.Confirm(DateTime.UtcNow));
+        booking.Cancel(cancelledAt);
+
+        booking.Id.Should().Be(bookingId);
+        booking.EventId.Should().Be(eventId);
+        booking.UserId.Should().Be(userId);
+        booking.CreatedAt.Should().Be(now);
+        booking.Status.Should().Be(BookingStatus.Cancelled);
+        booking.ProcessedAt.Should().Be(cancelledAt);
     }
 
     /// <summary>
-    /// Проверяет отклонение отмененного бронирования.
+    /// Проверяет подтверждение отмененного бронирования.
     /// </summary>
     [Fact]
-    public void Reject_WhenBookingIsCanceled_ShouldThrowBookingMustBeInPendingStatusException()
+    public void Confirm_WhenBookingIsReject_ShouldThrowBookingHasWrongStatusException()
     {
         var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
         booking.Cancel(DateTime.UtcNow);
 
-        Assert.Throws<BookingMustBeInPendingStatusException>(() => booking.Reject(DateTime.UtcNow));
+        Assert.Throws<BookingHasWrongStatusException>(() => booking.Confirm(DateTime.UtcNow));
     }
 
     /// <summary>
-    /// Проверяет отмену подтвержденного бронирования.
+    /// Проверяет отклонение подтвержденного бронирования.
     /// </summary>
     [Fact]
-    public void Cancel_WhenBookingIsConfirmed_ShouldThrowBookingMustBeInPendingStatusException()
+    public void Reject_WhenBookingIsCanceled_ShouldThrowBookingHasWrongStatusException()
     {
         var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
         booking.Confirm(DateTime.UtcNow);
 
-        Assert.Throws<BookingMustBeInPendingStatusException>(() => booking.Cancel(DateTime.UtcNow));
+        Assert.Throws<BookingHasWrongStatusException>(() => booking.Reject(DateTime.UtcNow));
+    }
+
+    /// <summary>
+    /// Проверяет отмену отклоненного бронирования.
+    /// </summary>
+    [Fact]
+    public void Cancel_WhenBookingIsRejected_ShouldThrowBookingHasWrongStatusException()
+    {
+        var booking = Booking.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        booking.Reject(DateTime.UtcNow);
+
+        var action = () => booking.Cancel(DateTime.UtcNow);
+
+        action.Should().Throw<BookingHasWrongStatusException>().WithMessage("Нельзя отменить бронирование.");
     }
 }

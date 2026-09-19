@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Bookings.Api.Contracts.Bookings;
+namespace Bookings.Api.Contracts;
 
 /// <summary>
 /// Представляет статусы бронирования.
@@ -21,5 +21,10 @@ public enum BookingStatus
     /// <summary>
     /// Отклонена.
     /// </summary>
-    Rejected
+    Rejected,
+
+    /// <summary>
+    /// Отменена.
+    /// </summary>
+    Cancelled
 }

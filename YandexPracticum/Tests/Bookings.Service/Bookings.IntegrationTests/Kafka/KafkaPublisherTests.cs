@@ -3,6 +3,7 @@ using Bookings.Infrastructure.Services;
 using Confluent.Kafka;
 using FluentAssertions;
 using Shared.Contracts;
+using Shared.Settings;
 
 namespace Bookings.IntegrationTests.Kafka;
 

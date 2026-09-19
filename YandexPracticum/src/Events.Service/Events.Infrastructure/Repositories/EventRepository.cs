@@ -3,15 +3,26 @@ using Events.Application.Interfaces;
 using Events.Domain;
 using Events.Infrastructure.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts;
 
 namespace Events.Infrastructure;
 
 internal class EventRepository(AppDbContext context) : IEventRepository
 {
-    public async Task<FilteredResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
+    public async Task<IReadOnlyList<Event>> GetTopBySoldPercentage(int count, CancellationToken cancellationToken)
+    {
+        return await context.Events
+            .AsNoTracking()
+            .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+            .ThenBy(e => e.Id)
+            .Take(count)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<PaginatedResult<Event>> GetFiltered(int page, int pageSize, Filters? filters,
         CancellationToken cancellationToken)
     {
-        var query = context.Events.AsQueryable();
+        var query = context.Events.AsNoTracking().AsQueryable();
 
         if (filters is not null)
         {
@@ -35,7 +46,7 @@ internal class EventRepository(AppDbContext context) : IEventRepository
         var result = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(x => x)
             .ToArrayAsync(cancellationToken);
 
-        return new FilteredResult<Event>(totalItems, result);
+        return new PaginatedResult<Event>(result, totalItems);
     }
 
     public async Task<Event?> Find(Guid eventId, CancellationToken cancellationToken)

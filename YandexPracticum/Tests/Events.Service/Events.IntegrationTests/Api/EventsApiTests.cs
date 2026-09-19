@@ -2,10 +2,10 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Events.Api.Contracts;
-using Events.Api.Contracts.Events;
 using Events.Domain;
 using Events.IntegrationTests.Api.Base;
 using FluentAssertions;
+using Shared.Contracts;
 
 namespace Events.IntegrationTests.Api;
 
@@ -42,7 +42,7 @@ public class EventsApiTests : BaseApiTest
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var responseData = (await response.Content.ReadFromJsonAsync<PaginatedResult<EventResponse>>())!;
-        Assert.Equal(3, responseData.Meta.TotalItems);
+        Assert.Equal(3, responseData.TotalItems);
     }
 
     /// <summary>
@@ -98,6 +98,39 @@ public class EventsApiTests : BaseApiTest
 
         //Assert
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Проверяет получение топ-10 событий по доле проданных мест.
+    /// </summary>
+    [Fact]
+    public async Task GetTop_WhenValidData_ShouldReturn200()
+    {
+        //Arrange
+        var popularId = Guid.NewGuid();
+        var otherId = Guid.NewGuid();
+        await Fixture.ExecuteDbContextAsync(async dbContext =>
+        {
+            var popular = Event.Create(popularId, TestData.Event1Title, TestData.Event1Description,
+                EventPeriod.Create(TestData.Event1StartAt, TestData.Event1EndAt), 10);
+            popular.TryReserveSeats(8);
+
+            var other = Event.Create(otherId, TestData.Event2Title, TestData.Event2Description,
+                EventPeriod.Create(TestData.Event2StartAt, TestData.Event2EndAt), 10);
+            other.TryReserveSeats(1);
+
+            dbContext.Events.AddRange(popular, other);
+        });
+
+        //Act
+        var response = await Client.GetAsync("/events/top");
+
+        //Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var responseData = (await response.Content.ReadFromJsonAsync<EventResponse[]>())!;
+        Assert.Equal(2, responseData.Length);
+        Assert.Equal(popularId, responseData[0].Id);
+        Assert.Equal(otherId, responseData[1].Id);
     }
 
     #endregion

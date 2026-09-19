@@ -1,4 +1,5 @@
-﻿using Events.Infrastructure.BackgroundServices;
+﻿using Events.Application.Interfaces;
+using Events.Infrastructure.BackgroundServices;
 using Events.Infrastructure.DataAccess;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
+using StackExchange.Redis;
 
 namespace Events.IntegrationTests.Api.Base;
 
@@ -65,6 +67,23 @@ public class ApiWebApplicationFactory(string connectionString) : WebApplicationF
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                 TestAuthHandler.AuthenticationScheme, options => { });
+
+        ConfigureCache(services);
+    }
+
+    protected static void ConfigureCache(IServiceCollection services)
+    {
+        foreach (var descriptor in services.Where(d => d.ServiceType == typeof(ICacheService)).ToList())
+        {
+            services.Remove(descriptor);
+        }
+
+        foreach (var descriptor in services.Where(d => d.ServiceType == typeof(IConnectionMultiplexer)).ToList())
+        {
+            services.Remove(descriptor);
+        }
+
+        services.AddSingleton<ICacheService, CacheServiceMock>();
     }
 
     private static void RemoveHostedService<THostedService>(IServiceCollection services)
