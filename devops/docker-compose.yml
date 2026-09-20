@@ -188,6 +188,7 @@ services:
       BADGER_EPHEMERAL: "false"
       BADGER_DIRECTORY_VALUE: /badger/data
       BADGER_DIRECTORY_KEY: /badger/key
+    user: "0"
     volumes:
       - jaeger-data:/badger
 
