@@ -15,8 +15,6 @@ internal static class ObservabilityExtensions
         var serviceName = builder.Configuration["ServiceName"] ?? "auth-service";
         var otlpEndpoint = builder.Configuration["Otlp:Endpoint"] ?? "http://localhost:4317";
 
-        builder.Environment.ApplicationName = serviceName;
-
         builder.Host.UseSerilog((ctx, cfg) =>
             cfg.ReadFrom.Configuration(ctx.Configuration)
                 .Enrich.WithProperty("ServiceName", serviceName)

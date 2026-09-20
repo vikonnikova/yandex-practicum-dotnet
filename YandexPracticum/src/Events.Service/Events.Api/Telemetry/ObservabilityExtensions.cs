@@ -17,6 +17,7 @@ internal static class ObservabilityExtensions
 
         builder.Host.UseSerilog((ctx, cfg) =>
             cfg.ReadFrom.Configuration(ctx.Configuration)
+                .Enrich.WithProperty("ServiceName", serviceName)
                 .WriteTo.Console(new CompactJsonFormatter()));
 
         builder.Services.AddOpenTelemetry()
