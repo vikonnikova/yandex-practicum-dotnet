@@ -2,7 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: Prometheus
-    # uid зафиксирован: на него ссылаются панели в dashboards/event-booking.json
+    # uid зафиксирован: на него ссылаются панели в dashboards/*.json
     uid: prometheus
     type: prometheus
     access: proxy
