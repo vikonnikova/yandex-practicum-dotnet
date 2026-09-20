@@ -33,7 +33,11 @@ internal static class ObservabilityExtensions
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddRuntimeInstrumentation()
-                .AddPrometheusExporter());
+                .AddPrometheusExporter(options =>
+                {
+                    // Без этого service.name уезжает только в target_info и не виден как метка метрик.
+                    options.ResourceConstantLabels = key => key == "service.name";
+                }));
 
         return builder;
     }

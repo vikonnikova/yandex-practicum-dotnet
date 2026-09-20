@@ -12,7 +12,7 @@ scrape_configs:
       - targets: ["bookings-api:8080"]
     metrics_path: /metrics
 
-  - job_name: users-service
+  - job_name: auth-service
     static_configs:
       - targets: ["auth-api:8080"]
     metrics_path: /metrics
