@@ -20,6 +20,9 @@ public class ApiWebApplicationFactory(string connectionString) : WebApplicationF
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Отключает OpenTelemetry целиком: в тестах нет коллектора, слать трейсы некуда.
+        Environment.SetEnvironmentVariable("OTEL_SDK_DISABLED", "true");
+
         builder.UseContentRoot(AppContext.BaseDirectory);
         builder.UseEnvironment("Testing");
         builder.ConfigureTestServices(ConfigureTestServices);
