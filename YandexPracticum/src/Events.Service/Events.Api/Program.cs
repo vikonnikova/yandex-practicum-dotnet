@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using Events.Api.Middleware;
+using Events.Api.Telemetry;
 using Events.Application;
 using Events.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddObservability();
 
 // Add services to the container.
 builder.Services.AddSingleton(TimeProvider.System);
@@ -88,11 +90,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseWhen(
+    context => context.Request.Path != ObservabilityExtensions.MetricsPath,
+    branch => branch.UseHttpsRedirection());
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapObservabilityEndpoints();
 app.MapControllers();
 
 app.Run();
