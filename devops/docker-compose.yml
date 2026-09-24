@@ -11,6 +11,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
 
   kafka:
     image: confluentinc/cp-kafka:7.6.1
@@ -35,7 +38,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 15
-      
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
   # ─────────────────────────── Визуальный веб-интерфейс ───────────────────────────
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -74,6 +79,9 @@ services:
     container_name: eventapi-redis
     ports:
       - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -94,9 +102,19 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=users;Username=users_service_user;Password=users_service_user
+      Otlp__Endpoint: http://jaeger:4317
+      ServiceName: auth-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Auth.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   events-api:
     container_name: eventapi-events
@@ -114,6 +132,14 @@ services:
       Kafka__BootstrapServers: kafka:29092
       Kafka__ConsumerGroup: events-service-group
       Redis__ConnectionString: redis:6379
+      Otlp__Endpoint: http://jaeger:4317
+      ServiceName: events-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Events.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -121,6 +147,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   bookings-api:
     container_name: eventapi-bookings
@@ -136,11 +164,76 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=bookings;Username=bookings_service_user;Password=bookings_service_user
       Kafka__BootstrapServers: kafka:29092
+      Otlp__Endpoint: http://jaeger:4317
+      ServiceName: bookings-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Bookings.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
+
+  # ─────────────────────────── Наблюдаемость ───────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: eventapi-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      auth-api:
+        condition: service_healthy
+      events-api:
+        condition: service_healthy
+      bookings-api:
+        condition: service_healthy
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: eventapi-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      SPAN_STORAGE_TYPE: badger
+      BADGER_EPHEMERAL: "false"
+      BADGER_DIRECTORY_VALUE: /badger/data
+      BADGER_DIRECTORY_KEY: /badger/key
+    user: "0"
+    volumes:
+      - jaeger-data:/badger
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: eventapi-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
 
 volumes:
   postgres-data:
+  redis-data:
+  zookeeper-data:
+  zookeeper-log:
+  kafka-data:
+  prometheus-data:
+  grafana-data:
+  jaeger-data:

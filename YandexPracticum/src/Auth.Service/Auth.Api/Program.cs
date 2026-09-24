@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text;
 using Auth.Api.Middleware;
+using Auth.Api.Telemetry;
 using Auth.Application;
 using Auth.Infrastructure;
 using Auth.Infrastructure.Extensions;
@@ -8,7 +9,22 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
+if (args.Contains("--healthcheck"))
+{
+    try
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+        using var response = await client.GetAsync("http://localhost:8080/health/ready");
+        Environment.Exit(response.IsSuccessStatusCode ? 0 : 1);
+    }
+    catch (Exception)
+    {
+        Environment.Exit(1);
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
+builder.AddObservability();
 
 // Add services to the container.
 builder.Services.AddSingleton(TimeProvider.System);
@@ -86,11 +102,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseWhen(
+    context => !ObservabilityExtensions.IsProbeRequest(context.Request),
+    branch => branch.UseHttpsRedirection());
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapObservabilityEndpoints();
 app.MapControllers();
 
 app.Run();
