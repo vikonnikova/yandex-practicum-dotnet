@@ -104,6 +104,12 @@ services:
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=users;Username=users_service_user;Password=users_service_user
       Otlp__Endpoint: http://jaeger:4317
       ServiceName: auth-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Auth.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,6 +134,12 @@ services:
       Redis__ConnectionString: redis:6379
       Otlp__Endpoint: http://jaeger:4317
       ServiceName: events-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Events.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,6 +166,12 @@ services:
       Kafka__BootstrapServers: kafka:29092
       Otlp__Endpoint: http://jaeger:4317
       ServiceName: bookings-service
+    healthcheck:
+      test: ["CMD", "dotnet", "Bookings.Api.dll", "--healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -172,9 +190,12 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - auth-api
-      - events-api
-      - bookings-api
+      auth-api:
+        condition: service_healthy
+      events-api:
+        condition: service_healthy
+      bookings-api:
+        condition: service_healthy
 
   jaeger:
     image: jaegertracing/all-in-one:1.56
