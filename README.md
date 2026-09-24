@@ -106,6 +106,7 @@ dotnet run --project src/Auth.Service/Auth.Api/Auth.Api.csproj
 dotnet run --project src/Events.Service/Events.Api/Events.Api.csproj
 dotnet run --project src/Bookings.Service/Bookings.Api/Bookings.Api.csproj
 ```
+*Трейсы уходят на `Otlp:Endpoint` из `appsettings` (`http://localhost:4317`). Jaeger из Docker Compose должен уже слушать этот порт. Если его нет, API продолжит работать, а экспортёр будет молча копить ошибки отправки.*
 
 #### 🔒 Аутентификация в Swagger:
 1. Перейдите в Auth: `http://localhost:5125/swagger` и выполните `POST /auth/login`.
@@ -174,7 +175,7 @@ dotnet ef migrations add <Имя> --project src/Bookings.Service/Bookings.Infras
 ### Инструменты и технологии
 *   **OpenTelemetry SDK** — интегрирован во все микросервисы для автоматического сбора телеметрии входящих/исходящих HTTP-запросов и SQL-операций через Entity Framework Core.
 *   **Serilog** — настроен в качестве единого провайдера логирования для вывода структурированных логов в формате JSON (`CompactJsonFormatter`).
-*   **Jaeger** — используется как централизованное хранилище и UI для распределенной трассировки (работает по Push-модели напрямую через протокол OTLP).
+*   **Jaeger** — используется как централизованное хранилище и UI для распределенной трассировки (работает по Push-модели напрямую через протокол OTLP). Адрес приёмника задаётся `Otlp:Endpoint`: локально это `http://localhost:4317`, в Docker Compose его перекрывает переменная `Otlp__Endpoint=http://jaeger:4317`.
 *   **Prometheus** — выполняет сбор (Scraping) метрик рантайма .NET и ASP.NET Core с каждого сервиса по Pull-модели через эндпоинты `/metrics`.
 *   **Grafana** — инструмент визуализации со встроенным дашбордом для отслеживания Latency, Throughput и Error Rate.
 
@@ -191,6 +192,17 @@ docker compose up -d
 *   `eventapi-prometheus` — сборщик метрик.
 *   `eventapi-jaeger` — приемник OTLP-трейсов и визуализатор цепочек вызовов.
 *   `eventapi-grafana` — аналитическая панель графиков.
+
+### Провизионинг Grafana
+
+Дашборды и источник данных не создаются вручную в UI. Grafana при старте читает каталог `/etc/grafana/provisioning` и сама поднимает конфигурацию из репозитория. В `docker-compose.yml` этот каталог смонтирован из `devops/grafana/provisioning` (только чтение).
+
+Механизм из двух частей:
+
+1. **Datasource.** Файл `devops/grafana/provisioning/datasources/datasource.yml` регистрирует Prometheus (`http://prometheus:9090`) как источник по умолчанию. У него зафиксирован `uid: prometheus`: на этот идентификатор ссылаются панели в JSON-дашбордах. Источник помечен `editable: false`, поэтому его нельзя переопределить из интерфейса.
+2. **Дашборды.** Файл `devops/grafana/provisioning/dashboards/dashboards.yml` описывает файловый провайдер. Каждые 30 секунд Grafana сканирует `/var/lib/grafana/dashboards` (смонтирован из `devops/grafana/dashboards`) и загружает JSON-файлы в папку **Event Booking**. Правка дашборда в репозитории подхватывается без импорта через UI: достаточно дождаться следующего сканирования или перезапустить контейнер Grafana.
+
+JSON в `devops/grafana/dashboards` — это экспорт Grafana: у каждой панели в `datasource.uid` зашито значение `prometheus`. Оно должно совпадать с `uid` в `datasource.yml`. Если поменять uid только в provisioning, панели перестанут находить источник данных.
 
 ### Порты и доступ к интерфейсам (UI)
 

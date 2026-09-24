@@ -413,7 +413,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 16
       },
@@ -457,7 +457,7 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
-      "description": "Если значение уходит выше нуля — задачи копятся в очереди быстрее, чем обрабатываются.",
+      "description": "Текущая длина очереди задач и число потоков в пуле. Обе величины абсолютные, поэтому у них общая шкала.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -508,7 +508,117 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(dotnet_thread_pool_queue_length{service_name=~\"$service\"})",
+          "instant": false,
+          "legendFormat": "Длина очереди (Queue Length)",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(dotnet_thread_pool_thread_count{service_name=~\"$service\"})",
+          "instant": false,
+          "legendFormat": "Всего потоков (Thread Count)",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Состояние пула потоков (Thread Pool State)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Сколько задач пул потоков завершает в секунду.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
         },
         "overrides": []
       },
@@ -516,9 +626,9 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 24
       },
-      "id": 6,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -538,14 +648,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum(rate(dotnet_thread_pool_queue_length_total{service_name=~\"$service\"}[5m])) - sum(rate(dotnet_thread_pool_work_item_count_total{service_name=~\"$service\"}[5m]))\r\n",
+          "expr": "sum(rate(dotnet_thread_pool_work_item_count_total{service_name=~\"$service\"}[5m]))",
           "instant": false,
-          "legendFormat": "__auto",
+          "legendFormat": "Выполнено задач/сек (Work Items/sec)",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Зависание потоков (Starvation)",
+      "title": "Производительность пула (Thread Pool Throughput)",
       "type": "timeseries"
     }
   ],
@@ -588,6 +698,6 @@
   "timezone": "browser",
   "title": "DOTNET",
   "uid": "dotnet",
-  "version": 12,
+  "version": 13,
   "weekStart": ""
 }
