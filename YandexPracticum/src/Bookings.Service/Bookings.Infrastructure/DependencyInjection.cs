@@ -3,9 +3,11 @@ using Bookings.Infrastructure.BackgroundServices;
 using Bookings.Infrastructure.DataAccess;
 using Bookings.Infrastructure.Repositories;
 using Bookings.Infrastructure.Services;
+using Bookings.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Shared.Contracts;
 using Shared.Settings;
 
@@ -26,6 +28,10 @@ public static class DependencyInjection
         services.AddSingleton(BindKafkaSettings(configuration));
         services.AddSingleton<IKafkaPublisher, KafkaPublisher>();
         services.AddHostedService<BookingBackgroundService>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<BookingsDbContext>("postgres", tags: ["ready"])
+            .AddCheck<KafkaHealthCheck>("kafka", tags: ["ready"]);
     }
 
     private static KafkaSettings BindKafkaSettings(IConfiguration configuration)

@@ -91,7 +91,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseWhen(
-    context => context.Request.Path != ObservabilityExtensions.MetricsPath,
+    context => !ObservabilityExtensions.IsProbeRequest(context.Request),
     branch => branch.UseHttpsRedirection());
 
 app.UseAuthentication();

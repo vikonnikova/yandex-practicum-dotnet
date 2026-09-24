@@ -3,11 +3,12 @@ using Events.Application.Interfaces;
 using Events.Infrastructure.BackgroundServices;
 using Events.Infrastructure.Caching;
 using Events.Infrastructure.DataAccess;
-using Events.Infrastructure.HealthChecker;
+using Events.Infrastructure.HealthChecks;
 using Events.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Shared.Contracts;
 using Shared.Settings;
 using StackExchange.Redis;
@@ -24,8 +25,6 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
         services.AddScoped<IEventRepository, EventRepository>();
-        services.AddScoped<IDatabaseHealthChecker, DatabaseHealthChecker>();
-
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
         services.AddSingleton(BindKafkaSettings(configuration));
@@ -37,6 +36,11 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         services.AddHostedService<BookingConfirmedConsumer>();
+
+        services.AddHealthChecks()
+            .AddDbContextCheck<AppDbContext>("postgres", tags: ["ready"])
+            .AddCheck<RedisHealthCheck>("redis", tags: ["ready"])
+            .AddCheck<KafkaHealthCheck>("kafka", tags: ["ready"]);
     }
 
     private static KafkaSettings BindKafkaSettings(IConfiguration configuration)

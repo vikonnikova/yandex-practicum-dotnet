@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -9,6 +10,9 @@ namespace Events.Api.Telemetry;
 internal static class ObservabilityExtensions
 {
     public const string MetricsPath = "/metrics";
+
+    public static bool IsProbeRequest(HttpRequest request) =>
+        request.Path == MetricsPath || request.Path.StartsWithSegments("/health");
 
     public static WebApplicationBuilder AddObservability(this WebApplicationBuilder builder)
     {
@@ -25,7 +29,7 @@ internal static class ObservabilityExtensions
             .WithTracing(tracing => tracing
                 .AddAspNetCoreInstrumentation(options =>
                 {
-                    options.Filter = httpContext => httpContext.Request.Path != MetricsPath;
+                    options.Filter = httpContext => !IsProbeRequest(httpContext.Request);
                 })
                 .AddHttpClientInstrumentation()
                 .AddEntityFrameworkCoreInstrumentation()
@@ -45,6 +49,11 @@ internal static class ObservabilityExtensions
     public static WebApplication MapObservabilityEndpoints(this WebApplication app)
     {
         app.MapPrometheusScrapingEndpoint(MetricsPath);
+        app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = static _ => false });
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = static registration => registration.Tags.Contains("ready")
+        });
         return app;
     }
 }
